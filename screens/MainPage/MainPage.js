@@ -92,10 +92,10 @@ const MainPage = () => {
     try {
       const [profileData, likesData, pingsData, connectionsData] =
         await Promise.all([
-          fetchMatchesForProfileAPI(userData.userId, userData.lookingFor),
-          fetchNewLikesAPI(userData.userId),
-          fetchPingsAPI(userData.userId),
-          fetchCurrentMatchesAPI(userData.userId),
+          fetchMatchesForProfileAPI(userData.emailId, userData.lookingFor),
+          fetchNewLikesAPI(userData.emailId),
+          fetchPingsAPI(userData.emailId),
+          fetchCurrentMatchesAPI(userData.emailId),
         ]);
 
       setProfiles(profileData || []);

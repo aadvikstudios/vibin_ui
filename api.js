@@ -70,9 +70,9 @@ export const actionPingAPI = async (userId, targetUserId, action) => {
 };
 
 // Existing APIs
-export const fetchMatchesForProfileAPI = async (userId, gender) => {
-  const queryParams = new URLSearchParams({ userId, gender }).toString();
-  console.log('userId, gender', userId, gender);
+export const fetchMatchesForProfileAPI = async (emailId, gender) => {
+  const queryParams = new URLSearchParams({ emailId, gender }).toString();
+  console.log('emailId, gender', emailId, gender);
   try {
     const response = await fetch(`${API_BASE_URL}/api/match?${queryParams}`);
     const data = await response.json();
@@ -157,12 +157,12 @@ export const sendActionToBackendAPI = async (
   return await response.json();
 };
 
-export const fetchCurrentMatchesAPI = async (userId) => {
-  console.log('fetchCurrentMatchesAPI', userId);
+export const fetchCurrentMatchesAPI = async (emailId) => {
+  console.log('fetchCurrentMatchesAPI', emailId);
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/match/currentMatches?userId=${userId}`
+      `${API_BASE_URL}/api/match/currentMatches?emailId=${emailId}`
     );
 
     if (!response.ok) {
@@ -234,10 +234,10 @@ export const fetchCurrentMatchesAPI = async (userId) => {
   }
 };
 
-export const fetchPingsAPI = async (userId) => {
+export const fetchPingsAPI = async (emailId) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/match/pings?userId=${userId}`
+      `${API_BASE_URL}/api/match/pings?emailId=${emailId}`
     );
 
     if (!response.ok) {
@@ -283,10 +283,10 @@ export const fetchPingsAPI = async (userId) => {
   }
 };
 
-export const fetchNewLikesAPI = async (userId) => {
+export const fetchNewLikesAPI = async (emailId) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/match/newLikes?userId=${userId}`
+      `${API_BASE_URL}/api/match/newLikes?emailId=${emailId}`
     );
 
     if (!response.ok) {
