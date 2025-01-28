@@ -92,7 +92,7 @@ const MainPage = () => {
     try {
       const [profileData, likesData, pingsData, connectionsData] =
         await Promise.all([
-          fetchMatchesForProfileAPI(userData.emailId, userData.lookingFor),
+          fetchMatchesForProfileAPI(userData.emailId, userData.gender),
           fetchNewLikesAPI(userData.emailId),
           fetchPingsAPI(userData.emailId),
           fetchCurrentMatchesAPI(userData.emailId),

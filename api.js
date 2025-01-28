@@ -76,11 +76,11 @@ export const fetchMatchesForProfileAPI = async (emailId, gender) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/match?${queryParams}`);
     const data = await response.json();
-    // console.log(data)
-    if (response.ok && data.matches) {
+    console.log('matched profiles are ', data);
+    if (response.ok && data.profiles) {
       // Fetch signed read URLs for photos only if photos exist and are not empty
       const updatedMatches = await Promise.all(
-        data.matches.map(async (match) => {
+        data.profiles.map(async (match) => {
           if (
             match.photos &&
             Array.isArray(match.photos) &&
