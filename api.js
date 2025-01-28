@@ -426,6 +426,7 @@ export const likeMessageAPI = async (matchId, createdAt, messageId, liked) => {
  * Generate a pre-signed URL for uploading an image to S3.
  */
 export const generatePresignedUrlAPI = async (fileName, fileType) => {
+  console.log("generatePresignedUrlAPI",fileName,fileType)
   try {
     const response = await fetch(`${API_BASE_URL}/generate-presigned-url`, {
       method: 'POST',
