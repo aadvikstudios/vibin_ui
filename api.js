@@ -43,30 +43,42 @@ export const sendMessageAPI = async (message) => {
   }
 };
 
-export const actionPingAPI = async (userId, targetUserId, action) => {
-  // Build the request body dynamically
+export const actionPingAPI = async (
+  userId,
+  targetUserId,
+  action,
+  pingNote = null
+) => {
+  // Build request body dynamically, including `pingNote` only if it exists
   const requestBody = {
     userId,
     targetUserId,
     action,
+    ...(pingNote ? { pingNote } : {}), // Conditionally include pingNote
   };
-  const response = await fetch(`${API_BASE_URL}/api/match/pingAction`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
-  console.log('response is ', response);
-  if (!response) {
-    const errorDetails = await response.json();
-    console.error('Response Error:', response);
-    throw new Error(
-      errorDetails?.message || 'Failed to send ping action to backend'
-    );
-  }
 
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/match/pingAction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('API response status:', response.status);
+
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      console.error('API Error:', errorDetails);
+      throw new Error(errorDetails.message || 'Failed to send ping action');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error in actionPingAPI:', error.message);
+    throw error;
+  }
 };
 
 // Existing APIs
@@ -112,19 +124,8 @@ export const fetchMatchesForProfileAPI = async (emailId, gender) => {
   }
 };
 
-export const sendActionToBackendAPI = async (
-  userId,
-  targetUserId,
-  action,
-  pingNote = null
-) => {
-  console.log(
-    'userId, targetUserId, action, pingNote',
-    userId,
-    targetUserId,
-    action,
-    pingNote
-  );
+export const sendActionToBackendAPI = async (userId, targetUserId, action) => {
+  console.log('userId, targetUserId, action', userId, targetUserId, action);
 
   // Build the request body dynamically
   const requestBody = {
@@ -133,11 +134,49 @@ export const sendActionToBackendAPI = async (
     action,
   };
 
-  if (action === 'pinged' && pingNote) {
-    requestBody.pingNote = pingNote; // Include pingNote only if the action is 'pinged'
+  const response = await fetch(`${API_BASE_URL}/api/action/action`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+  console.log(response);
+  if (!response.ok) {
+    console.log('!response.ok', !response.ok, response);
+    const errorDetails = await response.json();
+    console.error('Response Error:', response);
+    throw new Error(
+      errorDetails?.message || 'Failed to send action to backend'
+    );
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/match/action`, {
+  return await response.json();
+};
+
+export const sendPingToBackendAPI = async (
+  emailId,
+  targetEmailId,
+  action,
+  pingNote
+) => {
+  console.log(
+    'emailId, targetEmailId, action, pingNote',
+    emailId,
+    targetEmailId,
+    action,
+    pingNote
+  );
+
+  // Build the request body dynamically
+  const requestBody = {
+    emailId,
+    targetEmailId,
+    action,
+    pingNote,
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/action/sendPing`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -251,17 +290,20 @@ export const fetchPingsAPI = async (emailId) => {
     if (data?.pings) {
       // Iterate over each ping and update the photo with a pre-signed URL if available
       const pingsWithPresignedUrls = await Promise.all(
-        data.pings.map(async (ping) => {
-          if (ping?.photo) {
+        data?.pings.map(async (ping) => {
+          if (ping?.senderPhoto) {
             try {
-              const presignedUrl = await getPresignedReadUrlAPI(ping.photo);
+              const presignedUrl = await getPresignedReadUrlAPI(
+                ping.senderPhoto
+              );
+              console.log('presignedUrl', presignedUrl);
               return {
                 ...ping,
-                photo: presignedUrl, // Replace the photo with the pre-signed URL
+                senderPhoto: presignedUrl, // Replace the photo with the pre-signed URL
               };
             } catch (error) {
               console.error(
-                `Error fetching pre-signed URL for photo: ${ping.photo}`,
+                `Error fetching pre-signed URL for photo: ${ping.senderPhoto}`,
                 error.message
               );
               // Return the ping with the original photo if fetching pre-signed URL fails
@@ -422,11 +464,8 @@ export const likeMessageAPI = async (matchId, createdAt, messageId, liked) => {
   }
 };
 
-/**
- * Generate a pre-signed URL for uploading an image to S3.
- */
 export const generatePresignedUrlAPI = async (fileName, fileType) => {
-  console.log("generatePresignedUrlAPI",fileName,fileType)
+  console.log('generatePresignedUrlAPI', fileName, fileType);
   try {
     const response = await fetch(`${API_BASE_URL}/generate-presigned-url`, {
       method: 'POST',
@@ -448,9 +487,6 @@ export const generatePresignedUrlAPI = async (fileName, fileType) => {
   }
 };
 
-/**
- * Upload an image to S3 using the pre-signed URL.
- */
 export const uploadImageToS3API = async (uploadUrl, imageUri) => {
   try {
     const file = await fetch(imageUri);
@@ -475,9 +511,6 @@ export const uploadImageToS3API = async (uploadUrl, imageUri) => {
   }
 };
 
-/**
- * Fetch pre-signed URL for reading an image from S3.
- */
 export const getPresignedReadUrlAPI = async (key) => {
   try {
     const response = await fetch(`${API_BASE_URL}/get-presigned-read-url`, {

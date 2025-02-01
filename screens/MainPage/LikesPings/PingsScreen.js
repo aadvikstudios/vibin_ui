@@ -7,25 +7,33 @@ import EmptyStateView from '../../../components/EmptyStateView';
 const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
   const { colors } = useTheme();
   const [updatedPings, setUpdatedPings] = useState([...initialPings]); // Maintain a local state for pings
+  console.log('initialPings ', initialPings, updatedPings);
 
-  // Unified Ping Action Handler
-  const handlePingAction = async (userId, actionType) => {
+  const handlePingAction = async (emailId, actionType, pingNote = null) => {
     try {
-      const response = await actionPingAPI(
-        userProfile.userId,
-        userId,
-        actionType
-      );
-      console.log('response', response);
+      // Construct request payload conditionally
+      const payload = {
+        userEmailId: userProfile.emailId,
+        targetEmailId: emailId,
+        actionType,
+        ...(pingNote ? { pingNote } : {}), // Only add pingNote if it's provided
+      };
+
+      console.log('Sending request:', payload);
+
+      // Call the API
+      const response = await actionPingAPI(payload);
+
+      console.log('API response:', response);
+
       if (response.message) {
-        // Remove the ping from the list after action
-        const filteredPings = updatedPings.filter(
-          (ping) => ping.userId !== userId
+        // Remove the processed ping from the list
+        setUpdatedPings(
+          updatedPings.filter((ping) => ping.senderEmailId !== emailId)
         );
-        setUpdatedPings(filteredPings); // Update the local state
       } else {
         console.error(
-          `Error performing action (${actionType}) on ping: ${response.message}`
+          `Error performing action (${actionType}): ${response.message}`
         );
       }
     } catch (error) {
@@ -51,12 +59,16 @@ const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
   return (
     <FlatList
       data={updatedPings} // Use the local state for pings
-      keyExtractor={(item, index) => `${item.userId}-${index}`}
+      keyExtractor={(item, index) => `${item.senderEmailId}-${index}`}
       renderItem={({ item }) => (
         <PingCard
           ping={item}
-          onAccept={() => handlePingAction(item.userId, 'accept')}
-          onDecline={() => handlePingAction(item.userId, 'decline')}
+          onAccept={() =>
+            handlePingAction(item.senderEmailId, 'accept', item.pingNote)
+          }
+          onDecline={() =>
+            handlePingAction(item.senderEmailId, 'decline', null)
+          }
         />
       )}
       ListEmptyComponent={

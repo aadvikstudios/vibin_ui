@@ -23,8 +23,8 @@ const LikesScreen = ({ likes, loading }) => {
     try {
       // Call your backend API with the appropriate action
       const response = await sendActionToBackendAPI(
-        userData.userId, // Replace with actual user ID
-        item.userId, // Replace with the user ID of the selected profile
+        userData.emailId, // Replace with actual user ID
+        item.emailId, // Replace with the user ID of the selected profile
         action
       );
 

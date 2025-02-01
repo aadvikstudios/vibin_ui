@@ -14,7 +14,7 @@ import ChipList from './ChipList';
 import ActionButtons from './ActionButtons';
 import MatchScreen from './MatchScreen';
 import PingModal from './PingModal';
-import { sendActionToBackendAPI } from '../../../api';
+import { sendActionToBackendAPI, sendPingToBackendAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
 const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const { colors } = useTheme();
@@ -38,8 +38,8 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
     setIsLoading(true);
     try {
       const response = await sendActionToBackendAPI(
-        userProfile.userId,
-        currentProfile.userId,
+        userProfile.emailId,
+        currentProfile.emailId,
         action
       );
       console.log('response:', response);
@@ -116,11 +116,11 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
     }
 
     setIsLoading(true);
-
+    console.log('\nValue of current profile is ', profiles[currentIndex]);
     try {
-      const response = await sendActionToBackendAPI(
-        userProfile.userId,
-        profiles[currentIndex]?.userId,
+      const response = await sendPingToBackendAPI(
+        userProfile.emailId,
+        profiles[currentIndex]?.emailId,
         'pinged',
         pingNote
       );

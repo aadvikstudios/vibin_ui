@@ -82,7 +82,12 @@ const MainPage = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!userData?.userId || !userData?.lookingFor) {
+    console.log(
+      'value of fetchData is ',
+      userData.lookingFor,
+      userData.emailId
+    );
+    if (!userData?.emailId || !userData?.lookingFor) {
       console.warn('User data is missing required fields.');
       return;
     }

@@ -9,12 +9,12 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
       {/* Profile Photo */}
       <View style={styles.photoContainer}>
-        {ping.photo ? (
-          <Image source={{ uri: ping.photo }} style={styles.photo} />
+        {ping.senderPhoto ? (
+          <Image source={{ uri: ping.senderPhoto }} style={styles.photo} />
         ) : (
           <Avatar.Text
             size={60}
-            label={ping.userData?.name?.charAt(0).toUpperCase() || '?'}
+            label={ping.senderName?.charAt(0).toUpperCase() || '?'}
             style={[styles.avatar, { backgroundColor: colors.disabled }]}
           />
         )}
@@ -28,7 +28,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
             { color: colors.primaryText, ...fonts.headlineSmall },
           ]}
         >
-          {ping.userData?.name}, {ping.userData?.age}
+          {ping.senderName}, {ping.senderAge}
         </Text>
         <Text
           style={[
@@ -36,7 +36,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
             { color: colors.secondaryText, ...fonts.bodyMedium },
           ]}
         >
-          {ping.userData?.gender}, {ping.userData?.orientation}
+          {ping.senderGender}, {ping.senderOrientation}
         </Text>
         <Text
           style={[
