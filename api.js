@@ -8,8 +8,8 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
     );
     const data = await response.json();
     console.log('fetch Messages api', data);
-    if (response.ok && data.messages) {
-      return data.messages;
+    if (response.ok && data) {
+      return data;
     } else {
       throw new Error(data.message || 'Failed to fetch messages');
     }

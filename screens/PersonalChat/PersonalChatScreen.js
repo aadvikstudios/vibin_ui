@@ -12,6 +12,7 @@ import { Text, Avatar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import ChatContainer from './ChatContainer';
+import EmptyStateView from '../../components/EmptyStateView';
 import {
   fetchMessagesAPI,
   markMessagesReadAPI,
@@ -28,13 +29,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const chatImage = match.photo;
   const matchId = match.matchId;
   const senderId = match.senderId;
-  console.log(
-    'chatName, chatImage, matchId, senderId',
-    chatName,
-    chatImage,
-    matchId,
-    senderId
-  );
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -84,7 +78,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
   }, [matchId, senderId, userData.userId]);
 
   const handleSendMessage = () => {
-    console.log('handle send message ', userData.userId);
     if (!inputText.trim()) return;
     const message = {
       messageId: `${matchId}-${Date.now()}-${Math.random()}`,
@@ -115,6 +108,64 @@ const PersonalChatScreen = ({ route, navigation }) => {
     setRefreshing(true);
     fetchMessages();
   };
+
+  // Empty State
+  if (messages.length === 1 && messages[0].senderId === '') {
+    return (
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {/* Header */}
+          <View style={[styles.header, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Avatar.Image source={{ uri: chatImage }} size={40} />
+            <Text style={[styles.chatName, { color: colors.primaryText }]}>
+              {chatName}
+            </Text>
+          </View>
+
+          {/* Empty State View */}
+          <EmptyStateView
+            title="You have new connections!"
+            subtitle={
+              messages[0].content ||
+              'Start connecting by sending a message to your new matches.'
+            }
+            //   primaryActionText="View new connections"
+            //   onPrimaryAction={() => console.log('View new connections pressed')}
+          />
+
+          {/* Message Input */}
+          <View
+            style={[styles.inputContainer, { backgroundColor: colors.surface }]}
+          >
+            <TextInput
+              style={[
+                styles.input,
+                { borderColor: colors.border, color: colors.secondaryText },
+              ]}
+              placeholder="Type a message..."
+              value={inputText}
+              onChangeText={setInputText}
+              placeholderTextColor={colors.secondary}
+            />
+            <TouchableOpacity onPress={handleSendMessage}>
+              <Ionicons name="send" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView
