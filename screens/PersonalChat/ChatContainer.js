@@ -57,7 +57,10 @@ const ChatContainer = ({
           >
             {/* Display Image Message */}
             {item.imageUrl ? (
-              <Image source={{ uri: item.imageUrl }} style={styles.messageImage} />
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.messageImage}
+              />
             ) : (
               <Text
                 style={[

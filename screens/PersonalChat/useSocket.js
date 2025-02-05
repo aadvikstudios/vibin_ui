@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
-const API_BASE_URL = `http://vibin-socket-env.eba-2imjkpsj.ap-south-1.elasticbeanstalk.com`;
+const API_BASE_URL = `https://socket.vibinconnect.com`;
 
 export const useSocket = (matchId, setMessages, messageIds) => {
   const [socket, setSocket] = useState(null);

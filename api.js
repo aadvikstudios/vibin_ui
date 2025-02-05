@@ -1,4 +1,4 @@
-const API_BASE_URL = `http://vibin-env.eba-cqjrsm82.ap-south-1.elasticbeanstalk.com`;
+const API_BASE_URL = `https://api.vibinconnect.com`;
 
 // Fetch chat messages for a match
 export const fetchMessagesAPI = async (matchId, limit = 20) => {

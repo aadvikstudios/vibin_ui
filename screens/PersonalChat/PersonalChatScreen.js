@@ -82,7 +82,8 @@ const PersonalChatScreen = ({ route, navigation }) => {
   };
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert('You need to allow permission to access the gallery.');
       return;
@@ -116,29 +117,47 @@ const PersonalChatScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.surface }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Avatar.Image source={{ uri: chatImage }} size={40} />
-          <Text style={[styles.chatName, { color: colors.primaryText }]}>{chatName}</Text>
+          <Text style={[styles.chatName, { color: colors.primaryText }]}>
+            {chatName}
+          </Text>
         </View>
 
         {/* Chat Content */}
         {loading && !refreshing ? (
-          <ActivityIndicator style={styles.center} size="large" color={colors.primary} />
+          <ActivityIndicator
+            style={styles.center}
+            size="large"
+            color={colors.primary}
+          />
         ) : (
-          <ChatContainer messages={messages} profile={userData} refreshing={refreshing} onRefresh={onRefresh} />
+          <ChatContainer
+            messages={messages}
+            profile={userData}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         )}
 
         {/* Message Input */}
-        <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
+        <View
+          style={[styles.inputContainer, { backgroundColor: colors.surface }]}
+        >
           {/* Attachment Button */}
           <TouchableOpacity onPress={pickImage} style={styles.attachmentButton}>
             <Ionicons name="attach" size={24} color={colors.primary} />
@@ -146,7 +165,10 @@ const PersonalChatScreen = ({ route, navigation }) => {
 
           {/* Text Input */}
           <TextInput
-            style={[styles.input, { borderColor: colors.border, color: colors.secondaryText }]}
+            style={[
+              styles.input,
+              { borderColor: colors.border, color: colors.secondaryText },
+            ]}
             placeholder="Type a message..."
             value={inputText}
             onChangeText={setInputText}
