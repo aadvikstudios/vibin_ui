@@ -86,6 +86,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
       content: inputText.trim(),
       createdAt: new Date().toISOString(),
     };
+    console.log("🚀 Sending message:", message);
     sendMessage(message);
     setInputText('');
     setMessages((prev) => [...prev, message]);
