@@ -9,17 +9,17 @@ const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
   const [updatedPings, setUpdatedPings] = useState([...initialPings]); // Maintain a local state for pings
   console.log('initialPings ', initialPings, updatedPings);
 
-  const handlePingAction = async (emailId, actionType, pingNote = null) => {
+  const handlePingAction = async (emailId, action, pingNote = null) => {
     try {
       // Construct request payload conditionally
       const payload = {
-        userEmailId: userProfile.emailId,
+        emailId: userProfile.emailId,
         targetEmailId: emailId,
-        actionType,
+        action,
         ...(pingNote ? { pingNote } : {}), // Only add pingNote if it's provided
       };
 
-      console.log('Sending request:', payload);
+      console.log('\n\n\n\nSending request:', payload);
 
       // Call the API
       const response = await actionPingAPI(payload);

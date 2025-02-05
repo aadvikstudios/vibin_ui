@@ -43,38 +43,25 @@ export const sendMessageAPI = async (message) => {
   }
 };
 
-export const actionPingAPI = async (
-  userId,
-  targetUserId,
-  action,
-  pingNote = null
-) => {
-  // Build request body dynamically, including `pingNote` only if it exists
-  const requestBody = {
-    userId,
-    targetUserId,
-    action,
-    ...(pingNote ? { pingNote } : {}), // Conditionally include pingNote
-  };
-
+export const actionPingAPI = async (payload) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/match/pingAction`, {
+    const response = await fetch(`${API_BASE_URL}/api/action/pingAction`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(payload),
     });
 
     console.log('API response status:', response.status);
 
     if (!response.ok) {
-      const errorDetails = await response.json();
-      console.error('API Error:', errorDetails);
-      throw new Error(errorDetails.message || 'Failed to send ping action');
+      const errorText = await response.text(); // Read response as text to handle non-JSON errors
+      console.error('API Error:', errorText);
+      throw new Error(errorText || 'Failed to send ping action');
     }
 
-    return await response.json();
+    return await response.json(); // Parse only if the response is valid JSON
   } catch (error) {
     console.error('Error in actionPingAPI:', error.message);
     throw error;
@@ -84,7 +71,7 @@ export const actionPingAPI = async (
 // Existing APIs
 export const fetchMatchesForProfileAPI = async (emailId, gender) => {
   const queryParams = new URLSearchParams({ emailId, gender }).toString();
-  console.log('emailId, gender', emailId, gender);
+  console.log('from fetchMatchesForProfileAPI, emailId, gender', emailId, gender);
   try {
     const response = await fetch(`${API_BASE_URL}/api/match?${queryParams}`);
     const data = await response.json();
@@ -124,13 +111,17 @@ export const fetchMatchesForProfileAPI = async (emailId, gender) => {
   }
 };
 
-export const sendActionToBackendAPI = async (userId, targetUserId, action) => {
-  console.log('userId, targetUserId, action', userId, targetUserId, action);
+export const sendActionToBackendAPI = async (
+  emailId,
+  targetEmailId,
+  action
+) => {
+  console.log('emailId, targetEmailId, action', emailId, targetEmailId, action);
 
   // Build the request body dynamically
   const requestBody = {
-    userId,
-    targetUserId,
+    emailId,
+    targetEmailId,
     action,
   };
 
@@ -196,35 +187,35 @@ export const sendPingToBackendAPI = async (
   return await response.json();
 };
 
-export const fetchCurrentMatchesAPI = async (emailId) => {
-  console.log('fetchCurrentMatchesAPI', emailId);
+export const fetchConnectionsAPI = async (emailId) => {
+  console.log('fetchConnectionsAPI', emailId);
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/match/currentMatches?emailId=${emailId}`
+      `${API_BASE_URL}/api/match/connections?emailId=${emailId}`
     );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch current matches');
+      throw new Error(errorData.message || 'Failed to fetch connections');
     }
 
     const data = await response.json();
 
     if (data.matches) {
-      console.log('log is ', data.matches);
+      console.log('log is from connections ', data.matches);
 
       // Iterate over each match and update the photo with a pre-signed URL
       const matchesWithSignedPhotos = await Promise.all(
         data.matches.map(async (match) => {
-          if (match.photos) {
+          if (match.photo) {
             try {
               // Fetch the pre-signed URL for the single photo
-              const presignedUrl = await getPresignedReadUrlAPI(match.photos);
+              const presignedUrl = await getPresignedReadUrlAPI(match.photo);
 
               return {
                 matchId: match?.matchId,
-                userId: match?.userId,
+                emailId: match?.emailId,
                 name: match?.name,
                 photo: presignedUrl || null, // Replace the key with the signed URL
                 lastMessage: match?.lastMessage,
@@ -285,16 +276,16 @@ export const fetchPingsAPI = async (emailId) => {
     }
 
     const data = await response.json();
-    console.log('Data received:', data);
+    console.log('Data received from fetchPingsAPI:', data);
 
-    if (data?.pings) {
+    if (data?.pings ) {
       // Iterate over each ping and update the photo with a pre-signed URL if available
       const pingsWithPresignedUrls = await Promise.all(
         data?.pings.map(async (ping) => {
           if (ping?.senderPhoto) {
             try {
               const presignedUrl = await getPresignedReadUrlAPI(
-                ping.senderPhoto
+                ping.senderPhoto[0]
               );
               console.log('presignedUrl', presignedUrl);
               return {
@@ -303,7 +294,7 @@ export const fetchPingsAPI = async (emailId) => {
               };
             } catch (error) {
               console.error(
-                `Error fetching pre-signed URL for photo: ${ping.senderPhoto}`,
+                `Error fetching pre-signed URL for photo for fetchPingsAPI: ${ping.senderPhoto}`,
                 error.message
               );
               // Return the ping with the original photo if fetching pre-signed URL fails
@@ -337,7 +328,7 @@ export const fetchNewLikesAPI = async (emailId) => {
     }
 
     const data = await response.json();
-
+console.log("data from fetchNewLikesAPI , ",data,data.likes)
     if (data.likes) {
       // Iterate over each profile and update the photos with pre-signed URLs
       const likesWithPresignedUrls = await Promise.all(
@@ -370,8 +361,7 @@ export const fetchNewLikesAPI = async (emailId) => {
 
       return likesWithPresignedUrls;
     } else {
-      throw new Error('No likes data available');
-    }
+return null    }
   } catch (error) {
     console.error('Error fetching new likes:', error.message);
     throw error;

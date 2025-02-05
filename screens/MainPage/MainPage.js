@@ -13,7 +13,7 @@ import {
   fetchMatchesForProfileAPI,
   fetchNewLikesAPI,
   fetchPingsAPI,
-  fetchCurrentMatchesAPI,
+  fetchConnectionsAPI,
 } from '../../api';
 import ExploreScreen from './Explore/ExploreScreen';
 import ConnectionsScreen from './Connections/ConnectionsScreen';
@@ -100,7 +100,7 @@ const MainPage = () => {
           fetchMatchesForProfileAPI(userData.emailId, userData.gender),
           fetchNewLikesAPI(userData.emailId),
           fetchPingsAPI(userData.emailId),
-          fetchCurrentMatchesAPI(userData.emailId),
+          fetchConnectionsAPI(userData.emailId),
         ]);
 
       setProfiles(profileData || []);

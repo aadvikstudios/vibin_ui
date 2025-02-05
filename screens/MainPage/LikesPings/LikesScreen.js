@@ -15,12 +15,13 @@ import { useTheme } from 'react-native-paper';
 import { useUser } from '../../../context/UserContext'; // Assuming UserContext is used to access user data
 import { sendActionToBackendAPI } from '../../../api'; // Update the path to your API file
 import EmptyStateView from '../../../components/EmptyStateView';
-const LikesScreen = ({ likes, loading }) => {
+const LikesScreen = ({ likes, loading,onRefresh }) => {
   const { colors } = useTheme();
   const { userData } = useUser(); // Get user information from context
 
   const handleAction = async (action, item) => {
     try {
+      console.log('value of', userData.emailId, item.emailId, action);
       // Call your backend API with the appropriate action
       const response = await sendActionToBackendAPI(
         userData.emailId, // Replace with actual user ID
@@ -38,8 +39,10 @@ const LikesScreen = ({ likes, loading }) => {
         );
       }
 
-      // Reload the likes list
-      // onReloadLikes();
+    // **Reload the Likes list**
+    if (onRefresh) {
+      onRefresh();
+    }
     } catch (error) {
       console.error('Error sending action:', error);
       Alert.alert('Error', 'Failed to process action. Please try again.');
