@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  Image,
 } from 'react-native';
 import { Text, Avatar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import ChatContainer from './ChatContainer';
 import EmptyStateView from '../../components/EmptyStateView';
 import {
@@ -24,7 +26,6 @@ import { useSocket } from './useSocket';
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { userData } = useUser();
-  console.log('userDta is', userData);
   const { match } = route.params;
   const chatName = match.name;
   const chatImage = match.photo;
@@ -41,19 +42,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
     try {
       if (!refreshing) setLoading(true);
       const data = await fetchMessagesAPI(matchId, 50);
-      setMessages((prevMessages) => {
-        const newMessageMap = new Map(data.map((msg) => [msg.messageId, msg]));
-        const updatedMessages = prevMessages.map((msg) =>
-          newMessageMap.has(msg.messageId)
-            ? { ...msg, ...newMessageMap.get(msg.messageId) }
-            : msg
-        );
-        const newMessages = data.filter(
-          (msg) =>
-            !prevMessages.some((prevMsg) => prevMsg.messageId === msg.messageId)
-        );
-        return [...updatedMessages, ...newMessages];
-      });
+      setMessages(data);
       data.forEach((msg) => messageIds.current.add(msg.messageId));
     } catch (error) {
       console.error('Failed to fetch messages:', error);
@@ -72,7 +61,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
         console.error('Failed to mark messages as read:', error);
       }
     };
-
     if (userData.emailId !== senderId) {
       markAsRead();
     }
@@ -85,28 +73,40 @@ const PersonalChatScreen = ({ route, navigation }) => {
       matchId: String(matchId),
       senderId: userData.emailId,
       content: inputText.trim(),
+      imageUrl: null, // No image
       createdAt: new Date().toISOString(),
     };
 
-    console.log('🚀 Sending message:', message);
-
-    // Send message through the socket
     sendMessage(message);
-
-    // Clear input field without adding the message locally
     setInputText('');
   };
 
-  const likeMessage = async (matchId, createdAt, messageId, liked) => {
-    try {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.messageId === messageId ? { ...msg, liked } : msg
-        )
-      );
-      await likeMessageAPI(matchId, createdAt, messageId, liked);
-    } catch (error) {
-      console.error('Failed to like message:', error);
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert('You need to allow permission to access the gallery.');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      const message = {
+        messageId: `${matchId}-${Date.now()}-${Math.random()}`,
+        matchId: String(matchId),
+        senderId: userData.emailId,
+        content: '',
+        imageUrl: imageUri, // Attach image
+        createdAt: new Date().toISOString(),
+      };
+
+      sendMessage(message);
     }
   };
 
@@ -115,117 +115,45 @@ const PersonalChatScreen = ({ route, navigation }) => {
     fetchMessages();
   };
 
-  // Empty State
-  if (messages.length === 1 && messages[0].senderId === '') {
-    return (
-      <SafeAreaView
-        style={[styles.container, { backgroundColor: colors.background }]}
-      >
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          {/* Header */}
-          <View style={[styles.header, { backgroundColor: colors.surface }]}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Avatar.Image source={{ uri: chatImage }} size={40} />
-            <Text style={[styles.chatName, { color: colors.primaryText }]}>
-              {chatName}
-            </Text>
-          </View>
-
-          {/* Empty State View */}
-          <EmptyStateView
-            title="You have new connections!"
-            subtitle={
-              messages[0].content ||
-              'Start connecting by sending a message to your new matches.'
-            }
-            //   primaryActionText="View new connections"
-            //   onPrimaryAction={() => console.log('View new connections pressed')}
-          />
-
-          {/* Message Input */}
-          <View
-            style={[styles.inputContainer, { backgroundColor: colors.surface }]}
-          >
-            <TextInput
-              style={[
-                styles.input,
-                { borderColor: colors.border, color: colors.secondaryText },
-              ]}
-              placeholder="Type a message..."
-              value={inputText}
-              onChangeText={setInputText}
-              placeholderTextColor={colors.secondary}
-            />
-            <TouchableOpacity onPress={handleSendMessage}>
-              <Ionicons name="send" size={24} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.surface }]}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Avatar.Image source={{ uri: chatImage }} size={40} />
-          <Text style={[styles.chatName, { color: colors.primaryText }]}>
-            {chatName}
-          </Text>
+          <Text style={[styles.chatName, { color: colors.primaryText }]}>{chatName}</Text>
         </View>
 
         {/* Chat Content */}
         {loading && !refreshing ? (
-          <ActivityIndicator
-            style={styles.center}
-            size="large"
-            color={colors.primary}
-          />
+          <ActivityIndicator style={styles.center} size="large" color={colors.primary} />
         ) : (
-          <ChatContainer
-            messages={messages}
-            profile={userData}
-            likeMessage={likeMessage}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
+          <ChatContainer messages={messages} profile={userData} refreshing={refreshing} onRefresh={onRefresh} />
         )}
 
         {/* Message Input */}
-        <View
-          style={[styles.inputContainer, { backgroundColor: colors.surface }]}
-        >
+        <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
+          {/* Attachment Button */}
+          <TouchableOpacity onPress={pickImage} style={styles.attachmentButton}>
+            <Ionicons name="attach" size={24} color={colors.primary} />
+          </TouchableOpacity>
+
+          {/* Text Input */}
           <TextInput
-            style={[
-              styles.input,
-              { borderColor: colors.border, color: colors.secondaryText },
-            ]}
+            style={[styles.input, { borderColor: colors.border, color: colors.secondaryText }]}
             placeholder="Type a message..."
             value={inputText}
             onChangeText={setInputText}
             placeholderTextColor={colors.secondary}
           />
+
+          {/* Send Button */}
           <TouchableOpacity onPress={handleSendMessage}>
             <Ionicons name="send" size={24} color={colors.primary} />
           </TouchableOpacity>
@@ -261,6 +189,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
+    marginRight: 10,
+  },
+  attachmentButton: {
     marginRight: 10,
   },
 });

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,14 +22,14 @@ const ChatContainer = ({
   const { colors } = useTheme();
   const flatListRef = useRef(null);
 
-  // Automatically scroll to the bottom of the chat when new messages arrive
+  // Scroll to the bottom of the chat when new messages arrive
   const scrollToBottom = () => {
     if (flatListRef.current) {
       flatListRef.current.scrollToEnd({ animated: true });
     }
   };
 
-  // Call `markAsRead` when the component is mounted
+  // Mark messages as read when component mounts
   useEffect(() => {
     if (markAsRead) markAsRead();
   }, [markAsRead]);
@@ -45,7 +46,7 @@ const ChatContainer = ({
               : styles.receivedMessageWrapper,
           ]}
         >
-          {/* Message Content */}
+          {/* Message Container */}
           <View
             style={[
               styles.messageContainer,
@@ -54,16 +55,21 @@ const ChatContainer = ({
                 : { backgroundColor: colors.surface },
             ]}
           >
-            <Text
-              style={[
-                styles.messageText,
-                item.senderId === profile.emailId
-                  ? { color: colors.onPrimary }
-                  : { color: colors.primaryText },
-              ]}
-            >
-              {item.content}
-            </Text>
+            {/* Display Image Message */}
+            {item.imageUrl ? (
+              <Image source={{ uri: item.imageUrl }} style={styles.messageImage} />
+            ) : (
+              <Text
+                style={[
+                  styles.messageText,
+                  item.senderId === profile.emailId
+                    ? { color: colors.onPrimary }
+                    : { color: colors.primaryText },
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
 
             {/* Heart Icon for Sent Messages */}
             {item.senderId === profile.emailId && item.liked && (
@@ -165,6 +171,12 @@ const styles = StyleSheet.create({
   },
   heartIconReceived: {
     left: -1,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginTop: 5,
   },
 });
 
