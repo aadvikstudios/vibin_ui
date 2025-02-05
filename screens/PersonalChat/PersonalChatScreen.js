@@ -24,6 +24,7 @@ import { useSocket } from './useSocket';
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { userData } = useUser();
+  console.log('userDta is', userData);
   const { match } = route.params;
   const chatName = match.name;
   const chatImage = match.photo;
@@ -72,24 +73,28 @@ const PersonalChatScreen = ({ route, navigation }) => {
       }
     };
 
-    if (userData.userId !== senderId) {
+    if (userData.emailId !== senderId) {
       markAsRead();
     }
-  }, [matchId, senderId, userData.userId]);
+  }, [matchId, senderId, userData.emailId]);
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
     const message = {
       messageId: `${matchId}-${Date.now()}-${Math.random()}`,
       matchId: String(matchId),
-      senderId: userData.userId,
+      senderId: userData.emailId,
       content: inputText.trim(),
       createdAt: new Date().toISOString(),
     };
-    console.log("🚀 Sending message:", message);
+
+    console.log('🚀 Sending message:', message);
+
+    // Send message through the socket
     sendMessage(message);
+
+    // Clear input field without adding the message locally
     setInputText('');
-    setMessages((prev) => [...prev, message]);
   };
 
   const likeMessage = async (matchId, createdAt, messageId, liked) => {

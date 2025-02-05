@@ -40,7 +40,7 @@ const ChatContainer = ({
         <View
           style={[
             styles.messageWrapper,
-            item.senderId === profile.userId
+            item.senderId === profile.emailId
               ? styles.sentMessageWrapper
               : styles.receivedMessageWrapper,
           ]}
@@ -49,7 +49,7 @@ const ChatContainer = ({
           <View
             style={[
               styles.messageContainer,
-              item.senderId === profile.userId
+              item.senderId === profile.emailId
                 ? { backgroundColor: colors.primary }
                 : { backgroundColor: colors.surface },
             ]}
@@ -57,7 +57,7 @@ const ChatContainer = ({
             <Text
               style={[
                 styles.messageText,
-                item.senderId === profile.userId
+                item.senderId === profile.emailId
                   ? { color: colors.onPrimary }
                   : { color: colors.primaryText },
               ]}
@@ -66,14 +66,14 @@ const ChatContainer = ({
             </Text>
 
             {/* Heart Icon for Sent Messages */}
-            {item.senderId === profile.userId && item.liked && (
+            {item.senderId === profile.emailId && item.liked && (
               <View style={[styles.heartIcon, styles.heartIconSent]}>
                 <Ionicons name="heart" size={20} color={colors.accent} />
               </View>
             )}
 
             {/* Heart Icon for Received Messages */}
-            {item.senderId !== profile.userId && (
+            {item.senderId !== profile.emailId && (
               <TouchableOpacity
                 onPress={() =>
                   likeMessage(
@@ -98,7 +98,7 @@ const ChatContainer = ({
           <Text
             style={[
               styles.timestamp,
-              item.senderId === profile.userId
+              item.senderId === profile.emailId
                 ? { alignSelf: 'flex-end', color: colors.secondary }
                 : { alignSelf: 'flex-start', color: colors.secondary },
             ]}
