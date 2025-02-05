@@ -7,7 +7,7 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
       `${API_BASE_URL}/api/chat/messages?matchId=${matchId}&limit=${limit}`
     );
     const data = await response.json();
-
+    console.log('fetch Messages api', data);
     if (response.ok && data.messages) {
       return data.messages;
     } else {
@@ -71,7 +71,11 @@ export const actionPingAPI = async (payload) => {
 // Existing APIs
 export const fetchMatchesForProfileAPI = async (emailId, gender) => {
   const queryParams = new URLSearchParams({ emailId, gender }).toString();
-  console.log('from fetchMatchesForProfileAPI, emailId, gender', emailId, gender);
+  console.log(
+    'from fetchMatchesForProfileAPI, emailId, gender',
+    emailId,
+    gender
+  );
   try {
     const response = await fetch(`${API_BASE_URL}/api/match?${queryParams}`);
     const data = await response.json();
@@ -278,7 +282,7 @@ export const fetchPingsAPI = async (emailId) => {
     const data = await response.json();
     console.log('Data received from fetchPingsAPI:', data);
 
-    if (data?.pings ) {
+    if (data?.pings) {
       // Iterate over each ping and update the photo with a pre-signed URL if available
       const pingsWithPresignedUrls = await Promise.all(
         data?.pings.map(async (ping) => {
@@ -328,7 +332,7 @@ export const fetchNewLikesAPI = async (emailId) => {
     }
 
     const data = await response.json();
-console.log("data from fetchNewLikesAPI , ",data,data.likes)
+    console.log('data from fetchNewLikesAPI , ', data, data.likes);
     if (data.likes) {
       // Iterate over each profile and update the photos with pre-signed URLs
       const likesWithPresignedUrls = await Promise.all(
@@ -361,7 +365,8 @@ console.log("data from fetchNewLikesAPI , ",data,data.likes)
 
       return likesWithPresignedUrls;
     } else {
-return null    }
+      return null;
+    }
   } catch (error) {
     console.error('Error fetching new likes:', error.message);
     throw error;

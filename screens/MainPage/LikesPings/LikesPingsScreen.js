@@ -33,8 +33,9 @@ const LikesPingsScreen = ({
     >
       <Tab.Screen
         name="Likes"
-        children={() => 
-          <LikesScreen likes={likes} loading={loading} onRefresh={onRefresh} />}
+        children={() => (
+          <LikesScreen likes={likes} loading={loading} onRefresh={onRefresh} />
+        )}
       />
       <Tab.Screen
         name="Pings"

@@ -15,7 +15,7 @@ import { useTheme } from 'react-native-paper';
 import { useUser } from '../../../context/UserContext'; // Assuming UserContext is used to access user data
 import { sendActionToBackendAPI } from '../../../api'; // Update the path to your API file
 import EmptyStateView from '../../../components/EmptyStateView';
-const LikesScreen = ({ likes, loading,onRefresh }) => {
+const LikesScreen = ({ likes, loading, onRefresh }) => {
   const { colors } = useTheme();
   const { userData } = useUser(); // Get user information from context
 
@@ -39,10 +39,10 @@ const LikesScreen = ({ likes, loading,onRefresh }) => {
         );
       }
 
-    // **Reload the Likes list**
-    if (onRefresh) {
-      onRefresh();
-    }
+      // **Reload the Likes list**
+      if (onRefresh) {
+        onRefresh();
+      }
     } catch (error) {
       console.error('Error sending action:', error);
       Alert.alert('Error', 'Failed to process action. Please try again.');
