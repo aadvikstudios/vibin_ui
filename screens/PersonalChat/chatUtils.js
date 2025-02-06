@@ -67,7 +67,7 @@ export const pickImageAndUpload = async (
   matchId,
   sendMessage,
   userData,
-  path
+  path = 'chat-images/'
 ) => {
   const permissionResult =
     await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -89,35 +89,30 @@ export const pickImageAndUpload = async (
       const fileName = `${matchId}-${Date.now()}.jpg`;
       const fileType = 'image/jpeg';
 
-      // 1️⃣ Get Pre-signed URL from Backend with Correct Path
+      // 1️⃣ Generate Pre-Signed URL for chat-images/
       const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
-        `${fileName}`,
-        fileType,
-        path
+        `${path}${fileName}`,
+        fileType
       );
 
       // 2️⃣ Upload Image to S3
       await uploadImageToS3API(uploadUrl, imageUri, path);
 
-      // 3️⃣ Store Only Relative Path (No Full S3 URL)
+      // 3️⃣ Store only the relative path
       const storedFilePath = `${path}${fileName}`;
 
-      // 4️⃣ If it's a chat message, send it as a message
-      if (path === 'chat-images/') {
-        const message = {
-          messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-          matchId: String(matchId),
-          senderId: userData.emailId,
-          content: '',
-          imageUrl: storedFilePath, // Store relative path
-          createdAt: new Date().toISOString(),
-        };
+      // 4️⃣ Send message with the image URL
+      const message = {
+        messageId: `${matchId}-${Date.now()}-${Math.random()}`,
+        matchId: String(matchId),
+        senderId: userData.emailId,
+        content: '',
+        imageUrl: storedFilePath, // Store relative path
+        createdAt: new Date().toISOString(),
+      };
 
-        sendMessage(message);
-        sendMessageAPI(message); // Send message to backend
-      }
-
-      return storedFilePath; // Return stored path for profile pictures
+      sendMessage(message);
+      sendMessageAPI(message);
     } catch (error) {
       console.error('Image upload failed:', error);
     }

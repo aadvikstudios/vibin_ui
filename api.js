@@ -7,9 +7,13 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
       `${API_BASE_URL}/api/chat/messages?matchId=${matchId}&limit=${limit}`
     );
     const data = await response.json();
-    console.log('fetch Messages api', data);
+    const S3_BUCKET_URL = `${API_BASE_URL}/`;
+
     if (response.ok && data) {
-      return data;
+      return data.map((msg) => ({
+        ...msg,
+        imageUrl: msg.imageUrl ? `${S3_BUCKET_URL}${msg.imageUrl}` : null, // Convert relative to full URL
+      }));
     } else {
       throw new Error(data.message || 'Failed to fetch messages');
     }
@@ -482,25 +486,38 @@ export const generatePresignedUrlAPI = async (fileName, fileType, path) => {
 
 export const uploadImageToS3API = async (uploadUrl, imageUri, path) => {
   try {
-    const file = await fetch(imageUri);
-    const fileBlob = await file.blob();
+    console.log(`Uploading image to S3: ${imageUri} with path: ${path}`);
 
-    const response = await fetch(uploadUrl, {
+    // 1️⃣ Fetch the image as a blob
+    const response = await fetch(imageUri);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+
+    const fileBlob = await response.blob();
+
+    // 2️⃣ Ensure Content-Type is correct
+    const fileType = fileBlob.type || 'image/jpeg'; // Default to JPEG if missing
+
+    // 3️⃣ Upload to S3
+    const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': fileBlob.type,
-        'x-amz-meta-folder': path, // ✅ Store metadata for debugging
+        'Content-Type': fileType,
       },
       body: fileBlob,
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to upload image to S3');
+    if (!uploadResponse.ok) {
+      throw new Error(
+        `S3 Upload Failed: ${uploadResponse.status} ${uploadResponse.statusText}`
+      );
     }
 
+    console.log('✅ Image successfully uploaded to S3.');
     return true; // Upload successful
   } catch (error) {
-    console.error('Error in uploadImageToS3API:', error.message);
+    console.error('❌ Error in uploadImageToS3API:', error.message);
     throw error;
   }
 };

@@ -21,6 +21,7 @@ const ChatContainer = ({
 }) => {
   const { colors } = useTheme();
   const flatListRef = useRef(null);
+  const S3_BUCKET_URL = 'https://vibin-storage.s3.ap-south-1.amazonaws.com/';
 
   useEffect(() => {
     if (markAsRead) markAsRead();
@@ -47,10 +48,10 @@ const ChatContainer = ({
                 : { backgroundColor: colors.surface },
             ]}
           >
-            {/* Show Image or Text */}
+            {/* Display Image or Text Message */}
             {item.imageUrl ? (
               <Image
-                source={{ uri: item.imageUrl }}
+                source={{ uri: `${S3_BUCKET_URL}${item.imageUrl}` }} // Convert to Full URL
                 style={styles.messageImage}
               />
             ) : (
@@ -66,7 +67,7 @@ const ChatContainer = ({
               </Text>
             )}
 
-            {/* Heart Icon for Liked Messages */}
+            {/* Heart Icon for Sent Messages */}
             {item.senderId === profile.emailId && item.liked && (
               <View style={[styles.heartIcon, styles.heartIconSent]}>
                 <Ionicons name="heart" size={20} color={colors.accent} />

@@ -112,20 +112,23 @@ const AddPhotos = ({ navigation }) => {
       const fileName = `${Date.now()}-${uri.split('/').pop()}`; // Unique filename
       const fileType = 'image/jpeg';
 
-      // ✅ Pass only `fileName` (path will be added inside `generatePresignedUrlAPI`)
+      console.log('🚀 Generating Pre-Signed URL...');
       const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
         fileName,
         fileType,
         path
       );
 
-      // ✅ Upload to S3 with Correct Path
+      console.log('✅ Pre-Signed URL Generated: ', uploadUrl);
+
+      console.log('🚀 Uploading image to S3...');
       await uploadImageToS3API(uploadUrl, uri, path);
 
-      // ✅ Return only relative path
+      console.log('✅ Upload Successful. File Stored as:', s3Key);
+
       return `${path}${fileName}`;
     } catch (error) {
-      console.error('Error uploading image:', error.message);
+      console.error('❌ Error uploading image:', error.message);
       throw error;
     }
   };
