@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { useUser } from '../../context/UserContext';
 
 const ChatContainer = ({
   messages = [],
+  setMessages,
   profile,
   likeMessage,
   markAsRead,
@@ -82,7 +84,8 @@ const ChatContainer = ({
                     item.matchId,
                     item.createdAt,
                     item.messageId,
-                    !item.liked
+                    !item.liked,
+                    setMessages
                   )
                 }
                 style={[styles.heartIcon, styles.heartIconReceived]}

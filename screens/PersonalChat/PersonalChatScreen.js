@@ -33,7 +33,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const chatImage = match.photo;
   const matchId = match.matchId;
   const senderId = match.senderId;
-
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -85,6 +84,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
         ) : (
           <ChatContainer
             messages={messages}
+            setMessages={setMessages}
             likeMessage={likeMessage}
             profile={userData}
             refreshing={refreshing}

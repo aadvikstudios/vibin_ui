@@ -6,6 +6,7 @@ import {
   uploadImageToS3API,
   sendMessageAPI,
 } from '../../api';
+
 import * as ImagePicker from 'expo-image-picker';
 
 /** Fetch Messages */
@@ -88,11 +89,12 @@ export const pickImageAndUpload = async (
       const imageUri = result.assets[0].uri;
       const fileName = `${matchId}-${Date.now()}.jpg`;
       const fileType = 'image/jpeg';
-
+      console.log('path is ', path);
       // 1️⃣ Generate Pre-Signed URL for chat-images/
       const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
         `${path}${fileName}`,
-        fileType
+        fileType,
+        path
       );
 
       // 2️⃣ Upload Image to S3
