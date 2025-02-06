@@ -5,7 +5,7 @@ import {
   generatePresignedUrlAPI,
   uploadImageToS3API,
   sendMessageAPI,
-} from '../../api';
+} from '../../../api';
 import { debounce } from 'lodash';
 
 import * as ImagePicker from 'expo-image-picker';
