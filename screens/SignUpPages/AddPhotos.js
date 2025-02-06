@@ -107,19 +107,23 @@ const AddPhotos = ({ navigation }) => {
     );
   };
 
-  const uploadImage = async (uri) => {
+  const uploadImage = async (uri, path = 'profile-pics/') => {
     try {
-      const fileName = uri.split('/').pop();
+      const fileName = `${Date.now()}-${uri.split('/').pop()}`; // Unique filename
       const fileType = 'image/jpeg';
 
-      const { url, fileName: s3Key } = await generatePresignedUrlAPI(
+      // ✅ Pass only `fileName` (path will be added inside `generatePresignedUrlAPI`)
+      const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
         fileName,
-        fileType
+        fileType,
+        path
       );
 
-      await uploadImageToS3API(url, uri);
+      // ✅ Upload to S3 with Correct Path
+      await uploadImageToS3API(uploadUrl, uri, path);
 
-      return s3Key;
+      // ✅ Return only relative path
+      return `${path}${fileName}`;
     } catch (error) {
       console.error('Error uploading image:', error.message);
       throw error;

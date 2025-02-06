@@ -7,21 +7,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
-  Image,
 } from 'react-native';
 import { Text, Avatar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import ChatContainer from './ChatContainer';
-import EmptyStateView from '../../components/EmptyStateView';
-import {
-  fetchMessagesAPI,
-  markMessagesReadAPI,
-  likeMessageAPI,
-} from '../../api';
 import { useUser } from '../../context/UserContext';
 import { useSocket } from './useSocket';
+import { pickImageAndUpload } from './chatUtils';
+
+/** External Utility Functions */
+import {
+  fetchMessages,
+  markMessagesRead,
+  handleSendMessage,
+  pickImage,
+  likeMessage,
+} from './chatUtils';
 
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
@@ -31,6 +33,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const chatImage = match.photo;
   const matchId = match.matchId;
   const senderId = match.senderId;
+
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -38,82 +41,16 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const messageIds = useRef(new Set());
   const { sendMessage } = useSocket(matchId, setMessages, messageIds);
 
-  const fetchMessages = async () => {
-    try {
-      if (!refreshing) setLoading(true);
-      const data = await fetchMessagesAPI(matchId, 50);
-      setMessages(data);
-      data.forEach((msg) => messageIds.current.add(msg.messageId));
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    fetchMessages();
-    const markAsRead = async () => {
-      try {
-        await markMessagesReadAPI(matchId);
-      } catch (error) {
-        console.error('Failed to mark messages as read:', error);
-      }
-    };
+    fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
     if (userData.emailId !== senderId) {
-      markAsRead();
+      markMessagesRead(matchId);
     }
   }, [matchId, senderId, userData.emailId]);
 
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
-    const message = {
-      messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-      matchId: String(matchId),
-      senderId: userData.emailId,
-      content: inputText.trim(),
-      imageUrl: null, // No image
-      createdAt: new Date().toISOString(),
-    };
-
-    sendMessage(message);
-    setInputText('');
-  };
-
-  const pickImage = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
-      alert('You need to allow permission to access the gallery.');
-      return;
-    }
-
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      const message = {
-        messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-        matchId: String(matchId),
-        senderId: userData.emailId,
-        content: '',
-        imageUrl: imageUri, // Attach image
-        createdAt: new Date().toISOString(),
-      };
-
-      sendMessage(message);
-    }
-  };
-
   const onRefresh = () => {
     setRefreshing(true);
-    fetchMessages();
+    fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
   };
 
   return (
@@ -148,6 +85,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
         ) : (
           <ChatContainer
             messages={messages}
+            likeMessage={likeMessage}
             profile={userData}
             refreshing={refreshing}
             onRefresh={onRefresh}
@@ -158,12 +96,14 @@ const PersonalChatScreen = ({ route, navigation }) => {
         <View
           style={[styles.inputContainer, { backgroundColor: colors.surface }]}
         >
-          {/* Attachment Button */}
-          <TouchableOpacity onPress={pickImage} style={styles.attachmentButton}>
+          <TouchableOpacity
+            onPress={() =>
+              pickImageAndUpload(matchId, sendMessage, userData, 'chat-images/')
+            }
+          >
             <Ionicons name="attach" size={24} color={colors.primary} />
           </TouchableOpacity>
 
-          {/* Text Input */}
           <TextInput
             style={[
               styles.input,
@@ -175,8 +115,17 @@ const PersonalChatScreen = ({ route, navigation }) => {
             placeholderTextColor={colors.secondary}
           />
 
-          {/* Send Button */}
-          <TouchableOpacity onPress={handleSendMessage}>
+          <TouchableOpacity
+            onPress={() =>
+              handleSendMessage(
+                inputText,
+                matchId,
+                userData,
+                sendMessage,
+                setInputText
+              )
+            }
+          >
             <Ionicons name="send" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
@@ -185,6 +134,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
   );
 };
 
+/** Styles */
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
@@ -213,9 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginRight: 10,
   },
-  attachmentButton: {
-    marginRight: 10,
-  },
+  attachmentButton: { marginRight: 10 },
 });
 
 export default PersonalChatScreen;

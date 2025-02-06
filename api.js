@@ -459,15 +459,13 @@ export const likeMessageAPI = async (matchId, createdAt, messageId, liked) => {
   }
 };
 
-export const generatePresignedUrlAPI = async (fileName, fileType) => {
-  console.log('generatePresignedUrlAPI', fileName, fileType);
+export const generatePresignedUrlAPI = async (fileName, fileType, path) => {
+  console.log('generatePresignedUrlAPI', fileName, fileType, path);
   try {
     const response = await fetch(`${API_BASE_URL}/generate-presigned-url`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ fileName, fileType }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName, fileType, path }), // Pass the path parameter
     });
 
     if (!response.ok) {
@@ -482,7 +480,7 @@ export const generatePresignedUrlAPI = async (fileName, fileType) => {
   }
 };
 
-export const uploadImageToS3API = async (uploadUrl, imageUri) => {
+export const uploadImageToS3API = async (uploadUrl, imageUri, path) => {
   try {
     const file = await fetch(imageUri);
     const fileBlob = await file.blob();
@@ -491,6 +489,7 @@ export const uploadImageToS3API = async (uploadUrl, imageUri) => {
       method: 'PUT',
       headers: {
         'Content-Type': fileBlob.type,
+        'x-amz-meta-folder': path, // ✅ Store metadata for debugging
       },
       body: fileBlob,
     });
