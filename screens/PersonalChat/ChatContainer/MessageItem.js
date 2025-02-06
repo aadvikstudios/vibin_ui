@@ -78,18 +78,16 @@ const MessageItem = ({
       </View>
 
       {/* Timestamp */}
-      <Text
-        style={[
-          styles.timestamp,
-          item.senderId === profile.emailId
-            ? { alignSelf: 'flex-end', color: colors.secondary }
-            : { alignSelf: 'flex-start', color: colors.secondary },
-        ]}
-      >
+      <Text style={[styles.timestamp, { color: colors.secondary }]}>
         {new Date(item.createdAt).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         })}
+        {item.status === 'read'
+          ? ' ✓✓'
+          : item.status === 'delivered'
+            ? ' ✓'
+            : ''}
       </Text>
     </View>
   );

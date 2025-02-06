@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 
-const API_BASE_URL = `https://socket.vibinconnect.com`;
+const API_BASE_URL = 'https://socket.vibinconnect.com';
 
 export const useSocket = (matchId, setMessages, messageIds) => {
   const [socket, setSocket] = useState(null);
@@ -9,56 +9,46 @@ export const useSocket = (matchId, setMessages, messageIds) => {
   useEffect(() => {
     if (!matchId) return;
 
-    const newSocket = io(API_BASE_URL, {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 2000,
-    });
+    const newSocket = io(API_BASE_URL, { transports: ['websocket'] });
 
     newSocket.on('connect', () => {
       console.log('✅ Socket connected:', newSocket.id);
       newSocket.emit('join', { matchId });
     });
 
-    newSocket.on('disconnect', (reason) => {
-      console.warn('⚠️ Socket disconnected. Reason:', reason);
-    });
-
-    newSocket.on('connect_error', (error) => {
-      console.error('❌ Socket connection error:', error);
-    });
-
     newSocket.on('newMessage', (message) => {
-      console.log('📩 New message received:', message);
       if (!messageIds.current.has(message.messageId)) {
         messageIds.current.add(message.messageId);
-        setMessages((prevMessages) => [...prevMessages, message]);
-      } else {
-        console.warn('⚠️ Duplicate message detected:', message.messageId);
+        setMessages((prev) => [...prev, message]);
+
+        if (message.senderId !== matchId) {
+          newSocket.emit('messageDelivered', {
+            matchId,
+            messageId: message.messageId,
+          });
+        }
       }
     });
 
-    setSocket(newSocket);
+    newSocket.on('messageStatusUpdate', (update) => {
+      console.log('📩 Status update received:', update);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.messageId === update.messageId
+            ? { ...msg, status: update.status }
+            : msg
+        )
+      );
+    });
 
-    return () => {
-      console.log('🛑 Cleaning up socket connection for matchId:', matchId);
-      newSocket.disconnect();
-    };
-  }, [matchId, messageIds, setMessages]);
+    setSocket(newSocket);
+    return () => newSocket.disconnect();
+  }, [matchId]);
 
   const sendMessage = (message) => {
-    if (socket && socket.connected) {
+    if (socket) {
       console.log('📤 Sending message:', message);
-      socket.emit('sendMessage', message, (ack) => {
-        if (ack?.status) {
-          console.log('✅ Message sent acknowledgment:', ack.status);
-        } else {
-          console.error('❌ Message failed:', ack?.error);
-        }
-      });
-    } else {
-      console.error('❌ Cannot send message. Socket not connected.');
+      socket.emit('sendMessage', message);
     }
   };
 

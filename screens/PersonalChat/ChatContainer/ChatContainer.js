@@ -4,23 +4,49 @@ import { useTheme } from 'react-native-paper';
 import { getPresignedReadUrlAPI } from '../../../api';
 import MessageItem from './MessageItem'; // Import the new MessageItem component
 import CenteredMessage from './CenteredMessage'; // Import the new CenteredMessage component
+import { useSocket } from '../useSocket';
 
 const ChatContainer = ({
   messages = [],
   setMessages,
   profile,
   likeMessage,
-  markAsRead,
   refreshing,
   onRefresh,
+  matchId,
 }) => {
   const { colors } = useTheme();
   const flatListRef = useRef(null);
   const [imageUrls, setImageUrls] = useState({});
+  const messageIds = useRef(new Set());
+  const { socket } = useSocket(matchId, setMessages, messageIds);
 
+  // Mark messages as DELIVERED when received
   useEffect(() => {
-    if (markAsRead) markAsRead();
-  }, [markAsRead]);
+    if (!socket) return;
+
+    messages.forEach((msg) => {
+      if (msg.senderId !== profile.emailId && msg.status === 'sent') {
+        console.log(
+          '📤 Emitting messageDelivered:',
+          msg.matchId,
+          msg.messageId
+        ); // Debugging log
+        socket.emit('messageDelivered', {
+          matchId: msg.matchId,
+          messageId: msg.messageId,
+        });
+      }
+    });
+  }, [messages]);
+
+  // Mark messages as READ when chat screen is opened
+  useEffect(() => {
+    if (socket) {
+      console.log('📤 Emitting messageRead:', matchId); // Debugging log
+      socket.emit('messageRead', { matchId, senderId: profile.emailId });
+    }
+  }, []);
 
   // Remove duplicate messages
   const seenMessageIds = new Set();
