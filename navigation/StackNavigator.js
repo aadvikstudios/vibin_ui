@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../screens/Login';
 import Welcome from '../screens/Welcome';
+import SplashScreen from '../screens/SplashScreen'; // Import SplashScreen
 
 //SignUp screens
 import Email from '../screens/SignUpPages/Email';
@@ -23,6 +24,12 @@ const Stack = createStackNavigator();
 const StackNavigator = ({ initialRouteName }) => {
   return (
     <Stack.Navigator initialRouteName={initialRouteName}>
+      <Stack.Screen
+        name="SplashScreen"
+        component={SplashScreen}
+        options={{ headerShown: false }}
+      />
+
       <Stack.Screen
         name="Login"
         component={Login}

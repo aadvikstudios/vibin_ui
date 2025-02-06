@@ -5,17 +5,86 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from 'react-native-paper';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import PhotoSlider from './PhotoSlider';
 import OptionsList from './OptionsList';
 import { useUser } from '../../../context/UserContext';
+import { EventRegister } from 'react-native-event-listeners';
 
-const ProfileScreen = ({ navigation, route }) => {
-  const { userData } = useUser();
+const ProfileScreen = ({ navigation }) => {
+  const { userData, updateUser } = useUser(); // Get user data & updateUser function
   const { colors } = useTheme();
   const userProfile = userData;
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          onPress: async () => {
+            console.log('⏳ Logging out...');
+
+            try {
+              // Debug: Check if userProfile exists
+              const existingProfile = await AsyncStorage.getItem('userProfile');
+              if (existingProfile) {
+                console.log(
+                  '🔍 Found existing userProfile in AsyncStorage:',
+                  existingProfile
+                );
+              } else {
+                console.warn(
+                  '⚠️ No userProfile found in AsyncStorage before removal.'
+                );
+              }
+
+              // Remove userProfile safely
+              await AsyncStorage.removeItem('userProfile');
+
+              // Confirm removal
+              const checkProfile = await AsyncStorage.getItem('userProfile');
+              if (!checkProfile) {
+                console.log(
+                  '✅ userProfile successfully removed from AsyncStorage.'
+                );
+              } else {
+                console.error(
+                  '❌ userProfile still exists after removal:',
+                  checkProfile
+                );
+              }
+
+              // Reset user context
+              if (typeof updateUser === 'function') {
+                console.log('🧹 Resetting user context...');
+                updateUser({}); // 🔥 Fix: Use empty object instead of null
+              } else {
+                console.error('❌ updateUser is not a function!');
+              }
+
+              // 🔥 Directly navigate to SplashScreen
+              console.log('🔄 Navigating to SplashScreen...');
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SplashScreen' }],
+              });
+            } catch (error) {
+              console.error('🚨 Error during sign-out:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -108,6 +177,14 @@ const ProfileScreen = ({ navigation, route }) => {
 
       {/* Additional Options */}
       <OptionsList navigation={navigation} />
+
+      {/* Sign Out Button */}
+      <TouchableOpacity
+        style={[styles.signOutButton, { backgroundColor: colors.error }]}
+        onPress={handleSignOut}
+      >
+        <Text style={styles.signOutText}>Sign Out</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -186,6 +263,18 @@ const styles = StyleSheet.create({
   upgradeText: {
     color: '#fff',
     fontSize: 14,
+  },
+  signOutButton: {
+    marginVertical: 20,
+    marginHorizontal: 20,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  signOutText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import ConfirmationModal from '../../components/ConfirmationModal'; // Import the modal component
 import { useUser } from '../../context/UserContext';
 import { fetchUserProfileUsingEmailAPI } from '../../api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Email = ({ navigation }) => {
   const { colors } = useTheme();
@@ -45,6 +46,7 @@ const Email = ({ navigation }) => {
       setFetchedProfile(profile); // Store fetched profile
       updateUser(profile); // Save profile data in context
       setModalVisible(true); // Show the modal
+      await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
     } catch (error) {
       if (error.message === 'Profile not found') {
         updateUser('emailId', email);

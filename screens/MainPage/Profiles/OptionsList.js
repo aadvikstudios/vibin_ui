@@ -27,7 +27,7 @@ const options = [
   { label: 'Magazine', icon: 'book-outline', onPress: () => {} },
   {
     label: 'Our community',
-    icon: 'account-group-outline',
+    icon: 'people',
     onPress: (navigation) => navigation.navigate('OurCommunity'),
   },
   { label: 'About', icon: 'information-outline', onPress: () => {} },

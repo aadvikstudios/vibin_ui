@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, StatusBar } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack'; // Import Stack Navigator
+import { createStackNavigator } from '@react-navigation/stack';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -15,11 +15,13 @@ import {
   fetchPingsAPI,
   fetchConnectionsAPI,
 } from '../../api';
+
+// Screens
 import ExploreScreen from './Explore/ExploreScreen';
 import ConnectionsScreen from './Connections/ConnectionsScreen';
 import LikesPingsScreen from './LikesPings/LikesPingsScreen';
 import ProfileScreen from './Profiles/ProfileScreen';
-import EditProfile from './Profiles/ProfileOptionPages/EditProfile'; // Import EditProfile
+import EditProfile from './Profiles/ProfileOptionPages/EditProfile';
 import SearchSettings from './Profiles/ProfileOptionPages/SearchSettings';
 import AppSettings from './Profiles/ProfileOptionPages/AppSettings';
 import OurCommunity from './Profiles/ProfileOptionPages/OurCommunity';
@@ -27,53 +29,52 @@ import Help from './Profiles/ProfileOptionPages/Help';
 
 const Tab = createBottomTabNavigator();
 const ProfileStack = createStackNavigator();
+
+// Profile Stack Navigator
 const ProfileStackScreen = ({ userProfile, fetchData }) => (
   <ProfileStack.Navigator>
-    {/* Pass userProfile to ProfileScreen */}
     <ProfileStack.Screen
       name="ProfileScreen"
       component={ProfileScreen}
       options={{ headerShown: false }}
-      initialParams={{ userProfile }} // Pass userProfile as initialParams
+      initialParams={{ userProfile }}
     />
-    {/* Pass userProfile to EditProfile */}
     <ProfileStack.Screen
       name="EditProfile"
       component={EditProfile}
       options={{ headerShown: false }}
-      initialParams={{ userProfile, fetchData }} // Pass userProfile and fetchData as initialParams
+      initialParams={{ userProfile, fetchData }}
     />
-    {/* Pass userProfile to EditProfile */}
     <ProfileStack.Screen
       name="SearchSettings"
       component={SearchSettings}
       options={{ headerShown: false }}
-      initialParams={{ fetchData }} // Pass userProfile and fetchData as initialParams
+      initialParams={{ fetchData }}
     />
     <ProfileStack.Screen
       name="AppSettings"
       component={AppSettings}
       options={{ headerShown: false }}
-      initialParams={{ fetchData }} // Pass userProfile and fetchData as initialParams
+      initialParams={{ fetchData }}
     />
     <ProfileStack.Screen
       name="OurCommunity"
       component={OurCommunity}
       options={{ headerShown: false }}
-      initialParams={{ fetchData }} // Pass userProfile and fetchData as initialParams
+      initialParams={{ fetchData }}
     />
     <ProfileStack.Screen
       name="Help"
       component={Help}
       options={{ headerShown: false }}
-      initialParams={{ fetchData }} // Pass userProfile and fetchData as initialParams
+      initialParams={{ fetchData }}
     />
   </ProfileStack.Navigator>
 );
 
-const MainPage = () => {
+const MainPage = ({ navigation }) => {
   const { colors, dark } = useTheme();
-  const { userData } = useUser();
+  const { userData, updateUser } = useUser();
   const insets = useSafeAreaInsets();
   const [profiles, setProfiles] = useState([]);
   const [likes, setLikes] = useState([]);
@@ -82,13 +83,9 @@ const MainPage = () => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
-    console.log(
-      'value of fetchData is ',
-      userData.lookingFor,
-      userData.emailId
-    );
+    console.log('Fetching user data:', userData.lookingFor, userData.emailId);
     if (!userData?.emailId || !userData?.lookingFor) {
-      console.warn('User data is missing required fields.');
+      console.warn('⚠️ User data is missing required fields.');
       return;
     }
 
@@ -108,13 +105,13 @@ const MainPage = () => {
       setPings(pingsData || []);
       setConnections(connectionsData || []);
     } catch (error) {
-      console.error('Error fetching data:', error.message);
+      console.error('❌ Error fetching data:', error.message);
     } finally {
       setLoading(false);
     }
   }, [userData]);
-
   useEffect(() => {
+    // Fetch Data on Mount
     fetchData();
   }, [fetchData]);
 
@@ -170,9 +167,7 @@ const MainPage = () => {
         >
           <Tab.Screen
             name="Explore"
-            listeners={{
-              tabPress: () => handleTabChange(true),
-            }}
+            listeners={{ tabPress: () => handleTabChange(true) }}
             options={{ headerShown: false }}
           >
             {() => (
@@ -185,9 +180,7 @@ const MainPage = () => {
           </Tab.Screen>
           <Tab.Screen
             name="LikesPings"
-            listeners={{
-              tabPress: () => handleTabChange(true),
-            }}
+            listeners={{ tabPress: () => handleTabChange(true) }}
             options={{ headerShown: false }}
           >
             {() => (
@@ -202,9 +195,7 @@ const MainPage = () => {
           </Tab.Screen>
           <Tab.Screen
             name="Connections"
-            listeners={{
-              tabPress: () => handleTabChange(true),
-            }}
+            listeners={{ tabPress: () => handleTabChange(true) }}
             options={{ headerShown: false }}
           >
             {() => (
@@ -218,9 +209,7 @@ const MainPage = () => {
           </Tab.Screen>
           <Tab.Screen
             name="Profile"
-            listeners={{
-              tabPress: () => handleTabChange(true),
-            }}
+            listeners={{ tabPress: () => handleTabChange(true) }}
             options={{ headerShown: false }}
           >
             {() => (

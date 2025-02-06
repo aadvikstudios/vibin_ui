@@ -22,7 +22,8 @@ const AppContent = () => {
   return (
     <UserProvider>
       <NavigationContainer>
-        <StackNavigator initialRouteName="Login" />
+        {/* Now the initial route is the SplashScreen */}
+        <StackNavigator initialRouteName="SplashScreen" />
       </NavigationContainer>
     </UserProvider>
   );
@@ -39,7 +40,6 @@ const App = () => {
         backgroundColor="transparent"
         translucent
       />
-
       <AppContent />
     </PaperProvider>
   );

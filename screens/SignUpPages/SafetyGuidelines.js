@@ -5,6 +5,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { useUser } from '../../context/UserContext'; // Import the UserContext hook
 import { createUserProfileAPI } from '../../api'; // Import the API function
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 const SafetyGuidelines = ({ navigation }) => {
   const { colors } = useTheme();
@@ -26,15 +27,27 @@ const SafetyGuidelines = ({ navigation }) => {
 
   const handleContinue = async () => {
     setIsSubmitting(true); // Disable the button while the API call is in progress
+
     try {
       console.log('Sending user data to API:', userData);
       const response = await createUserProfileAPI(userData); // Call the API with userData
-      console.log('Profile created successfully:', response);
-      if (response && response.profile) {
-        updateUser(response.profile);
-      }
 
-      navigation.navigate('MainPage'); // Navigate to the MainPage after success
+      console.log('Profile created successfully:', response);
+
+      if (response && response.profile) {
+        updateUser(response.profile); // Update context
+
+        // Store user profile locally in AsyncStorage
+        await AsyncStorage.setItem(
+          'userProfile',
+          JSON.stringify(response.profile)
+        );
+
+        console.log('User profile stored locally.');
+
+        // Navigate to MainPage after storing successfully
+        navigation.navigate('MainPage');
+      }
     } catch (error) {
       console.error('Failed to create profile:', error.message);
     } finally {
