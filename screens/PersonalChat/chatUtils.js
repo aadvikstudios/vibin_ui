@@ -92,7 +92,7 @@ export const pickImageAndUpload = async (
       console.log('path is ', path);
       // 1️⃣ Generate Pre-Signed URL for chat-images/
       const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
-        `${path}${fileName}`,
+        fileName,
         fileType,
         path
       );
@@ -102,7 +102,7 @@ export const pickImageAndUpload = async (
 
       // 3️⃣ Store only the relative path
       const storedFilePath = `${path}${fileName}`;
-
+      console.log('stored file path is ', storedFilePath);
       // 4️⃣ Send message with the image URL
       const message = {
         messageId: `${matchId}-${Date.now()}-${Math.random()}`,

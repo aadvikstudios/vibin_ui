@@ -12,7 +12,7 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
     if (response.ok && data) {
       return data.map((msg) => ({
         ...msg,
-        imageUrl: msg.imageUrl ? `${S3_BUCKET_URL}${msg.imageUrl}` : null, // Convert relative to full URL
+        imageUrl: msg.imageUrl ? `${msg.imageUrl}` : null, // Convert relative to full URL
       }));
     } else {
       throw new Error(data.message || 'Failed to fetch messages');
