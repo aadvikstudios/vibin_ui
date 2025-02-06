@@ -34,6 +34,8 @@ export const useSocket = (matchId, setMessages, messageIds) => {
       if (!messageIds.current.has(message.messageId)) {
         messageIds.current.add(message.messageId);
         setMessages((prevMessages) => [...prevMessages, message]);
+      } else {
+        console.warn('⚠️ Duplicate message detected:', message.messageId);
       }
     });
 

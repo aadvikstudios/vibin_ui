@@ -6,6 +6,7 @@ import {
   uploadImageToS3API,
   sendMessageAPI,
 } from '../../api';
+import { debounce } from 'lodash';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -39,7 +40,6 @@ export const markMessagesRead = async (matchId) => {
   }
 };
 
-/** Handle Sending Message */
 export const handleSendMessage = (
   inputText,
   matchId,
@@ -51,17 +51,19 @@ export const handleSendMessage = (
 
   const message = {
     messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-    matchId: String(matchId),
+    matchId,
     senderId: userData.emailId,
     content: inputText.trim(),
-    imageUrl: null,
     createdAt: new Date().toISOString(),
   };
 
-  sendMessage(message);
-  sendMessageAPI(message); // Send to backend
+  debouncedSendMessage(sendMessage, message);
   setInputText('');
 };
+
+const debouncedSendMessage = debounce((sendMessage, message) => {
+  sendMessage(message);
+}, 500);
 
 /** Pick Image & Upload to S3 */
 export const pickImageAndUpload = async (

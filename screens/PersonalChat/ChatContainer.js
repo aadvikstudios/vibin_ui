@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '../../context/UserContext';
 import { getPresignedReadUrlAPI } from '../../api'; // Import your util function
 
 const ChatContainer = ({
@@ -30,11 +29,11 @@ const ChatContainer = ({
     if (markAsRead) markAsRead();
   }, [markAsRead]);
 
-  // Debugging: Remove duplicate messages
+  // Remove duplicate messages
   const seenMessageIds = new Set();
   const uniqueMessages = messages.filter((message) => {
     if (seenMessageIds.has(message.messageId)) {
-      console.warn('Duplicate messageId found:', message.messageId);
+      console.warn('⚠️ Duplicate messageId found:', message.messageId);
       return false;
     }
     seenMessageIds.add(message.messageId);
@@ -43,7 +42,6 @@ const ChatContainer = ({
 
   // Function to fetch pre-signed URLs for images
   const fetchImageUrl = async (imageKey) => {
-    console.log('imageurl', imageKey);
     if (!imageKey) return null; // No image key, return null
     if (imageUrls[imageKey]) return imageUrls[imageKey]; // Return if already fetched
 
@@ -52,7 +50,7 @@ const ChatContainer = ({
       setImageUrls((prevUrls) => ({ ...prevUrls, [imageKey]: url })); // Cache URL
       return url;
     } catch (error) {
-      console.error('Failed to fetch pre-signed URL:', error);
+      console.error('❌ Failed to fetch pre-signed URL:', error);
       return null;
     }
   };
@@ -60,90 +58,88 @@ const ChatContainer = ({
   return (
     <FlatList
       data={uniqueMessages}
-      renderItem={({ item }) => {
-        return (
+      renderItem={({ item }) => (
+        <View
+          style={[
+            styles.messageWrapper,
+            item.senderId === profile.emailId
+              ? styles.sentMessageWrapper
+              : styles.receivedMessageWrapper,
+          ]}
+        >
           <View
             style={[
-              styles.messageWrapper,
+              styles.messageContainer,
               item.senderId === profile.emailId
-                ? styles.sentMessageWrapper
-                : styles.receivedMessageWrapper,
+                ? { backgroundColor: colors.primary }
+                : { backgroundColor: colors.surface },
             ]}
           >
-            <View
-              style={[
-                styles.messageContainer,
-                item.senderId === profile.emailId
-                  ? { backgroundColor: colors.primary }
-                  : { backgroundColor: colors.surface },
-              ]}
-            >
-              {/* Display Image or Text Message */}
-              {item.imageUrl ? (
-                <ImageMessage
-                  imageKey={item.imageUrl}
-                  fetchImageUrl={fetchImageUrl}
+            {/* Display Image or Text Message */}
+            {item.imageUrl ? (
+              <ImageMessage
+                imageKey={item.imageUrl}
+                fetchImageUrl={fetchImageUrl}
+              />
+            ) : (
+              <Text
+                style={[
+                  styles.messageText,
+                  item.senderId === profile.emailId
+                    ? { color: colors.onPrimary }
+                    : { color: colors.primaryText },
+                ]}
+              >
+                {item.content}
+              </Text>
+            )}
+
+            {/* Heart Icon for Sent Messages */}
+            {item.senderId === profile.emailId && item.liked && (
+              <View style={[styles.heartIcon, styles.heartIconSent]}>
+                <Ionicons name="heart" size={20} color={colors.accent} />
+              </View>
+            )}
+
+            {/* Like Button for Received Messages */}
+            {item.senderId !== profile.emailId && (
+              <TouchableOpacity
+                onPress={() =>
+                  likeMessage(
+                    item.matchId,
+                    item.createdAt,
+                    item.messageId,
+                    !item.liked,
+                    setMessages
+                  )
+                }
+                style={[styles.heartIcon, styles.heartIconReceived]}
+              >
+                <Ionicons
+                  name={item.liked ? 'heart' : 'heart-outline'}
+                  size={20}
+                  color={colors.accent}
                 />
-              ) : (
-                <Text
-                  style={[
-                    styles.messageText,
-                    item.senderId === profile.emailId
-                      ? { color: colors.onPrimary }
-                      : { color: colors.primaryText },
-                  ]}
-                >
-                  {item.content}
-                </Text>
-              )}
-
-              {/* Heart Icon for Sent Messages */}
-              {item.senderId === profile.emailId && item.liked && (
-                <View style={[styles.heartIcon, styles.heartIconSent]}>
-                  <Ionicons name="heart" size={20} color={colors.accent} />
-                </View>
-              )}
-
-              {/* Like Button for Received Messages */}
-              {item.senderId !== profile.emailId && (
-                <TouchableOpacity
-                  onPress={() =>
-                    likeMessage(
-                      item.matchId,
-                      item.createdAt,
-                      item.messageId,
-                      !item.liked,
-                      setMessages
-                    )
-                  }
-                  style={[styles.heartIcon, styles.heartIconReceived]}
-                >
-                  <Ionicons
-                    name={item.liked ? 'heart' : 'heart-outline'}
-                    size={20}
-                    color={colors.accent}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* Timestamp */}
-            <Text
-              style={[
-                styles.timestamp,
-                item.senderId === profile.emailId
-                  ? { alignSelf: 'flex-end', color: colors.secondary }
-                  : { alignSelf: 'flex-start', color: colors.secondary },
-              ]}
-            >
-              {new Date(item.createdAt).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
+              </TouchableOpacity>
+            )}
           </View>
-        );
-      }}
+
+          {/* Timestamp */}
+          <Text
+            style={[
+              styles.timestamp,
+              item.senderId === profile.emailId
+                ? { alignSelf: 'flex-end', color: colors.secondary }
+                : { alignSelf: 'flex-start', color: colors.secondary },
+            ]}
+          >
+            {new Date(item.createdAt).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+        </View>
+      )}
       keyExtractor={(item, index) =>
         item.messageId ? item.messageId.toString() : `msg-${index}`
       }
