@@ -35,7 +35,12 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const messageIds = useRef(new Set());
-  const { sendMessage } = useSocket(matchId, setMessages, messageIds);
+  const { socket, sendMessage } = useSocket(
+    matchId,
+    messages,
+    setMessages,
+    messageIds
+  );
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);

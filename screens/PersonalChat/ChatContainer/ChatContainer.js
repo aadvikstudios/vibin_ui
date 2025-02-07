@@ -21,33 +21,6 @@ const ChatContainer = ({
   const messageIds = useRef(new Set());
   const { socket } = useSocket(matchId, setMessages, messageIds);
 
-  // Mark messages as DELIVERED when received
-  useEffect(() => {
-    if (!socket) return;
-
-    messages.forEach((msg) => {
-      if (msg.senderId !== profile.emailId && msg.status === 'sent') {
-        console.log(
-          '📤 Emitting messageDelivered:',
-          msg.matchId,
-          msg.messageId
-        ); // Debugging log
-        socket.emit('messageDelivered', {
-          matchId: msg.matchId,
-          messageId: msg.messageId,
-        });
-      }
-    });
-  }, [messages]);
-
-  // Mark messages as READ when chat screen is opened
-  useEffect(() => {
-    if (socket) {
-      console.log('📤 Emitting messageRead:', matchId); // Debugging log
-      socket.emit('messageRead', { matchId, senderId: profile.emailId });
-    }
-  }, []);
-
   // Remove duplicate messages
   const seenMessageIds = new Set();
   const uniqueMessages = messages.filter((message) => {
