@@ -57,26 +57,28 @@ const MessageItem = ({
           </Text>
         )}
 
-        {/* Like Button */}
-        <TouchableOpacity
-          onPress={() =>
-            likeMessage(
-              socket,
-              item.matchId,
-              item.createdAt,
-              item.messageId,
-              !item.liked,
-              setMessages
-            )
-          }
-          style={[styles.heartIcon, styles.heartIconReceived]}
-        >
-          <Ionicons
-            name={item.liked ? 'heart' : 'heart-outline'}
-            size={20}
-            color={colors.accent}
-          />
-        </TouchableOpacity>
+        {/* Like Button - Only Display for Received Messages */}
+        {item.senderId !== profile.emailId && (
+          <TouchableOpacity
+            onPress={() =>
+              likeMessage(
+                socket,
+                item.matchId,
+                item.createdAt,
+                item.messageId,
+                !item.liked,
+                setMessages
+              )
+            }
+            style={[styles.heartIcon, styles.heartIconReceived]}
+          >
+            <Ionicons
+              name={item.liked ? 'heart' : 'heart-outline'}
+              size={20}
+              color={colors.accent}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={[styles.timestamp, { color: colors.secondary }]}>

@@ -28,6 +28,7 @@ const MessageInput = ({
       senderId: userData.emailId,
       content: inputText,
       createdAt: new Date().toISOString(),
+      isUnRead: true,
       messageId: `${matchId}-${Date.now()}-${Math.random()}`,
       replyTo: replyMessage
         ? { messageId: replyMessage.messageId, content: replyMessage.content }

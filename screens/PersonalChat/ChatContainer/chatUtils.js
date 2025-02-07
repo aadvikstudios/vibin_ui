@@ -55,6 +55,7 @@ export const handleSendMessage = (
     senderId: userData.emailId,
     content: inputText.trim(),
     createdAt: new Date().toISOString(),
+    isUnRead: true,
   };
 
   debouncedSendMessage(sendMessage, message);
@@ -110,9 +111,10 @@ export const pickImageAndUpload = async (
         messageId: `${matchId}-${Date.now()}-${Math.random()}`,
         matchId: String(matchId),
         senderId: userData.emailId,
-        content: '',
+        content: '[ Image ]',
         imageUrl: storedFilePath, // Store relative path
         createdAt: new Date().toISOString(),
+        isUnRead: true,
       };
 
       sendMessage(message);
