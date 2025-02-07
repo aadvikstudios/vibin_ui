@@ -124,22 +124,58 @@ export const pickImageAndUpload = async (
 };
 
 /** Like Message */
+// export const likeMessage = async (
+//   matchId,
+//   createdAt,
+//   messageId,
+//   liked,
+//   setMessages
+// ) => {
+//   try {
+//     setMessages((prevMessages) =>
+//       prevMessages.map((msg) =>
+//         msg.messageId === messageId ? { ...msg, liked } : msg
+//       )
+//     );
+
+//     await likeMessageAPI(matchId, createdAt, messageId, liked);
+//   } catch (error) {
+//     console.error('Failed to like message:', error);
+//   }
+// };
 export const likeMessage = async (
+  socket,
   matchId,
   createdAt,
   messageId,
   liked,
   setMessages
 ) => {
+  if (!socket) {
+    console.error("❌ Socket not available");
+    return;
+  }
+
   try {
+    // Optimistically update UI before backend confirmation
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
         msg.messageId === messageId ? { ...msg, liked } : msg
       )
     );
 
-    await likeMessageAPI(matchId, createdAt, messageId, liked);
+    // Emit event to the server
+    socket.emit("likeMessage", { matchId, createdAt, messageId, liked });
+
+    console.log(`👍 Like event sent: Message ${messageId}, Liked: ${liked}`);
   } catch (error) {
-    console.error('Failed to like message:', error);
+    console.error("❌ Failed to like message:", error);
+
+    // Rollback UI update if an error occurs
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) =>
+        msg.messageId === messageId ? { ...msg, liked: !liked } : msg
+      )
+    );
   }
 };

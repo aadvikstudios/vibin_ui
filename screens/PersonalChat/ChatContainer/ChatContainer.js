@@ -7,6 +7,7 @@ import CenteredMessage from './CenteredMessage'; // Import the new CenteredMessa
 import { useSocket } from '../useSocket';
 
 const ChatContainer = ({
+  socket,
   messages = [],
   setMessages,
   profile,
@@ -19,7 +20,6 @@ const ChatContainer = ({
   const flatListRef = useRef(null);
   const [imageUrls, setImageUrls] = useState({});
   const messageIds = useRef(new Set());
-  const { socket } = useSocket(matchId, setMessages, messageIds);
 
   // Remove duplicate messages
   const seenMessageIds = new Set();
@@ -63,6 +63,7 @@ const ChatContainer = ({
       data={filteredMessages}
       renderItem={({ item }) => (
         <MessageItem
+          socket={socket}
           item={item}
           profile={profile}
           likeMessage={likeMessage}
