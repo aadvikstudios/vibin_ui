@@ -152,7 +152,7 @@ export const likeMessage = async (
   setMessages
 ) => {
   if (!socket) {
-    console.error("❌ Socket not available");
+    console.error('❌ Socket not available');
     return;
   }
 
@@ -165,11 +165,11 @@ export const likeMessage = async (
     );
 
     // Emit event to the server
-    socket.emit("likeMessage", { matchId, createdAt, messageId, liked });
+    socket.emit('likeMessage', { matchId, createdAt, messageId, liked });
 
     console.log(`👍 Like event sent: Message ${messageId}, Liked: ${liked}`);
   } catch (error) {
-    console.error("❌ Failed to like message:", error);
+    console.error('❌ Failed to like message:', error);
 
     // Rollback UI update if an error occurs
     setMessages((prevMessages) =>

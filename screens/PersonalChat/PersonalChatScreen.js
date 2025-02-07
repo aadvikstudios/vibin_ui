@@ -37,7 +37,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const messageIds = useRef(new Set());
   const { socket, sendMessage } = useSocket(matchId, setMessages, messageIds);
 
-
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
     if (userData.emailId !== senderId) {
@@ -75,8 +74,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
           />
         ) : (
           <ChatContainer
-          socket={socket} // ✅ Pass socket to ChatContainer
-
+            socket={socket} // ✅ Pass socket to ChatContainer
             messages={messages}
             setMessages={setMessages}
             likeMessage={likeMessage}
