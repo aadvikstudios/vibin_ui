@@ -14,12 +14,11 @@ const ChatContainer = ({
   likeMessage,
   refreshing,
   onRefresh,
-  matchId,
+  setReplyMessage,
 }) => {
   const { colors } = useTheme();
   const flatListRef = useRef(null);
   const [imageUrls, setImageUrls] = useState({});
-  const messageIds = useRef(new Set());
 
   // Remove duplicate messages
   const seenMessageIds = new Set();
@@ -68,6 +67,7 @@ const ChatContainer = ({
           profile={profile}
           likeMessage={likeMessage}
           setMessages={setMessages}
+          setReplyMessage={setReplyMessage} // ✅ Pass replyMessage setter
           fetchImageUrl={fetchImageUrl}
           colors={colors}
         />

@@ -34,6 +34,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [replyMessage, setReplyMessage] = useState(null); // ✅ Track reply message
   const messageIds = useRef(new Set());
   const { socket, sendMessage } = useSocket(matchId, setMessages, messageIds);
 
@@ -81,6 +82,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
             profile={userData}
             refreshing={refreshing}
             onRefresh={onRefresh}
+            setReplyMessage={setReplyMessage} // ✅ Pass replyMessage setter
           />
         )}
 
@@ -93,6 +95,8 @@ const PersonalChatScreen = ({ route, navigation }) => {
           setInputText={setInputText}
           handleSendMessage={handleSendMessage}
           colors={colors}
+          replyMessage={replyMessage} // ✅ Pass replyMessage state
+          setReplyMessage={setReplyMessage} // ✅ Pass function to clear reply
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,19 +1,21 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ImageMessage from './ImageMessage'; // Image component
+import ImageMessage from './ImageMessage';
 
 const MessageItem = ({
-  socket, // Pass socket down
+  socket,
   item,
   profile,
   likeMessage,
   setMessages,
   fetchImageUrl,
   colors,
+  setReplyMessage, // ✅ New state for reply handling
 }) => {
   return (
-    <View
+    <TouchableOpacity
+      onLongPress={() => setReplyMessage(item)} // ✅ Set the reply message
       style={[
         styles.messageWrapper,
         item.senderId === profile.emailId
@@ -29,6 +31,13 @@ const MessageItem = ({
             : { backgroundColor: colors.surface },
         ]}
       >
+        {/* Display Reply Message */}
+        {item.replyTo && (
+          <View style={styles.replyContainer}>
+            <Text style={styles.replyText}>{item.replyTo.content}</Text>
+          </View>
+        )}
+
         {/* Image or Text Message */}
         {item.imageUrl ? (
           <ImageMessage
@@ -48,45 +57,35 @@ const MessageItem = ({
           </Text>
         )}
 
-        {/* Heart Icon for Sent Messages */}
-        {item.senderId === profile.emailId && item.liked && (
-          <View style={[styles.heartIcon, styles.heartIconSent]}>
-            <Ionicons name="heart" size={20} color={colors.accent} />
-          </View>
-        )}
-
-        {/* Like Button for Received Messages */}
-        {item.senderId !== profile.emailId && (
-          <TouchableOpacity
-            onPress={() =>
-              likeMessage(
-                socket,
-                item.matchId,
-                item.createdAt,
-                item.messageId,
-                !item.liked,
-                setMessages
-              )
-            }
-            style={[styles.heartIcon, styles.heartIconReceived]}
-          >
-            <Ionicons
-              name={item.liked ? 'heart' : 'heart-outline'}
-              size={20}
-              color={colors.accent}
-            />
-          </TouchableOpacity>
-        )}
+        {/* Like Button */}
+        <TouchableOpacity
+          onPress={() =>
+            likeMessage(
+              socket,
+              item.matchId,
+              item.createdAt,
+              item.messageId,
+              !item.liked,
+              setMessages
+            )
+          }
+          style={[styles.heartIcon, styles.heartIconReceived]}
+        >
+          <Ionicons
+            name={item.liked ? 'heart' : 'heart-outline'}
+            size={20}
+            color={colors.accent}
+          />
+        </TouchableOpacity>
       </View>
 
-      {/* Timestamp */}
       <Text style={[styles.timestamp, { color: colors.secondary }]}>
         {new Date(item.createdAt).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
         })}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -104,8 +103,14 @@ const styles = StyleSheet.create({
   messageText: { fontSize: 16 },
   timestamp: { fontSize: 12, marginTop: 5 },
   heartIcon: { position: 'absolute', bottom: -10 },
-  heartIconSent: { right: -1 },
   heartIconReceived: { left: -1 },
+  replyContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: 5,
+    borderRadius: 8,
+    marginBottom: 5,
+  },
+  replyText: { fontSize: 12, fontStyle: 'italic', color: 'gray' },
 });
 
 export default MessageItem;
