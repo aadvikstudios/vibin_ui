@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 
 const API_BASE_URL = 'https://socket.vibinconnect.com';
 
-export const useSocket = (matchId, setMessages, messageIds) => {
+export const useSocket = (matchId, setMessages, messageIds, userData) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export const useSocket = (matchId, setMessages, messageIds) => {
 
     newSocket.on('connect', () => {
       console.log('✅ Socket connected:', newSocket.id);
-      newSocket.emit('join', { matchId });
+      newSocket.emit('join', { matchId, userId: userData.emailId });
     });
 
     newSocket.on('newMessage', (message) => {
@@ -21,7 +21,7 @@ export const useSocket = (matchId, setMessages, messageIds) => {
         messageIds.current.add(message.messageId);
         setMessages((prev) => [...prev, message]);
 
-        if (message.senderId !== matchId) {
+        if (message.senderId !== userData.emailId && message.messageId) {
           newSocket.emit('messageDelivered', {
             matchId,
             messageId: message.messageId,
@@ -34,16 +34,19 @@ export const useSocket = (matchId, setMessages, messageIds) => {
       console.log('📩 Status update received:', update);
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.messageId === update.messageId
-            ? { ...msg, status: update.status }
-            : msg
+          msg.matchId === matchId ? { ...msg, status: update.status } : msg
         )
       );
     });
 
     setSocket(newSocket);
-    return () => newSocket.disconnect();
-  }, [matchId]);
+    return () => {
+      if (newSocket) {
+        console.log('🛑 Disconnecting socket:', newSocket.id);
+        newSocket.disconnect();
+      }
+    };
+  }, [matchId, userData.emailId]);
 
   const sendMessage = (message) => {
     if (socket) {
