@@ -93,6 +93,9 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
           {item.orientation?.charAt(0).toUpperCase() +
             item.orientation.slice(1) || 'Not specified'}
         </Text>
+        <Text style={[styles.name, { color: colors.primaryText }]}>
+          {item.distanceBetween} km away
+        </Text>
         <Text style={[styles.bio, { color: colors.secondaryText }]}>
           {item.bio || 'No bio available'}
         </Text>
