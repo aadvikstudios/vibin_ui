@@ -23,8 +23,18 @@ export const PaperThemes = {
       border: '#E0E0E0', // Subtle light gray borders
       notification: '#FF5858', // Notification color
       onSurface: '#4C4C4C', // Secondary text on surfaces
-      success: '#28A745', // Success color (green)
+
+      // Success (Green)
+      success: '#28A745', // Success color
       onSuccess: '#FFFFFF', // Text on success background
+
+      // Warning (Orange)
+      warning: '#FFC107', // Warning color (amber)
+      onWarning: '#1C1C1E', // Dark text on warning background
+
+      // Danger / Error (Red)
+      danger: '#DC3545', // Danger color (strong red)
+      onDanger: '#FFFFFF', // Text on danger background
     },
     fonts: {
       ...LightTheme.fonts,
@@ -67,8 +77,18 @@ export const PaperThemes = {
       border: '#444444', // Dark border
       notification: '#FF5858', // Notification color
       onSurface: '#CCCCCC', // Light text on surfaces
-      success: '#28A745', // Success color (green)
+
+      // Success (Green)
+      success: '#28A745', // Success color
       onSuccess: '#FFFFFF', // Text on success background
+
+      // Warning (Orange)
+      warning: '#FFC107', // Warning color (amber)
+      onWarning: '#121212', // Dark text on warning background
+
+      // Danger / Error (Red)
+      danger: '#DC3545', // Danger color (strong red)
+      onDanger: '#FFFFFF', // Text on danger background
     },
     fonts: {
       ...DarkTheme.fonts,

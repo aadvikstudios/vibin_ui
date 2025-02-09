@@ -55,7 +55,7 @@ const PingModal = ({
       <Button
         mode="text"
         onPress={onClose}
-        labelStyle={[styles.cancelButtonText, { color: colors.error }]} // Error color for Cancel
+        labelStyle={[styles.cancelButtonText, { color: colors.danger }]} // Error color for Cancel
       >
         Cancel
       </Button>

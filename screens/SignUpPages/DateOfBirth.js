@@ -180,7 +180,7 @@ const DateOfBirth = ({ navigation }) => {
         </View>
         {/* Error Message */}
         {errorMessage ? (
-          <Text style={[styles.errorText, { color: colors.error }]}>
+          <Text style={[styles.errorText, { color: colors.danger }]}>
             {errorMessage}
           </Text>
         ) : null}

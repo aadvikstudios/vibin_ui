@@ -180,7 +180,7 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Sign Out Button */}
       <TouchableOpacity
-        style={[styles.signOutButton, { backgroundColor: colors.error }]}
+        style={[styles.signOutButton, { backgroundColor: colors.danger }]}
         onPress={handleSignOut}
       >
         <Text style={styles.signOutText}>Sign Out</Text>

@@ -54,7 +54,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
           <Avatar.Icon
             size={36}
             icon="close"
-            color={colors.error}
+            color={colors.danger}
             style={[styles.actionIcon, { backgroundColor: colors.surface }]}
           />
         </TouchableOpacity>

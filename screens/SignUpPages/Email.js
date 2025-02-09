@@ -102,7 +102,7 @@ const Email = ({ navigation }) => {
         />
         {/* Display error message */}
         {errorMessage ? (
-          <Text style={[styles.errorText, { color: colors.error }]}>
+          <Text style={[styles.errorText, { color: colors.danger }]}>
             {errorMessage}
           </Text>
         ) : null}
