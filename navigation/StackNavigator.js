@@ -19,6 +19,8 @@ import Permissions from '../screens/SignUpPages/Permissions';
 import SafetyGuidelines from '../screens/SignUpPages/SafetyGuidelines';
 import MainPage from '../screens/MainPage/MainPage';
 import PersonalChatScreen from '../screens/PersonalChat/PersonalChatScreen';
+import ViewProfileScreen from '../screens/MainPage/Explore/ViewProfileScreen';
+
 const Stack = createStackNavigator();
 
 const StackNavigator = ({ initialRouteName }) => {
@@ -110,6 +112,14 @@ const StackNavigator = ({ initialRouteName }) => {
         name="PersonalChatScreen"
         component={PersonalChatScreen}
         options={{ headerShown: false }}
+      />
+      {/* ✅ Added ViewProfileScreen */}
+      <Stack.Screen
+        name="ViewProfileScreen"
+        component={ViewProfileScreen}
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );

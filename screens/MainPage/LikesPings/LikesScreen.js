@@ -10,14 +10,18 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // ✅ Import useNavigation
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
+
 import { useUser } from '../../../context/UserContext'; // Assuming UserContext is used to access user data
 import { sendActionToBackendAPI } from '../../../api'; // Update the path to your API file
 import EmptyStateView from '../../../components/EmptyStateView';
 const LikesScreen = ({ likes, loading, onRefresh }) => {
   const { colors } = useTheme();
   const { userData } = useUser(); // Get user information from context
+  const navigation = useNavigation(); // ✅ Define navigation
 
   const handleAction = async (action, item) => {
     try {
@@ -47,6 +51,10 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
       console.error('Error sending action:', error);
       Alert.alert('Error', 'Failed to process action. Please try again.');
     }
+  };
+  // Open ViewProfileScreen and pass emailId
+  const handleViewProfile = (emailId) => {
+    navigation.navigate('ViewProfileScreen', { email: emailId });
   };
 
   // Render a single like profile row
@@ -85,6 +93,20 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
         </Text>
 
         <View style={styles.actionButtonsContainer}>
+          {/* View Profile Button */}
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: colors.background,
+                borderColor: colors.border,
+              },
+            ]}
+            onPress={() => handleViewProfile(item.emailId)}
+          >
+            <Icon name="eye-outline" size={22} color={colors.primary} />
+          </TouchableOpacity>
+
           {/* Dislike Button */}
           <TouchableOpacity
             style={[
