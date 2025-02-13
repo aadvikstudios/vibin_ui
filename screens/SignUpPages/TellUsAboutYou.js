@@ -13,7 +13,7 @@ const TellUsAboutYou = ({ navigation }) => {
   const handleNext = () => {
     updateUser('bio', bio);
     console.log('Bio:', bio);
-    navigation.navigate('AddPhotos');
+    navigation.navigate('Questionnaire');
   };
 
   return (

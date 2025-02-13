@@ -14,6 +14,7 @@ import Desires from '../screens/SignUpPages/Desires';
 import LookingFor from '../screens/SignUpPages/LookingFor';
 import Interests from '../screens/SignUpPages/Interests';
 import TellUsAboutYou from '../screens/SignUpPages/TellUsAboutYou';
+import QuestionnaireScreen from '../screens/SignUpPages/QuestionnaireScreen';
 import AddPhotos from '../screens/SignUpPages/AddPhotos';
 import Permissions from '../screens/SignUpPages/Permissions';
 import SafetyGuidelines from '../screens/SignUpPages/SafetyGuidelines';
@@ -85,6 +86,11 @@ const StackNavigator = ({ initialRouteName }) => {
       <Stack.Screen
         name="TellUsAboutYou"
         component={TellUsAboutYou}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Questionnaire"
+        component={QuestionnaireScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

@@ -108,6 +108,7 @@ export const fetchMatchesForProfileAPI = async (emailId, gender) => {
           return match;
         })
       );
+      console.log('Logs aere  for the matches ', updatedMatches);
 
       return updatedMatches;
     } else {

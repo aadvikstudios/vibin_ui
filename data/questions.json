@@ -1,0 +1,24 @@
+{
+  "questionnaire": [
+    {
+      "key": "firstDate",
+      "question": "Imagine you're on your first date with the partner of your dreams.\nHow would you choose to spend the day together?",
+      "placeholder": "Describe your perfect first date..."
+    },
+    {
+      "key": "upliftingThing",
+      "question": "Even on the most ordinary days, what’s one thing that never fails to excite or uplift you?",
+      "placeholder": "What brightens your day?"
+    },
+    {
+      "key": "request",
+      "question": "If I could do anything for you right now, what would you ask for?",
+      "placeholder": "Make a wish..."
+    },
+    {
+      "key": "freeDay",
+      "question": "You have a completely free day—no responsibilities, no rules.\nWhat’s the very first thing you’d do?",
+      "placeholder": "Describe your perfect free day..."
+    }
+  ]
+}
