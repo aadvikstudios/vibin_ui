@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native'; // ✅ Import useFocusEffect
+
 import { useTheme } from 'react-native-paper';
 import MatchScreen from './MatchScreen';
 import ProfileScreen from './ProfileScreen';
@@ -20,7 +22,13 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const [pingNote, setPingNote] = useState('');
 
   useEffect(() => setIsLoading(loading), [loading]);
-
+  // ✅ Reset index when user navigates to the tab
+  useFocusEffect(
+    useCallback(() => {
+      setCurrentIndex(0); // Reset index
+      setShowNoProfiles(false); // Reset empty state
+    }, [profiles]) // Depend on profiles, so it resets when they change
+  );
   const moveToNextProfile = () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= profiles.length) {
@@ -74,6 +82,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         setIsSuccessModalVisible(true);
         setPingNote('');
         setTimeout(() => setIsSuccessModalVisible(false), 2000);
+        moveToNextProfile();
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to send ping.');

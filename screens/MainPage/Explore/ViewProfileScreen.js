@@ -23,7 +23,7 @@ import BlockReportButton from '../../../components/BlockReportButton';
 
 const ViewProfileScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
-  const { email } = route.params || {}; // Extract email from params
+  const { email, targetEmail } = route.params || {}; // Extract email from params
 
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,9 +43,12 @@ const ViewProfileScreen = ({ route, navigation }) => {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching profile using email:', email);
+      console.log('🔍 Fetching profile using email:', email, targetEmail);
 
-      const fetchedProfile = await fetchUserProfileUsingEmailAPI(email);
+      const fetchedProfile = await fetchUserProfileUsingEmailAPI(
+        email,
+        targetEmail
+      );
       console.log('📩 Fetched Profile:', fetchedProfile);
 
       if (fetchedProfile?.photos?.length > 0) {

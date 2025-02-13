@@ -287,41 +287,42 @@ export const fetchPingsAPI = async (emailId) => {
     const data = await response.json();
     console.log('Data received from fetchPingsAPI:', data);
 
-    if (data?.pings) {
-      // Iterate over each ping and update the photo with a pre-signed URL if available
-      const pingsWithPresignedUrls = await Promise.all(
-        data?.pings.map(async (ping) => {
-          if (ping?.senderPhoto) {
-            try {
-              const presignedUrl = await getPresignedReadUrlAPI(
-                ping.senderPhoto[0]
-              );
-              console.log('presignedUrl', presignedUrl);
-              return {
-                ...ping,
-                senderPhoto: presignedUrl, // Replace the photo with the pre-signed URL
-              };
-            } catch (error) {
-              console.error(
-                `Error fetching pre-signed URL for photo for fetchPingsAPI: ${ping.senderPhoto}`,
-                error.message
-              );
-              // Return the ping with the original photo if fetching pre-signed URL fails
-              return ping;
-            }
-          }
-
-          return ping; // Return the ping as-is if no photo is available
-        })
-      );
-
-      return pingsWithPresignedUrls;
-    } else {
-      throw new Error('No pings data available');
+    // Handle case where `pings` is null, undefined, or not an array
+    if (!data?.pings || !Array.isArray(data.pings)) {
+      console.warn(`No pings data found for emailId: ${emailId}`);
+      return []; // Return an empty array instead of throwing an error
     }
+
+    // Iterate over each ping and update the photo with a pre-signed URL if available
+    const pingsWithPresignedUrls = await Promise.all(
+      data.pings.map(async (ping) => {
+        if (ping?.senderPhoto) {
+          try {
+            const presignedUrl = await getPresignedReadUrlAPI(
+              ping.senderPhoto[0]
+            );
+            console.log('presignedUrl', presignedUrl);
+            return {
+              ...ping,
+              senderPhoto: presignedUrl, // Replace the photo with the pre-signed URL
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching pre-signed URL for photo for fetchPingsAPI: ${ping.senderPhoto}`,
+              error.message
+            );
+            // Return the ping with the original photo if fetching pre-signed URL fails
+            return ping;
+          }
+        }
+        return ping; // Return the ping as-is if no photo is available
+      })
+    );
+
+    return pingsWithPresignedUrls;
   } catch (error) {
     console.error('Error fetching pings:', error.message);
-    throw error;
+    return []; // Return an empty array instead of throwing an error
   }
 };
 
@@ -378,14 +379,32 @@ export const fetchNewLikesAPI = async (emailId) => {
   }
 };
 
-export const fetchUserProfileUsingEmailAPI = async (email) => {
-  const response = await fetch(`${API_BASE_URL}/api/profiles/email/${email}`);
-  if (response.status === 200) {
-    return await response.json();
-  } else if (response.status === 404) {
-    throw new Error('Profile not found');
-  } else {
-    throw new Error(`Unexpected response: ${response.status}`);
+export const fetchUserProfileUsingEmailAPI = async (
+  email,
+  targetEmail = null
+) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/profiles/email/profile`, {
+      method: 'POST', // Use POST to send JSON body
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        emailId: email,
+        ...(targetEmail && { targetEmailId: targetEmail }), // Only include targetEmailId if it's provided
+      }),
+    });
+
+    if (response.ok) {
+      return await response.json();
+    } else if (response.status === 404) {
+      throw new Error('Profile not found');
+    } else {
+      throw new Error(`Unexpected response: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error.message);
+    throw error;
   }
 };
 
