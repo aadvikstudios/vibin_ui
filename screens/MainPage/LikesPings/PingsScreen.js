@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import PingCard from './PingCard'; // Import the PingCard component
@@ -8,6 +8,9 @@ const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
   const { colors } = useTheme();
   const [updatedPings, setUpdatedPings] = useState([...initialPings]); // Maintain a local state for pings
   console.log('initialPings ', initialPings, updatedPings);
+  useEffect(() => {
+    setUpdatedPings(initialPings);
+  }, [initialPings]);
 
   const handlePingAction = async (emailId, action, pingNote = null) => {
     try {

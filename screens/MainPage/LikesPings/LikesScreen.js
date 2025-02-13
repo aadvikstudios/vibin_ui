@@ -54,7 +54,7 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
   };
   // Open ViewProfileScreen and pass emailId
   const handleViewProfile = (emailId) => {
-    navigation.navigate('ViewProfileScreen', { profile: null, email: emailId });
+    navigation.navigate('ViewProfileScreen', { email: emailId });
   };
 
   // Render a single like profile row

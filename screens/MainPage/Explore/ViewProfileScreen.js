@@ -11,33 +11,35 @@ import {
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import CarouselComponent from './CarouselComponent';
-import ChipList from './ChipList';
+import ChipList from '../../../components/ChipList';
+import QuestionnaireAnswers from '../../../components/QuestionnaireAnswers'; // Import the new component
+
 import {
   fetchUserProfileUsingEmailAPI,
   getPresignedReadUrlAPI,
 } from '../../../api';
+import ProfileDetails from '../../../components/ProfileDetails';
+import BlockReportButton from '../../../components/BlockReportButton';
 
 const ViewProfileScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
-  const { profile: passedProfile, email } = route.params || {}; // Ensure `route.params` is not undefined
+  const { email } = route.params || {}; // Extract email from params
 
-  const [userProfile, setUserProfile] = useState(passedProfile || null);
-  const [loading, setLoading] = useState(!passedProfile);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  console.log('🚀 Received Props -> Profile:', passedProfile, 'Email:', email);
-
   useEffect(() => {
-    if (!userProfile && email) {
+    if (email) {
       fetchUserProfile();
-    } else if (userProfile?.photos?.length > 0) {
-      console.log('🖼 Fetching Signed URLs for Photos...');
-      fetchPhotoUrls(userProfile.photos);
+    } else {
+      setError('No email provided.');
+      setLoading(false);
     }
-  }, [email, userProfile]);
+  }, [email]);
 
-  // Fetch user profile using email if not passed from navigation
+  // Fetch user profile using email
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
@@ -50,23 +52,22 @@ const ViewProfileScreen = ({ route, navigation }) => {
         await fetchPhotoUrls(fetchedProfile.photos, fetchedProfile);
       } else {
         setUserProfile(fetchedProfile);
+        setLoading(false);
       }
     } catch (err) {
       setError(err.message || 'Failed to load profile.');
       Alert.alert('Error', err.message || 'Failed to load profile.');
-    } finally {
       setLoading(false);
     }
   };
 
   // Fetch pre-signed URLs for all photos
-  const fetchPhotoUrls = async (photoKeys, profileData = userProfile) => {
+  const fetchPhotoUrls = async (photoKeys, profileData) => {
     try {
       const updatedPhotos = await Promise.all(
         photoKeys.map(async (key) => {
           try {
-            const url = await getPresignedReadUrlAPI(key);
-            return url;
+            return await getPresignedReadUrlAPI(key);
           } catch (error) {
             console.error(`❌ Error fetching signed URL for ${key}:`, error);
             return null;
@@ -74,13 +75,10 @@ const ViewProfileScreen = ({ route, navigation }) => {
         })
       );
 
-      const filteredPhotos = updatedPhotos.filter((url) => url);
-      console.log('✅ Updated Photo URLs:', filteredPhotos);
-
-      setUserProfile((prevProfile) => ({
-        ...prevProfile,
-        photos: filteredPhotos,
-      }));
+      setUserProfile({
+        ...profileData,
+        photos: updatedPhotos.filter(Boolean),
+      });
     } catch (err) {
       console.error('🚨 Error fetching pre-signed URLs:', err);
     } finally {
@@ -88,7 +86,7 @@ const ViewProfileScreen = ({ route, navigation }) => {
     }
   };
 
-  // **🟢 Show Loading Indicator While Fetching Data**
+  // **Loading State**
   if (loading) {
     return (
       <View
@@ -105,7 +103,7 @@ const ViewProfileScreen = ({ route, navigation }) => {
     );
   }
 
-  // **🔴 Show Error Message if Profile is Missing**
+  // **Error State**
   if (error || !userProfile) {
     return (
       <View
@@ -122,6 +120,14 @@ const ViewProfileScreen = ({ route, navigation }) => {
     <ScrollView
       contentContainerStyle={[styles.card, { backgroundColor: colors.surface }]}
     >
+      {/* 🔙 Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+      </TouchableOpacity>
+
       {/* Profile Images */}
       {userProfile?.photos?.length > 0 ? (
         <CarouselComponent
@@ -140,39 +146,9 @@ const ViewProfileScreen = ({ route, navigation }) => {
       )}
 
       {/* Profile Info */}
-      <View style={styles.textContainer}>
-        <Text style={[styles.name, { color: colors.secondaryText }]}>
-          {userProfile.name || 'No Name'}
-        </Text>
-        <Text style={[{ color: colors.secondaryText }]}>
-          {userProfile.age || 'N/A'}{' '}
-          {userProfile.gender
-            ? userProfile.gender.charAt(0).toUpperCase() +
-              userProfile.gender.slice(1)
-            : 'Not specified'}{' '}
-          •{' '}
-          {userProfile.orientation
-            ? userProfile.orientation.charAt(0).toUpperCase() +
-              userProfile.orientation.slice(1)
-            : 'Not specified'}
-        </Text>
-        <Text style={[{ color: colors.secondaryText }]}>
-          {userProfile.distanceBetween < 1
-            ? 'Less than a Km away'
-            : `${userProfile.distanceBetween} Km away`}
-        </Text>
-      </View>
-
+      <ProfileDetails profile={userProfile} />
       {/* Bio Section */}
       <View style={styles.textContainer}>
-        <View style={styles.bioContainer}>
-          <Text style={[styles.quote, styles.openingQuote]}>“</Text>
-          <Text style={[styles.bio, { color: colors.primaryText }]}>
-            {userProfile.bio || 'No bio available'}
-          </Text>
-          <Text style={[styles.quote, styles.closingQuote]}>”</Text>
-        </View>
-
         {/* Desires */}
         {userProfile.desires?.length > 0 && (
           <ChipList title="Desires" items={userProfile.desires} />
@@ -182,21 +158,13 @@ const ViewProfileScreen = ({ route, navigation }) => {
         {userProfile.interests?.length > 0 && (
           <ChipList title="Interests" items={userProfile.interests} />
         )}
+        {/* Add QuestionnaireAnswers Component */}
+        {userProfile.questionnaire && (
+          <QuestionnaireAnswers questionnaire={profile.questionnaire} />
+        )}
 
         {/* Block or Report */}
-        <View style={styles.blockReportContainer}>
-          <TouchableOpacity style={styles.blockReportButton}>
-            <Ionicons
-              name="flag-outline"
-              size={18}
-              color={colors.danger}
-              style={styles.flagIcon}
-            />
-            <Text style={[styles.blockReportText, { color: colors.danger }]}>
-              Block or Report
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <BlockReportButton />
       </View>
     </ScrollView>
   );
@@ -206,6 +174,15 @@ const styles = StyleSheet.create({
   card: {
     flexGrow: 1,
     justifyContent: 'space-between',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 55,
+    left: 15,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    padding: 8,
+    borderRadius: 20,
   },
   placeholderContainer: {
     height: 200,
@@ -242,6 +219,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderRadius: 5,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  blockReportText: {
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  flagIcon: {
+    marginRight: 5,
   },
 });
 

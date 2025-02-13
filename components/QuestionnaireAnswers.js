@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import questionsData from '../../../data/questions.json'; // Import questions.json
+import questionsData from '../data/questions.json'; // Import questions.json
 
 const QuestionnaireAnswers = ({ questionnaire }) => {
   const { colors } = useTheme();

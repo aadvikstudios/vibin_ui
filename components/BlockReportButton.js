@@ -14,6 +14,7 @@ const BlockReportButton = () => (
 const styles = StyleSheet.create({
   textContainer: {
     padding: 10,
+    alignItems: 'center',
   },
   button: {
     flexDirection: 'row',
