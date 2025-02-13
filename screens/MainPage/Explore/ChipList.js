@@ -6,7 +6,7 @@ const ChipList = ({ title, items }) => {
   const { colors } = useTheme();
 
   return (
-    <View>
+    <View style={styles.textContainer}>
       <Text style={[styles.sectionTitle, { color: colors.primaryText }]}>
         {title}
       </Text>
@@ -27,6 +27,9 @@ const ChipList = ({ title, items }) => {
 };
 
 const styles = StyleSheet.create({
+  textContainer: {
+    padding: 10,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
