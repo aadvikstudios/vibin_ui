@@ -94,7 +94,11 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       ) : isMatch ? (
         <MatchScreen />
       ) : showNoProfiles ? (
@@ -105,13 +109,17 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         <EmptyStateView title="No profiles available" />
       )}
 
-      {profiles?.length > 0 && currentIndex < profiles.length && !isMatch && (
-        <ActionButtons
-          onPress={(action) =>
-            action === 'pinged' ? setModalVisible(true) : handleAction(action)
-          }
-        />
-      )}
+      {/* ✅ Hide Action Buttons when isLoading is true */}
+      {!isLoading &&
+        profiles?.length > 0 &&
+        currentIndex < profiles.length &&
+        !isMatch && (
+          <ActionButtons
+            onPress={(action) =>
+              action === 'pinged' ? setModalVisible(true) : handleAction(action)
+            }
+          />
+        )}
 
       <PingModal
         visible={isModalVisible}
