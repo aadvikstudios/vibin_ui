@@ -67,6 +67,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       Alert.alert('Note Required', 'Please add a note before sending.');
       return;
     }
+    setModalVisible(false);
 
     setIsLoading(true);
     try {
