@@ -32,7 +32,6 @@ const Email = ({ navigation }) => {
       setErrorMessage('');
     }
   };
-
   const handleNext = async () => {
     if (!isValidEmail(email)) {
       setErrorMessage('Please enter a valid email address');
@@ -40,20 +39,25 @@ const Email = ({ navigation }) => {
     }
 
     setLoading(true);
+    setErrorMessage(null); // ✅ Clear previous error messages
+
     try {
       const profile = await fetchUserProfileUsingEmailAPI(email);
-      console.log(profile);
-      setFetchedProfile(profile); // Store fetched profile
-      updateUser(profile); // Save profile data in context
-      setModalVisible(true); // Show the modal
-      await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
-    } catch (error) {
-      if (error.message === 'Profile not found') {
-        updateUser('emailId', email);
-        navigation.navigate('DOB');
+
+      if (profile) {
+        console.log('Fetched profile:', profile);
+        setFetchedProfile(profile);
+        updateUser(profile);
+        setModalVisible(true);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(profile));
       } else {
-        console.error(error.message || 'Something went wrong');
+        console.log('Profile not found, proceeding to sign-up flow...');
+        updateUser({ emailId: email }); // ✅ Store email in context
+        setTimeout(() => navigation.navigate('DOB'), 300); // ✅ Smooth transition
       }
+    } catch (error) {
+      console.error('Error received:', error);
+      setErrorMessage(error.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }

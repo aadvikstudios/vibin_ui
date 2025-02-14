@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native'; // ✅ Import useFocusEffect
-
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { View, ActivityIndicator, Alert, Animated, Easing } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from 'react-native-paper';
+
 import MatchScreen from './MatchScreen';
 import ProfileScreen from './ProfileScreen';
 import ActionButtons from './ActionButtons';
@@ -13,6 +13,11 @@ import { sendActionToBackendAPI, sendPingToBackendAPI } from '../../../api';
 
 const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const { colors } = useTheme();
+
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMatch, setIsMatch] = useState(false);
   const [showNoProfiles, setShowNoProfiles] = useState(false);
@@ -22,20 +27,68 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const [pingNote, setPingNote] = useState('');
 
   useEffect(() => setIsLoading(loading), [loading]);
+
   // ✅ Reset index when user navigates to the tab
   useFocusEffect(
     useCallback(() => {
-      setCurrentIndex(0); // Reset index
-      setShowNoProfiles(false); // Reset empty state
-    }, [profiles]) // Depend on profiles, so it resets when they change
+      setCurrentIndex(0);
+      setShowNoProfiles(false);
+    }, [profiles])
   );
+
   const moveToNextProfile = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= profiles.length) {
-      setShowNoProfiles(true);
-    } else {
-      setCurrentIndex(nextIndex);
-    }
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: -500, // Slide left
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0, // Fade out
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.8, // Slight shrink effect
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        if (nextIndex >= profiles.length) {
+          setShowNoProfiles(true);
+          return prevIndex;
+        }
+
+        // Reset animation values for new profile
+        slideAnim.setValue(500); // Start new profile off-screen
+        opacityAnim.setValue(0);
+        scaleAnim.setValue(1.2); // Slight zoom-in
+
+        Animated.parallel([
+          Animated.timing(slideAnim, {
+            toValue: 0, // Slide to center
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1, // Fade in
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1, // Back to normal scale
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        return nextIndex;
+      });
+    });
   };
 
   const handleAction = async (action) => {
@@ -49,6 +102,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         currentProfile.emailId,
         action
       );
+      console.log('response?.isMatch', response?.isMatch, response);
 
       if (response?.isMatch) {
         setIsMatch(true);
@@ -93,11 +147,9 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {isLoading ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : isMatch ? (
@@ -105,22 +157,26 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       ) : showNoProfiles ? (
         <EmptyStateView title="No profiles available" />
       ) : profiles?.length > 0 && currentIndex < profiles.length ? (
-        <ProfileScreen profile={profiles[currentIndex]} />
+        <Animated.View
+          style={{
+            transform: [{ translateX: slideAnim }, { scale: scaleAnim }],
+            opacity: opacityAnim,
+          }}
+        >
+          <ProfileScreen profile={profiles[currentIndex]} />
+        </Animated.View>
       ) : (
         <EmptyStateView title="No profiles available" />
       )}
 
-      {/* ✅ Hide Action Buttons when isLoading is true */}
-      {!isLoading &&
-        profiles?.length > 0 &&
-        currentIndex < profiles.length &&
-        !isMatch && (
-          <ActionButtons
-            onPress={(action) =>
-              action === 'pinged' ? setModalVisible(true) : handleAction(action)
-            }
-          />
-        )}
+      {/* ✅ Action Buttons only appear when profiles exist and it's not loading */}
+      {!isLoading && !showNoProfiles && profiles?.length > 0 && !isMatch && (
+        <ActionButtons
+          onPress={(action) =>
+            action === 'pinged' ? setModalVisible(true) : handleAction(action)
+          }
+        />
+      )}
 
       <PingModal
         visible={isModalVisible}
@@ -141,6 +197,17 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       />
     </View>
   );
+};
+
+const styles = {
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 };
 
 export default ExploreScreen;
