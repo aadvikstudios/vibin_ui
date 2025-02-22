@@ -42,7 +42,6 @@ const Login = ({ navigation }) => {
 
       {/* Overlay Content */}
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
-        
         {/* Row 1: Title & Subtitle (Static) */}
         <View style={styles.staticRow}>
           <Text style={[styles.title, { color: colors.primary }]}>VIBIN</Text>
@@ -67,7 +66,6 @@ const Login = ({ navigation }) => {
             Join Vibin
           </Button>
         </View>
-
       </View>
     </View>
   );
@@ -91,7 +89,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    flexDirection: 'column', 
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around', // Ensures elements don't move
     paddingHorizontal: 20,
@@ -101,12 +99,11 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20, 
+    marginBottom: 20,
   },
   dynamicRow: {
     height: 60, // Fixed height to prevent movement
     width: '100%',
- 
   },
   title: {
     fontSize: 44,

@@ -5,11 +5,11 @@ import { Text } from 'react-native-paper';
 
 const TypewriterText = () => {
   const texts = [
-    "Swipe right, love draws near!",
-    "Sparks fly, no need to fear!",
+    'Swipe right, love draws near!',
+    'Sparks fly, no need to fear!',
     "Heartbeats race, let's steer!",
-    "Find your match, make it clear!",
-    "Love and laughter, year by year!",
+    'Find your match, make it clear!',
+    'Love and laughter, year by year!',
   ];
 
   // Colors adjusted for better visibility on dark backgrounds
@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
     height: 55, // Fixed height to prevent shifting
     justifyContent: 'center', // Center text inside
     alignItems: 'flex-start', // Align text to the left
-
   },
   typingText: {
     fontSize: 22,
