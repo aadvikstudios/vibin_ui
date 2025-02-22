@@ -16,7 +16,7 @@ const Gender = ({ navigation }) => {
     // Update the UserContext with the selected gender
     updateUser('gender', selectedGender);
     console.log('Gender', selectedGender);
-    navigation.navigate('Orientation');
+    navigation.navigate('Name');
   };
 
   const renderItem = ({ item }) => (

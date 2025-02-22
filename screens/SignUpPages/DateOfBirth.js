@@ -35,7 +35,6 @@ const DateOfBirth = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPicker, setShowPicker] = useState(false);
 
-
   const handleDateConfirm = (event, selectedDate) => {
     if (Platform.OS === 'android') setShowPicker(false); // Close picker on Android
 
@@ -57,8 +56,14 @@ const DateOfBirth = ({ navigation }) => {
 
     updateUser('dob', dob.toISOString().split('T')[0]);
     updateUser('age', calculateAge(dob));
+    console.log(
+      'dob',
+      dob.toISOString().split('T')[0],
+      'age',
+      calculateAge(dob)
+    );
 
-    navigation.navigate('Name');
+    navigation.navigate('Gender');
   };
 
   return (
@@ -70,12 +75,13 @@ const DateOfBirth = ({ navigation }) => {
         currentStep={1}
       />
       <View style={styles.content}>
-        {dob && (
-          <Text style={[styles.ageText, { color: colors.primary }]}>
-            I'm {calculateAge(dob)}
-          </Text>
-        )}
-
+        <View style={styles.ageContent}>
+          {dob && (
+            <Text style={[styles.ageText, { color: colors.primary }]}>
+              I'm {calculateAge(dob)}
+            </Text>
+          )}
+        </View>
         {/* Open Date Picker on Press */}
         <Pressable onPress={() => setShowPicker(true)}>
           <TextInput

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import { Text, Chip, useTheme } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons'; // Import icon library
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -93,25 +93,28 @@ const Interests = ({ navigation }) => {
         <Text style={[styles.helperText, { color: colors.secondaryText }]}>
           {getHelperText()}
         </Text>
-        <View style={styles.tagContainer}>
+
+        {/* Display Selected Interests Using Chip Styling */}
+        <View style={styles.selectedContainer}>
           {interestList.map((interest, index) => (
-            <View
+            <Chip
               key={index}
-              style={[styles.tag, { backgroundColor: colors.primaryContainer }]}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: colors.primaryContainer,
+                  borderColor: colors.primary,
+                },
+              ]}
+              textStyle={{ color: colors.primary }}
+              onClose={() => handleRemoveInterest(interest)}
             >
-              <Text style={[styles.tagText, { color: colors.primary }]}>
-                {interest}
-              </Text>
-              <Text
-                style={[styles.removeTag, { color: colors.primary }]}
-                onPress={() => handleRemoveInterest(interest)}
-              >
-                ✕
-              </Text>
-            </View>
+              {interest}
+            </Chip>
           ))}
         </View>
       </View>
+
       <Footer
         buttonText={interestList.length > 0 ? 'Next' : 'Skip'}
         onPress={handleNext}
@@ -155,26 +158,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tagContainer: {
+  selectedContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    marginBottom: 20,
   },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginBottom: 10,
-  },
-  tagText: {
-    fontSize: 14,
-    marginRight: 10,
-  },
-  removeTag: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  chip: {
+    margin: 4,
+    borderWidth: 1,
   },
 });
 

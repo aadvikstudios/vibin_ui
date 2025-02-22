@@ -10,47 +10,41 @@ import {
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { useUser } from '../../context/UserContext';
-import { checkUserHandleAPI } from '../../api'; // Import API function
-
-// Function to generate a fun, random user handle
-const generateUserHandle = () => {
-  const handleList = [
-    'FlirtyFox99',
-    'LoveMagnet',
-    'KinkMaster',
-    'RomanticRider',
-    'CupidArrow',
-    'Phoenix121',
-    'LetsFlirt',
-    'MysticLover',
-    'HeartThrob88',
-    'SoulmateHunter',
-  ];
-  return handleList[Math.floor(Math.random() * handleList.length)];
-};
+import { checkUserHandleAPI } from '../../api'; // Adjust path if needed
+import { generateUserHandle } from '../../utils/generateUserHandle'; // Import from utils
 
 const Name = ({ navigation }) => {
   const { colors } = useTheme();
-  const { updateUser } = useUser();
+  const { updateUser, user } = useUser(); // Fetch user data, including gender
+
+  // Extract gender from user context
+  const gender = user?.gender || 'Male'; // Default to 'Male' if not set
+
+  // Generate a random user handle on mount based on gender
+  const { username: initialUsername, userhandle: initialUserHandle } =
+    generateUserHandle(gender);
 
   // State variables
   const [name, setName] = useState('');
-  const [userhandle, setUserHandle] = useState(generateUserHandle());
+  const [username, setUsername] = useState(initialUsername); // Stores the original capitalization
+  const [userhandle, setUserHandle] = useState(initialUserHandle); // Stores lowercase version for validation
   const [userhandleAvailable, setUserHandleAvailable] = useState(true);
-  const [hideName, setHideName] = useState(false);
+  const [hideName, setHideName] = useState(false); // Controls whether name is visible on other pages
   const [errorMessage, setErrorMessage] = useState('');
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   useEffect(() => {
-    setUserHandle(generateUserHandle()); // Generate a random handle when the screen loads
-  }, []);
+    const { username, userhandle } = generateUserHandle(gender);
+    setUsername(username);
+    setUserHandle(userhandle);
+  }, [gender]); // Re-run when gender changes
 
-  // Function to check user handle availability via API
+  // Function to check userhandle availability via API
   const checkUserHandleAvailability = async () => {
     if (!userhandle.trim()) return;
 
     setCheckingAvailability(true);
-    const isAvailable = await checkUserHandleAPI(userhandle.trim());
+    const isAvailable = await checkUserHandleAPI(userhandle); // Check lowercase handle
     setUserHandleAvailable(isAvailable);
     setCheckingAvailability(false);
 
@@ -72,13 +66,19 @@ const Name = ({ navigation }) => {
       return;
     }
 
+    if (!name.trim()) {
+      setErrorMessage('Name is required.');
+      return;
+    }
+
     // Save user data globally
     updateUser('name', name);
-    updateUser('userhandle', userhandle);
-    updateUser('hideName', hideName);
+    updateUser('username', username); // Store display name
+    updateUser('userhandle', userhandle); // Store lowercase handle
+    updateUser('hideName', hideName); // Used to decide visibility on other pages
 
     // Navigate to next step
-    navigation.navigate('Gender');
+    navigation.navigate('Orientation');
   };
 
   return (
@@ -95,9 +95,10 @@ const Name = ({ navigation }) => {
         <TextInput
           label="User Handle (Public)"
           mode="outlined"
-          value={userhandle}
+          value={username} // Display name
           onChangeText={(text) => {
-            setUserHandle(text);
+            setUsername(text); // Store original casing
+            setUserHandle(text.toLowerCase()); // Store lowercase for validation
             setUserHandleAvailable(true); // Reset availability until checked
           }}
           onBlur={checkUserHandleAvailability}
@@ -110,7 +111,7 @@ const Name = ({ navigation }) => {
               <ActivityIndicator animating={true} size="small" />
             ) : (
               <TextInput.Icon
-                icon="check-circle"
+                icon={userhandleAvailable ? 'check-circle' : 'close-circle'}
                 color={userhandleAvailable ? 'green' : 'red'}
               />
             )
@@ -125,10 +126,12 @@ const Name = ({ navigation }) => {
         <HelperText type="error" visible={!!errorMessage}>
           {errorMessage}
         </HelperText>
+      </View>
 
-        {/* Name Input - Optional */}
+      <View style={styles.content}>
+        {/* Name Input - Required */}
         <TextInput
-          label="Real Name (Optional)"
+          label="Your Name"
           mode="outlined"
           value={name}
           onChangeText={setName}
@@ -137,7 +140,7 @@ const Name = ({ navigation }) => {
           underlineColor={colors.primary}
         />
 
-        {/* Toggle Switch to Hide Real Name */}
+        {/* Toggle Switch to Hide Name on Other Pages */}
         <View style={styles.switchContainer}>
           <Switch
             value={hideName}
@@ -145,7 +148,9 @@ const Name = ({ navigation }) => {
             color={colors.accentPrimary}
           />
           <Text style={[styles.switchLabel, { color: colors.primaryText }]}>
-            Hide my real name
+            {hideName
+              ? "Don't show my real name to others"
+              : 'Show my real name to others'}
           </Text>
         </View>
       </View>
@@ -153,7 +158,7 @@ const Name = ({ navigation }) => {
       <Footer
         buttonText="Next"
         onPress={handleNext}
-        disabled={!userhandle.trim() || !userhandleAvailable}
+        disabled={!userhandle.trim() || !userhandleAvailable || !name.trim()}
       />
     </View>
   );
