@@ -19,6 +19,81 @@
       "key": "freeDay",
       "question": "You have a completely free day—no responsibilities, no rules.\nWhat’s the very first thing you’d do?",
       "placeholder": "Describe your perfect free day..."
+    },
+    {
+      "key": "winHeart",
+      "question": "The best way to win my heart is...",
+      "placeholder": "What makes you feel special?"
+    },
+    {
+      "key": "perfectWeekend",
+      "question": "My perfect weekend is...",
+      "placeholder": "Describe your ideal weekend..."
+    },
+    {
+      "key": "dreamVacation",
+      "question": "A dream vacation for me would be...",
+      "placeholder": "Where would you love to travel?"
+    },
+    {
+      "key": "funFact",
+      "question": "What’s one fun fact about you that surprises people?",
+      "placeholder": "Share something unique!"
+    },
+    {
+      "key": "guiltyPleasure",
+      "question": "My guilty pleasure is...",
+      "placeholder": "Spill the beans!"
+    },
+    {
+      "key": "spontaneous",
+      "question": "The most spontaneous thing I’ve ever done is...",
+      "placeholder": "What’s your most thrilling moment?"
+    },
+    {
+      "key": "loveLanguage",
+      "question": "My love language is...",
+      "placeholder": "How do you express love?"
+    },
+    {
+      "key": "karaokeSong",
+      "question": "My go-to karaoke song is...",
+      "placeholder": "Sing your heart out!"
+    },
+    {
+      "key": "biggestTurnOn",
+      "question": "My biggest turn-on is...",
+      "placeholder": "What do you find attractive?"
+    },
+    {
+      "key": "cocktail",
+      "question": "If I were a cocktail, I’d be...",
+      "placeholder": "Describe your drink personality!"
+    },
+    {
+      "key": "firstAdventure",
+      "question": "If we matched, our first adventure together would be...",
+      "placeholder": "What fun activity would you pick?"
+    },
+    {
+      "key": "foodCombo",
+      "question": "My favorite food combination is...",
+      "placeholder": "Weird but delicious?"
+    },
+    {
+      "key": "tvShow",
+      "question": "The best TV show ever is...",
+      "placeholder": "What show do you love?"
+    },
+    {
+      "key": "quickestWay",
+      "question": "The quickest way to my heart is...",
+      "placeholder": "What makes you fall for someone?"
+    },
+    {
+      "key": "threeWishes",
+      "question": "If I had three wishes, I would wish for...",
+      "placeholder": "What are your biggest dreams?"
     }
   ]
 }
