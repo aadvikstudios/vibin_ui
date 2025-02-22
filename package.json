@@ -19,6 +19,8 @@
     "@react-navigation/stack": "^7.1.1",
     "expo": "~52.0.36",
     "expo-auth-session": "~6.0.3",
+    "expo-datepicker": "^1.0.23",
+    "expo-dev-client": "~5.0.12",
     "expo-image-picker": "~16.0.6",
     "expo-location": "~18.0.7",
     "expo-navigation-bar": "~4.0.8",
@@ -44,7 +46,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "socket.io-client": "^4.8.1",
-    "expo-dev-client": "~5.0.12"
+    "@react-native-community/datetimepicker": "8.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

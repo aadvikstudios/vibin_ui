@@ -398,7 +398,7 @@ export const fetchUserProfileUsingEmailAPI = async (
     if (response.ok) {
       return await response.json();
     } else if (response.status === 404) {
-      throw new Error('Profile not found');
+      return undefined;
     } else {
       throw new Error(`Unexpected response: ${response.status}`);
     }
