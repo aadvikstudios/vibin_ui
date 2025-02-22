@@ -378,6 +378,28 @@ export const fetchNewLikesAPI = async (emailId) => {
     throw error;
   }
 };
+// api.js
+export const checkUserHandleAPI = async (userhandle) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/profiles/check-userhandle?userhandle=${encodeURIComponent(userhandle)}`,
+      {
+        method: 'GET', // ✅ Use GET instead of POST
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+
+    if (response.status === 409) {
+      return false; // Userhandle is taken
+    }
+
+    const data = await response.json();
+    return data.message === 'Userhandle is available';
+  } catch (error) {
+    console.error('❌ Error checking user handle:', error);
+    return false; // Assume taken on API failure
+  }
+};
 
 export const fetchUserProfileUsingEmailAPI = async (
   email,
