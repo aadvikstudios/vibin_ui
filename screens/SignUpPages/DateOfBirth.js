@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
-import { useTheme, TextInput } from 'react-native-paper';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  Modal,
+  Platform,
+} from 'react-native';
+import { TextInput, useTheme, Button } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -28,31 +35,20 @@ const DateOfBirth = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPicker, setShowPicker] = useState(false);
 
-  const validateDOB = (selectedDate) => {
-    if (!selectedDate) return false;
 
-    const age = calculateAge(selectedDate);
-    if (age === null || age < 17) {
-      setErrorMessage('You must be at least 17 years old.');
-      return false;
-    }
-
-    setErrorMessage('');
-    return true;
-  };
-
-  const handleDateChange = (event, selectedDate) => {
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-    }
+  const handleDateConfirm = (event, selectedDate) => {
+    if (Platform.OS === 'android') setShowPicker(false); // Close picker on Android
 
     if (selectedDate) {
-      if (validateDOB(selectedDate)) {
+      const age = calculateAge(selectedDate);
+      if (age >= 17) {
         setDob(selectedDate);
+        setErrorMessage('');
+      } else {
+        setErrorMessage('You must be at least 17 years old.');
       }
     }
   };
-
   const handleNext = () => {
     if (!dob) {
       setErrorMessage('Please select your date of birth.');
@@ -73,16 +69,14 @@ const DateOfBirth = ({ navigation }) => {
         subtitle="You must be 17+ to explore Vibin. Your age will appear on your profile. Your date of birth will remain private."
         currentStep={1}
       />
-
       <View style={styles.content}>
-        <View style={styles.ageContent}>
-          {dob && (
-            <Text style={[styles.ageText, { color: colors.primaryText }]}>
-              I'm {calculateAge(dob)}
-            </Text>
-          )}
-        </View>
+        {dob && (
+          <Text style={[styles.ageText, { color: colors.primary }]}>
+            I'm {calculateAge(dob)}
+          </Text>
+        )}
 
+        {/* Open Date Picker on Press */}
         <Pressable onPress={() => setShowPicker(true)}>
           <TextInput
             mode="outlined"
@@ -91,26 +85,76 @@ const DateOfBirth = ({ navigation }) => {
             editable={false}
             style={[
               styles.input,
-              { backgroundColor: colors.surface, borderColor: colors.border },
+              { backgroundColor: colors.surface, borderColor: colors.primary },
             ]}
             right={
               <TextInput.Icon
                 icon="calendar"
                 onPress={() => setShowPicker(true)}
+                color={colors.primary}
               />
             }
           />
         </Pressable>
 
-        {showPicker && (
+        {/* ✅ Custom Date Picker */}
+        {showPicker && Platform.OS === 'android' && (
           <DateTimePicker
             value={dob || new Date()}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+            display="spinner" // Changes look from blue Material Design to a neutral spinner
             maximumDate={new Date()}
             minimumDate={new Date(1900, 0, 1)}
-            onChange={handleDateChange}
+            onChange={handleDateConfirm}
+            textColor={colors.primaryText} // ✅ Applies theme color for text
           />
+        )}
+
+        {/* ✅ Custom Modal for iOS with Themed Buttons */}
+        {Platform.OS === 'ios' && (
+          <Modal
+            transparent
+            animationType="slide"
+            visible={showPicker}
+            onRequestClose={() => setShowPicker(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View
+                style={[
+                  styles.modalContent,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <DateTimePicker
+                  value={dob || new Date()}
+                  mode="date"
+                  display="spinner"
+                  maximumDate={new Date()}
+                  minimumDate={new Date(1900, 0, 1)}
+                  onChange={handleDateConfirm}
+                />
+                <View style={styles.buttonRow}>
+                  <Button
+                    mode="contained"
+                    onPress={() => setShowPicker(false)}
+                    color={colors.danger}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={() => {
+                      setShowPicker(false);
+                      handleDateConfirm(null, dob);
+                    }}
+                    color={colors.primary}
+                  >
+                    Confirm
+                  </Button>
+                </View>
+              </View>
+            </View>
+          </Modal>
         )}
 
         {errorMessage ? (
@@ -119,7 +163,6 @@ const DateOfBirth = ({ navigation }) => {
           </Text>
         ) : null}
       </View>
-
       <Footer buttonText="Next" onPress={handleNext} disabled={!dob} />
     </View>
   );
@@ -134,6 +177,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+
   ageContent: {
     alignItems: 'center',
   },
@@ -151,6 +195,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 10,
     textAlign: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay
+  },
+  modalContent: {
+    width: '80%',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
   },
 });
 
