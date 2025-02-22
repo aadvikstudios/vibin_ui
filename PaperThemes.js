@@ -9,7 +9,7 @@ export const PaperThemes = {
     roundness: 10,
     colors: {
       ...LightTheme.colors,
-      primary: '#F7529E', // Updated primary color (Pink)
+      primary: '#FF4081', // Bright pink primary
       primaryContainer: '#FFD3E4', // Soft pink container
       accent: '#FF85B3', // Complementary accent color
       background: '#F9FAFB', // Light gray background
@@ -21,25 +21,22 @@ export const PaperThemes = {
       disabled: '#E5E5E5', // Disabled elements
       placeholder: '#9E9E9E', // Placeholder text
       border: '#E0E0E0', // Light border color
-      notification: '#F7529E', // Notification color
+      notification: '#FF4081', // Notification color
       onSurface: '#4C4C4C', // Text on surfaces
-      // action buttons
-      liked: '#F7529E', // Pink for Like
-      onDisliked: '#FFFFFF', // Text/icon on Like button
-      disliked: '#E0E0E0', // **Soft Gray for Dislike Button**
+
+      // Buttons & Action Colors
+      liked: '#FF4081', // Pink for Like
+      onLiked: '#FFFFFF', // White text/icon on Like button
+      disliked: '#E0E0E0', // Soft Gray for Dislike Button
       onDisliked: '#1C1C1E', // Darker text/icon on soft gray
 
-      // Success (Green)
-      success: '#28A745', // Success green
-      onSuccess: '#FFFFFF', // Text on success background
-
-      // Warning (Orange)
-      warning: '#FFC107', // Warning amber
+      // Status Colors
+      success: '#28A745', // Green for success
+      onSuccess: '#FFFFFF', // White text on success background
+      warning: '#FFC107', // Amber for warning
       onWarning: '#1C1C1E', // Dark text on warning
-
-      // Danger / Error (Red)
-      danger: '#DC3545', // Error red
-      onDanger: '#FFFFFF', // Text on danger background
+      danger: '#DC3545', // Red for errors
+      onDanger: '#FFFFFF', // White text on danger
     },
     fonts: {
       ...LightTheme.fonts,
@@ -68,37 +65,34 @@ export const PaperThemes = {
     roundness: 10,
     colors: {
       ...DarkTheme.colors,
-      primary: '#F7529E', // Updated primary color for dark mode
-      primaryContainer: '#3A1F33', // Dark pink container
-      accent: '#FF85B3', // Light pink accent
+      primary: '#FF4081', // Same pink for dark mode
+      primaryContainer: '#3A1F33', // Darker pink container
+      accent: '#FF85B3', // Lighter pink accent
       background: '#121212', // Deep black background
-      surface: '#1E1E1E', // Dark surface color
+      surface: '#1E1E1E', // Dark gray surface
       primaryText: '#EAEAEA', // Light text for contrast
       secondaryText: '#CCCCCC', // Softer gray for secondary text
       text: '#EAEAEA', // Default text color
       onPrimary: '#FFFFFF', // White text on primary
       disabled: '#6E6E6E', // Disabled elements
       placeholder: '#A6A6A6', // Placeholder text
-      border: '#444444', // Dark border
-      notification: '#F7529E', // Notification color
+      border: '#444444', // Darker border
+      notification: '#FF4081', // Notification color
       onSurface: '#CCCCCC', // Light text on surfaces
 
-      // action buttons
-      disliked: '#777777', // **Darker Soft Gray for Dislike Button**
+      // Buttons & Action Colors
+      liked: '#FF4081', // Same pink for like
+      onLiked: '#FFFFFF', // White text/icon on Like button
+      disliked: '#777777', // Darker Soft Gray for Dislike Button
       onDisliked: '#FFFFFF', // White text/icon on dark gray
-      liked: '#B71C1C', // Darker red for Dislike
-      onLiked: '#FFFFFF', // Text/icon on Dislike button
-      // Success (Green)
-      success: '#28A745', // Success green
-      onSuccess: '#FFFFFF', // Text on success background
 
-      // Warning (Orange)
+      // Status Colors
+      success: '#28A745', // Success green
+      onSuccess: '#FFFFFF', // White text on success
       warning: '#FFC107', // Warning amber
       onWarning: '#121212', // Dark text on warning
-
-      // Danger / Error (Red)
       danger: '#DC3545', // Error red
-      onDanger: '#FFFFFF', // Text on danger background
+      onDanger: '#FFFFFF', // White text on danger
     },
     fonts: {
       ...DarkTheme.fonts,
