@@ -62,7 +62,7 @@ const Login = ({ navigation }) => {
         >
           Join Vibin
         </Button>
-        <Button
+        {/* <Button
           mode="contained"
           onPress={() => promptAsync()}
           disabled={!request}
@@ -70,7 +70,7 @@ const Login = ({ navigation }) => {
           labelStyle={{ color: '#fff' }}
         >
           Sign in with Google
-        </Button>
+        </Button> */}
       </View>
     </ImageBackground>
   );

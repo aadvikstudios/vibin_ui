@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchUserProfileUsingEmailAPI } from '../api'; // Import API function
-import { useUser } from '../context/UserContext'; // Import User Context
+import { fetchUserProfileUsingEmailAPI } from '../api';
+import { useUser } from '../context/UserContext';
 
 const SplashScreen = ({ navigation }) => {
-  const { updateUser } = useUser(); // Access updateUser from UserContext
+  const { updateUser } = useUser();
+  const { colors } = useTheme(); // 🎨 Get colors from theme
 
   useEffect(() => {
     const checkUserSession = async () => {
       try {
         console.log('🔍 Checking AsyncStorage for user profile...');
-
         const userProfileData = await AsyncStorage.getItem('userProfile');
 
         if (userProfileData) {
@@ -20,30 +21,19 @@ const SplashScreen = ({ navigation }) => {
 
           if (userProfile.emailId) {
             console.log('📡 Fetching latest profile for:', userProfile.emailId);
-
-            // Fetch the latest user profile from API
             const updatedProfile = await fetchUserProfileUsingEmailAPI(
               userProfile.emailId
             );
 
             if (updatedProfile) {
               console.log('✅ Latest profile fetched:', updatedProfile);
-
-              // Update user context
               updateUser(updatedProfile);
-
-              // Store the updated profile locally in AsyncStorage
               await AsyncStorage.setItem(
                 'userProfile',
                 JSON.stringify(updatedProfile)
               );
-
               console.log('✅ User profile updated and stored locally.');
             }
-          } else {
-            console.log(
-              '⚠️ Email ID missing in stored profile. Skipping profile update.'
-            );
           }
 
           // Navigate to MainPage after profile update
@@ -54,19 +44,31 @@ const SplashScreen = ({ navigation }) => {
         }
       } catch (error) {
         console.error('⚠️ Error checking/updating user session:', error);
-        navigation.replace('Login'); // Fallback to login
+        navigation.replace('Login');
       }
     };
 
     setTimeout(() => {
       checkUserSession();
-    }, 2000); // Simulate loading time
+    }, 2000);
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logoText}>VibinConnect</Text>
-      <ActivityIndicator size="large" color="#ff6f61" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* App Logo */}
+      <Image source={require('../assets/icon.png')} style={styles.logo} />
+
+      {/* App Name */}
+      <Text style={[styles.logoText, { color: colors.primary }]}>
+        VibinConnect
+      </Text>
+
+      {/* Loading Indicator */}
+      <ActivityIndicator
+        size="large"
+        color={colors.primary}
+        style={styles.loader}
+      />
     </View>
   );
 };
@@ -76,13 +78,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+    resizeMode: 'contain',
   },
   logoText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ff6f61',
     marginBottom: 20,
+  },
+  loader: {
+    marginTop: 10,
   },
 });
 

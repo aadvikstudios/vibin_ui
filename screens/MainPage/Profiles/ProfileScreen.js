@@ -14,7 +14,6 @@ import PhotoSlider from './PhotoSlider';
 import OptionsList from './OptionsList';
 import { useUser } from '../../../context/UserContext';
 import { EventRegister } from 'react-native-event-listeners';
-import { clearUserInteractionsAPI } from '../../../api'; // Import the API function
 const ProfileScreen = ({ navigation }) => {
   const { userData, updateUser } = useUser(); // Get user data & updateUser function
   const { colors } = useTheme();
@@ -83,20 +82,6 @@ const ProfileScreen = ({ navigation }) => {
       ],
       { cancelable: false }
     );
-  };
-  const handleDeleteData = async () => {
-    try {
-      // setLoading(truje);
-      await clearUserInteractionsAPI(userProfile.emailId); // Call API
-      console.log('✅ User interactions cleared successfully.');
-    } catch (error) {
-      console.error(
-        '❌ Error clearing interactions:',
-        error.message || 'Failed to clear interactions.'
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -200,12 +185,6 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.signOutText}>Sign Out</Text>
       </TouchableOpacity>
       {/* Sign Out Button */}
-      <TouchableOpacity
-        style={[styles.signOutButton, { backgroundColor: colors.danger }]}
-        onPress={handleDeleteData}
-      >
-        <Text style={styles.signOutText}>Delete Data(Temprorary button)</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };
