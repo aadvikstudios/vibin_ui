@@ -14,7 +14,7 @@ const QuestionnaireAnswers = ({ questionnaire }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {Object.entries(questionnaire).map(([key, value], index) => {
+      {Object.entries(questionnaire).map(([key, value]) => {
         const questionData = questionMap[key];
         if (!questionData) return null;
 
@@ -24,17 +24,23 @@ const QuestionnaireAnswers = ({ questionnaire }) => {
             style={[
               styles.card,
               {
-                backgroundColor: colors.background,
+                backgroundColor: colors.primaryContainer,
+                borderColor: colors.border,
                 shadowColor: colors.shadow,
               },
             ]}
           >
-            <Text style={[styles.question, { color: colors.secondaryText }]}>
+            {/* Question */}
+            <Text style={[styles.question, { color: colors.onPrimary }]}>
               {questionData.question}
             </Text>
-            <Text style={[styles.answer, { color: colors.onPrimary }]}>
-              {value || 'No response provided'}
-            </Text>
+
+            {/* Answer */}
+            <View style={styles.answerContainer}>
+              <Text style={[styles.answer, { color: colors.accent }]}>
+                {value || 'No response provided'}
+              </Text>
+            </View>
           </View>
         );
       })}
@@ -45,24 +51,34 @@ const QuestionnaireAnswers = ({ questionnaire }) => {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 15,
+    paddingHorizontal: 10,
   },
   card: {
     padding: 15,
     marginBottom: 12,
-    elevation: 3, // Adds subtle shadow on Android
-    shadowOffset: { width: 0, height: 2 }, // iOS Shadow
-    shadowOpacity: 0.1,
+    borderRadius: 10,
+    borderWidth: 1,
+    elevation: 2, // Slight elevation for better visibility
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
     shadowRadius: 5,
   },
   question: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 8,
+    opacity: 0.9,
+  },
+  answerContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', // Subtle background for differentiation
   },
   answer: {
     fontSize: 18,
+    fontWeight: '600',
     fontStyle: 'italic',
-    opacity: 0.9,
   },
 });
 

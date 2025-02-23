@@ -31,6 +31,7 @@ export const femaleHandleList = [
 // Function to generate a unique handle with a symbol and a random number based on gender
 export const generateUserHandle = (gender) => {
   const symbols = ['.', '_', '@']; // Allowed symbols
+  console.log('gender from generate user handle is ', gender);
   const handleList = gender === 'man' ? maleHandleList : femaleHandleList;
 
   const randomHandle =

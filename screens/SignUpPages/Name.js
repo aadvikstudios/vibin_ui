@@ -15,10 +15,10 @@ import { generateUserHandle } from '../../utils/generateUserHandle'; // Import f
 
 const Name = ({ navigation }) => {
   const { colors } = useTheme();
-  const { updateUser, user } = useUser(); // Fetch user data, including gender
+  const { userData, updateUser } = useUser();
 
   // Extract gender from user context
-  const gender = user?.gender || 'Male'; // Default to 'Male' if not set
+  const gender = userData?.gender || 'Male'; // Default to 'Male' if not set
 
   // Generate a random user handle on mount based on gender
   const { username: initialUsername, userhandle: initialUserHandle } =

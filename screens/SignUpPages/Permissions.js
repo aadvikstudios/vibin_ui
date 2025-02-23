@@ -1,52 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { Text, useTheme, IconButton } from 'react-native-paper';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { useUser } from '../../context/UserContext'; // Import UserContext to save data globally
+import { useUser } from '../../context/UserContext';
 import {
   fetchPermissionAndLocation,
   fetchNotificationPermission,
-} from '../../utils/permissionsHelper'; // Import helper functions
+} from '../../utils/permissionsHelper';
 
 const Permissions = ({ navigation }) => {
   const { colors } = useTheme();
   const { updateUser } = useUser();
-
   const [permissions, setPermissions] = useState({
     notifications: false,
     location: false,
   });
-
-  const hasFetchedPermissions = useRef(false); // Ensure permissions are fetched only once
+  const [isLoading, setIsLoading] = useState(true); // Track loading state
+  const hasFetchedPermissions = useRef(false);
 
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (hasFetchedPermissions.current) return; // Prevent re-fetching
-
+      if (hasFetchedPermissions.current) return;
       hasFetchedPermissions.current = true;
 
-      const location = await fetchPermissionAndLocation();
-      if (location) {
-        setPermissions((prev) => ({ ...prev, location: true }));
-        updateUser({
-          latitude: location.latitude,
-          longitude: location.longitude,
-        });
+      try {
+        const location = await fetchPermissionAndLocation();
+        if (location) {
+          setPermissions((prev) => ({ ...prev, location: true }));
+          updateUser({
+            latitude: location.latitude,
+            longitude: location.longitude,
+          });
+        }
 
         const notificationsGranted = await fetchNotificationPermission();
         if (notificationsGranted) {
           setPermissions((prev) => ({ ...prev, notifications: true }));
-        } else {
-          Alert.alert(
-            'Notification Access',
-            'Notifications permission was denied.'
-          );
         }
-      } else {
-        setPermissions((prev) => ({ ...prev, location: false }));
-        updateUser({ latitude: null, longitude: null });
-        Alert.alert('Location Access', 'We could not access your location.');
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -66,6 +67,7 @@ const Permissions = ({ navigation }) => {
         subtitle="Do we have your permission to access the following?"
         currentStep={10}
       />
+
       <View style={styles.content}>
         {/* Notifications Permission */}
         <TouchableOpacity
@@ -147,10 +149,21 @@ const Permissions = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </View>
+
+      {/* Overlay Loader while fetching permissions */}
+      {isLoading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.secondaryText }]}>
+            Checking permissions...
+          </Text>
+        </View>
+      )}
+
       <Footer
         buttonText="Next"
         onPress={handleNext}
-        disabled={!permissions.location}
+        disabled={isLoading || !permissions.location} // Disable while loading or if location is denied
       />
     </View>
   );
@@ -184,6 +197,16 @@ const styles = StyleSheet.create({
   permissionDescription: {
     fontSize: 14,
     marginTop: 5,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject, // Covers the entire screen
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent dark overlay
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
   },
 });
 

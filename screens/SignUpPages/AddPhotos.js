@@ -7,6 +7,7 @@ import {
   Text,
   Alert,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Header from '../../components/Header';
@@ -16,9 +17,12 @@ import {
   fetchGalleryPermission,
   fetchCameraPermission,
 } from '../../utils/permissionsHelper';
-import { generatePresignedUrlAPI, uploadImageToS3API } from '../../api';
-import * as ImagePicker from 'expo-image-picker';
-import { MaterialIcons } from '@expo/vector-icons'; // Import MaterialIcons
+import {
+  handleAddPhoto,
+  uploadImage,
+  startAnimation,
+} from '../../utils/photoHelper';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const AddPhotos = ({ navigation }) => {
   const { colors } = useTheme();
@@ -28,10 +32,10 @@ const AddPhotos = ({ navigation }) => {
     gallery: false,
     camera: false,
   });
-  const [isUploading, setIsUploading] = useState(false); // Upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const animatedScale = useState(new Animated.Value(1))[0];
 
   useEffect(() => {
-    // Request permissions on component mount
     const requestPermissions = async () => {
       const galleryPermission = await fetchGalleryPermission();
       const cameraPermission = await fetchCameraPermission();
@@ -44,102 +48,14 @@ const AddPhotos = ({ navigation }) => {
     requestPermissions();
   }, []);
 
-  const handleAddPhoto = async (index) => {
-    if (!permissionsGranted.gallery && !permissionsGranted.camera) {
-      Alert.alert(
-        'Permissions Required',
-        'Please allow camera and gallery permissions to add photos.'
-      );
-      return;
-    }
-
-    Alert.alert(
-      'Choose Action',
-      'Do you want to capture a photo or pick from the gallery?',
-      [
-        {
-          text: 'Capture Photo',
-          onPress: async () => {
-            if (!permissionsGranted.camera) {
-              Alert.alert(
-                'Permission Denied',
-                'Camera access is required to capture photos.'
-              );
-              return;
-            }
-            const result = await ImagePicker.launchCameraAsync({
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 1,
-            });
-            if (!result.canceled) {
-              const updatedPhotos = [...photos];
-              updatedPhotos[index] = result.assets[0].uri;
-              setPhotos(updatedPhotos);
-            }
-          },
-        },
-        {
-          text: 'Pick from Gallery',
-          onPress: async () => {
-            if (!permissionsGranted.gallery) {
-              Alert.alert(
-                'Permission Denied',
-                'Gallery access is required to pick photos.'
-              );
-              return;
-            }
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 1,
-            });
-            if (!result.canceled) {
-              const updatedPhotos = [...photos];
-              updatedPhotos[index] = result.assets[0].uri;
-              setPhotos(updatedPhotos);
-            }
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
-  const uploadImage = async (uri, path = 'profile-pics/') => {
-    try {
-      const fileName = `${Date.now()}-${uri.split('/').pop()}`; // Unique filename
-      const fileType = 'image/jpeg';
-
-      console.log('🚀 Generating Pre-Signed URL...');
-      const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
-        fileName,
-        fileType,
-        path
-      );
-
-      console.log('✅ Pre-Signed URL Generated: ', uploadUrl);
-
-      console.log('🚀 Uploading image to S3...');
-      await uploadImageToS3API(uploadUrl, uri, path);
-
-      console.log('✅ Upload Successful. File Stored as:', s3Key);
-
-      return `${path}${fileName}`;
-    } catch (error) {
-      console.error('❌ Error uploading image:', error.message);
-      throw error;
-    }
-  };
-
   const handleNext = async () => {
     try {
-      const filteredImages = photos.filter(Boolean); // Remove null entries
-      // if (filteredImages.length < 2) {
-      //   Alert.alert('Error', 'Please add at least 2 photos to proceed.');
-      //   return;
-      // }
+      const filteredImages = photos.filter(Boolean);
+
+      if (filteredImages.length < 1) {
+        Alert.alert('Error', 'Please add at least one photo to proceed.');
+        return;
+      }
 
       setIsUploading(true);
 
@@ -147,10 +63,10 @@ const AddPhotos = ({ navigation }) => {
         filteredImages.map((uri) => uploadImage(uri))
       );
 
-      updateUser('photos', uploadedImageKeys); // Save photo keys globally
+      updateUser('photos', uploadedImageKeys);
       console.log('Uploaded Photos:', uploadedImageKeys);
 
-      navigation.navigate('Permissions'); // Navigate to the next step
+      navigation.navigate('Permissions');
     } catch (error) {
       console.error('Error uploading photos:', error.message);
       Alert.alert('Error', 'Failed to upload photos. Please try again.');
@@ -163,20 +79,21 @@ const AddPhotos = ({ navigation }) => {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         navigation={navigation}
-        title="Add photos"
-        subtitle="Add at least two photos to proceed."
+        title="Add Photos"
+        subtitle="Add at least one photo to proceed."
         currentStep={9}
       />
       <View style={styles.content}>
         <View style={styles.photoGrid}>
           {photos.map((photo, index) => (
-            <View
+            <Animated.View
               key={index}
               style={[
                 styles.photoBox,
                 {
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
+                  transform: [{ scale: animatedScale }],
                 },
               ]}
             >
@@ -193,35 +110,40 @@ const AddPhotos = ({ navigation }) => {
                   >
                     <MaterialIcons
                       name="close"
-                      size={10}
+                      size={14}
                       color={colors.primary}
                     />
                   </TouchableOpacity>
                 </>
               ) : (
-                <TouchableOpacity onPress={() => handleAddPhoto(index)}>
+                <TouchableOpacity
+                  onPress={() => {
+                    startAnimation(animatedScale);
+                    handleAddPhoto(
+                      index,
+                      setPhotos,
+                      photos,
+                      permissionsGranted
+                    );
+                  }}
+                >
                   <MaterialIcons
                     name="add"
-                    size={30}
+                    size={35}
                     color={colors.placeholder}
                   />
                 </TouchableOpacity>
               )}
-            </View>
+            </Animated.View>
           ))}
         </View>
         <Text style={[styles.helperText, { color: colors.secondaryText }]}>
-          Show off your best sides. Tip: Members with at least three clear,
-          well-lit, and recent photos receive 5x more Likes than members with
-          just one photo.
+          Show off your best sides. Members with at least three recent photos
+          receive 5x more Likes!
         </Text>
       </View>
       {isUploading && <ActivityIndicator size="large" color={colors.primary} />}
-      <Footer
-        buttonText="Next"
-        onPress={handleNext}
-        // disabled={photos.filter((p) => p !== null).length < 2 || isUploading} // Ensure at least two photos
-      />
+      <Footer buttonText="Next" onPress={handleNext} />
     </View>
   );
 };
@@ -271,4 +193,5 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+
 export default AddPhotos;
