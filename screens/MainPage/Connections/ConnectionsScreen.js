@@ -27,14 +27,18 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
 
   const renderNewMatch = ({ item }) => (
     <TouchableOpacity
-      style={[styles.newMatchCard]}
+      style={[styles.newMatchCard, { backgroundColor: colors.surfaceVariant }]}
       onPress={() => handlePress(item)}
     >
       <Image source={{ uri: item.photo }} style={styles.newMatchAvatar} />
       <Text style={[styles.newMatchName, { color: colors.primaryText }]}>
         {item.name}
       </Text>
-      {item.isUnread && <View style={styles.redDot} />}
+      {item.isUnread && (
+        <View
+          style={[styles.redDot, { backgroundColor: colors.notification }]}
+        />
+      )}
     </TouchableOpacity>
   );
 
@@ -64,7 +68,9 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
         </Text>
       </View>
       {item.isUnread && item.senderId !== userProfile.userId && (
-        <View style={styles.redDot} />
+        <View
+          style={[styles.redDot, { backgroundColor: colors.notification }]}
+        />
       )}
     </TouchableOpacity>
   );
@@ -87,7 +93,10 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
           ]}
         >
           <Text
-            style={[styles.connectionsCount, { color: colors.primaryText }]}
+            style={[
+              styles.connectionsCount,
+              { color: colors.onPrimaryContainer },
+            ]}
           >
             {connections.length}
           </Text>
@@ -167,7 +176,8 @@ const styles = StyleSheet.create({
   newMatchCard: {
     alignItems: 'center',
     marginHorizontal: 10,
-    position: 'relative',
+    padding: 10,
+    borderRadius: 10,
   },
   newMatchAvatar: {
     width: 50,
@@ -210,7 +220,6 @@ const styles = StyleSheet.create({
   redDot: {
     width: 10,
     height: 10,
-    backgroundColor: 'red',
     borderRadius: 5,
     position: 'absolute',
     top: 5,

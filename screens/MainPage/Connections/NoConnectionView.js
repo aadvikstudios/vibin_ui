@@ -7,18 +7,26 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const NoConnectionView = ({ title, subtitle, onDiscoverMore }) => {
+  const { colors, fonts } = useTheme(); // ✅ Get latest theme colors
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Circle with icon */}
-      <View style={styles.circle}>
-        <View style={styles.innerCircle}>
-          <Text style={styles.iconText}>❤️</Text>
+      <View style={[styles.circle, { borderColor: colors.outline }]}>
+        <View
+          style={[
+            styles.innerCircle,
+            { backgroundColor: colors.surfaceVariant },
+          ]}
+        >
+          <Text style={[styles.iconText, { color: colors.liked }]}>❤️</Text>
         </View>
-        <Text style={styles.likeCount}>0</Text>
+        <Text style={[styles.likeCount, { color: colors.primaryText }]}>0</Text>
       </View>
 
       {/* Avatar carousel */}
@@ -38,15 +46,22 @@ const NoConnectionView = ({ title, subtitle, onDiscoverMore }) => {
       </View>
 
       {/* Title and subtitle */}
-      <Text style={styles.title}>{title || 'See your Connections here'}</Text>
-      <Text style={styles.subtitle}>
+      <Text style={[styles.title, { color: colors.primaryText }]}>
+        {title || 'See your Connections here'}
+      </Text>
+      <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
         {subtitle ||
           'When you like someone and the feelings are mutual, they become a Connection. Start your journey by tapping Like on the profiles that catch your eye.'}
       </Text>
 
       {/* Discover button */}
-      <TouchableOpacity style={styles.primaryButton} onPress={onDiscoverMore}>
-        <Text style={styles.primaryButtonText}>Discover more people</Text>
+      <TouchableOpacity
+        style={[styles.primaryButton, { backgroundColor: colors.primary }]}
+        onPress={onDiscoverMore}
+      >
+        <Text style={[styles.primaryButtonText, { color: colors.onPrimary }]}>
+          Discover more people
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -57,7 +72,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1c1c1c', // Matches dark background
     paddingHorizontal: 20,
   },
   circle: {
@@ -65,7 +79,6 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 10,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 30,
@@ -75,18 +88,15 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconText: {
     fontSize: 32,
-    color: '#ff6f61', // Heart color
   },
   likeCount: {
     position: 'absolute',
     fontSize: 20,
-    color: '#fff',
     fontWeight: 'bold',
     bottom: -15,
   },
@@ -99,30 +109,25 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     marginHorizontal: 10,
-    backgroundColor: '#333', // Placeholder for missing avatars
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 14,
-    color: '#bbb',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 30,
   },
   primaryButton: {
-    backgroundColor: '#ff6f61',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 25,
   },
   primaryButtonText: {
-    color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 16,

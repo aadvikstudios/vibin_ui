@@ -11,7 +11,7 @@ const EmptyStateView = ({
   secondaryActionText,
   icon,
 }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -23,12 +23,22 @@ const EmptyStateView = ({
       )}
 
       {/* Title */}
-      <Text style={[styles.title, { color: colors.primaryText }]}>
+      <Text
+        style={[
+          styles.title,
+          { color: colors.primaryText, ...fonts.displayMedium },
+        ]}
+      >
         {title || 'It’s quiet around here'}
       </Text>
 
       {/* Subtitle */}
-      <Text style={[styles.subtitle, { color: colors.secondaryText }]}>
+      <Text
+        style={[
+          styles.subtitle,
+          { color: colors.secondaryText, ...fonts.displaySmall },
+        ]}
+      >
         {subtitle ||
           'To find more people near you, update your search settings.'}
       </Text>
@@ -57,7 +67,9 @@ const EmptyStateView = ({
           ]}
           onPress={onSecondaryAction}
         >
-          <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+          <Text
+            style={[styles.secondaryButtonText, { color: colors.primaryText }]}
+          >
             {secondaryActionText}
           </Text>
         </TouchableOpacity>
@@ -95,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   primaryButton: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
     marginBottom: 10,

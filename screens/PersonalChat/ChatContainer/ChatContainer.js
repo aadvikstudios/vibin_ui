@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { getPresignedReadUrlAPI } from '../../../api';
-import MessageItem from './MessageItem'; // Import the new MessageItem component
-import CenteredMessage from './CenteredMessage'; // Import the new CenteredMessage component
+import MessageItem from './MessageItem'; // ✅ Updated MessageItem
+import CenteredMessage from './CenteredMessage'; // ✅ Handles system messages
 import { useSocket } from '../useSocket';
 
 const ChatContainer = ({
@@ -20,7 +20,7 @@ const ChatContainer = ({
   const flatListRef = useRef(null);
   const [imageUrls, setImageUrls] = useState({});
 
-  // Remove duplicate messages
+  // ✅ Remove duplicate messages efficiently
   const seenMessageIds = new Set();
   const uniqueMessages = messages.filter((message) => {
     if (seenMessageIds.has(message.messageId)) {
@@ -31,7 +31,7 @@ const ChatContainer = ({
     return true;
   });
 
-  // Function to fetch pre-signed URLs for images
+  // ✅ Fetch pre-signed URLs for images
   const fetchImageUrl = async (imageKey) => {
     if (!imageKey) return null;
     if (imageUrls[imageKey]) return imageUrls[imageKey];
@@ -46,7 +46,7 @@ const ChatContainer = ({
     }
   };
 
-  // Check if only one message exists and senderId is empty (special case)
+  // ✅ Check if only one message exists and senderId is empty (system message)
   const shouldCenterMessage =
     uniqueMessages.length === 1 && uniqueMessages[0].senderId === '';
 
@@ -54,7 +54,7 @@ const ChatContainer = ({
     return <CenteredMessage message={uniqueMessages[0]} colors={colors} />;
   }
 
-  // Filter out messages with an empty senderId (except the single-message case)
+  // ✅ Filter out messages with an empty senderId (except system messages)
   const filteredMessages = uniqueMessages.filter((msg) => msg.senderId !== '');
 
   return (
@@ -77,8 +77,8 @@ const ChatContainer = ({
       }
       ref={flatListRef}
       contentContainerStyle={{
-        paddingHorizontal: 10,
-        paddingVertical: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
         flexGrow: 1,
       }}
       refreshControl={

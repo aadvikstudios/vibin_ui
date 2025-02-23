@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
 import { pickImageAndUpload } from '../ChatContainer/chatUtils';
 
 const MessageInput = ({
@@ -16,10 +17,11 @@ const MessageInput = ({
   inputText,
   setInputText,
   handleSendMessage,
-  colors,
-  replyMessage, // ✅ New state for tracking replies
-  setReplyMessage, // ✅ Function to clear reply
+  replyMessage, // ✅ Reply state tracking
+  setReplyMessage, // ✅ Clear reply after sending
 }) => {
+  const { colors } = useTheme(); // ✅ Use latest theme colors
+
   const onSend = () => {
     if (!inputText.trim()) return;
 
@@ -32,7 +34,7 @@ const MessageInput = ({
       messageId: `${matchId}-${Date.now()}-${Math.random()}`,
       replyTo: replyMessage
         ? { messageId: replyMessage.messageId, content: replyMessage.content }
-        : null, // ✅ Include replyTo metadata
+        : null, // ✅ Include reply metadata
     };
 
     sendMessage(message);
@@ -44,12 +46,17 @@ const MessageInput = ({
     <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
       {/* Reply Preview */}
       {replyMessage && (
-        <View style={styles.replyContainer}>
-          <Text style={styles.replyText}>
+        <View
+          style={[
+            styles.replyContainer,
+            { backgroundColor: colors.surfaceVariant },
+          ]}
+        >
+          <Text style={[styles.replyText, { color: colors.primaryText }]}>
             Replying to: {replyMessage.content}
           </Text>
           <TouchableOpacity onPress={() => setReplyMessage(null)}>
-            <Ionicons name="close" size={18} color="gray" />
+            <Ionicons name="close" size={18} color={colors.primary} />
           </TouchableOpacity>
         </View>
       )}
@@ -59,6 +66,7 @@ const MessageInput = ({
         onPress={() =>
           pickImageAndUpload(matchId, sendMessage, userData, 'chat-images/')
         }
+        style={styles.iconButton}
       >
         <Ionicons name="attach" size={24} color={colors.primary} />
       </TouchableOpacity>
@@ -67,16 +75,16 @@ const MessageInput = ({
       <TextInput
         style={[
           styles.input,
-          { borderColor: colors.border, color: colors.secondaryText },
+          { borderColor: colors.border, color: colors.primaryText },
         ]}
         placeholder="Type a message..."
         value={inputText}
         onChangeText={setInputText}
-        placeholderTextColor={colors.secondary}
+        placeholderTextColor={colors.secondaryText}
       />
 
       {/* Send Button */}
-      <TouchableOpacity onPress={onSend}>
+      <TouchableOpacity onPress={onSend} style={styles.iconButton}>
         <Ionicons name="send" size={24} color={colors.primary} />
       </TouchableOpacity>
     </View>
@@ -87,10 +95,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderColor: '#ccc',
   },
   input: {
     flex: 1,
@@ -105,7 +112,6 @@ const styles = StyleSheet.create({
     top: -30,
     left: 10,
     right: 10,
-    backgroundColor: '#f0f0f0',
     padding: 5,
     borderRadius: 8,
     flexDirection: 'row',
@@ -114,7 +120,9 @@ const styles = StyleSheet.create({
   replyText: {
     fontSize: 12,
     fontStyle: 'italic',
-    color: 'gray',
+  },
+  iconButton: {
+    padding: 5,
   },
 });
 
