@@ -85,7 +85,7 @@ const Interests = ({ navigation }) => {
               color={
                 interests.trim() && interestList.length < 10
                   ? colors.primary
-                  : colors.textDisabled
+                  : colors.secondary
               }
             />
           </TouchableOpacity>

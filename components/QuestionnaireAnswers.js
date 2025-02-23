@@ -31,13 +31,20 @@ const QuestionnaireAnswers = ({ questionnaire }) => {
             ]}
           >
             {/* Question */}
-            <Text style={[styles.question, { color: colors.onPrimary }]}>
+            <Text
+              style={[styles.question, { color: colors.onPrimaryContainer }]}
+            >
               {questionData.question}
             </Text>
 
             {/* Answer */}
-            <View style={styles.answerContainer}>
-              <Text style={[styles.answer, { color: colors.accent }]}>
+            <View
+              style={[
+                styles.answerContainer,
+                { backgroundColor: colors.surfaceVariant },
+              ]}
+            >
+              <Text style={[styles.answer, { color: colors.onSurfaceVariant }]}>
                 {value || 'No response provided'}
               </Text>
             </View>
@@ -73,7 +80,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)', // Subtle background for differentiation
   },
   answer: {
     fontSize: 18,

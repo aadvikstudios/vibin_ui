@@ -9,22 +9,40 @@ export const PaperThemes = {
     roundness: 10,
     colors: {
       ...LightTheme.colors,
+
+      // Primary Colors
       primary: '#FF4081', // Bright pink primary
+      onPrimary: '#FFFFFF', // Text on primary background
       primaryContainer: '#FFD3E4', // Soft pink container
-      accent: '#FF85B3', // Complementary accent color
+      onPrimaryContainer: '#1C1C1E', // Text on primary container
+
+      // Secondary Colors
+      secondary: '#6200EA', // Deep purple secondary
+      onSecondary: '#FFFFFF', // Text on secondary background
+      secondaryContainer: '#D1C4E9', // Soft purple container
+      onSecondaryContainer: '#1C1C1E', // Text on secondary container
+
+      // Background & Surface
       background: '#F9FAFB', // Light gray background
+      onBackground: '#1C1C1E', // Text on background
       surface: '#FFFFFF', // White surface
+      onSurface: '#4C4C4C', // Text on surface
+      surfaceVariant: '#F5F5F5', // Slightly different surface color
+      onSurfaceVariant: '#3A3A3A', // Text on surface variant
+
+      // Borders & Separators
+      border: '#E0E0E0', // Light border color
+      outline: '#BDBDBD', // Outline elements
+      divider: '#E5E5E5', // Divider color
+
+      // Text & Labels
       primaryText: '#1C1C1E', // Dark text for contrast
       secondaryText: '#4C4C4C', // Soft gray for secondary text
-      text: '#1C1C1E', // Default text color
-      onPrimary: '#FFFFFF', // White text on primary
+      tertiaryText: '#757575', // Lighter tertiary text
       disabled: '#E5E5E5', // Disabled elements
       placeholder: '#9E9E9E', // Placeholder text
-      border: '#E0E0E0', // Light border color
-      notification: '#FF4081', // Notification color
-      onSurface: '#4C4C4C', // Text on surfaces
 
-      // Buttons & Action Colors
+      // Buttons & Actions
       liked: '#FF4081', // Pink for Like
       onLiked: '#FFFFFF', // White text/icon on Like button
       disliked: '#E0E0E0', // Soft Gray for Dislike Button
@@ -37,6 +55,9 @@ export const PaperThemes = {
       onWarning: '#1C1C1E', // Dark text on warning
       danger: '#DC3545', // Red for errors
       onDanger: '#FFFFFF', // White text on danger
+
+      // Notification Colors
+      notification: '#FF4081', // Notification color
     },
     fonts: {
       ...LightTheme.fonts,
@@ -65,22 +86,40 @@ export const PaperThemes = {
     roundness: 10,
     colors: {
       ...DarkTheme.colors,
+
+      // Primary Colors
       primary: '#FF4081', // Same pink for dark mode
+      onPrimary: '#FFFFFF', // White text on primary
       primaryContainer: '#3A1F33', // Darker pink container
-      accent: '#FF85B3', // Lighter pink accent
+      onPrimaryContainer: '#EAEAEA', // Light text on primary container
+
+      // Secondary Colors
+      secondary: '#BB86FC', // Light purple for dark mode
+      onSecondary: '#1C1C1E', // Text on secondary background
+      secondaryContainer: '#3700B3', // Darker purple container
+      onSecondaryContainer: '#EAEAEA', // Light text on secondary container
+
+      // Background & Surface
       background: '#121212', // Deep black background
+      onBackground: '#EAEAEA', // Light text for contrast
       surface: '#1E1E1E', // Dark gray surface
+      onSurface: '#CCCCCC', // Light text on surface
+      surfaceVariant: '#2C2C2C', // Slightly different surface color
+      onSurfaceVariant: '#BDBDBD', // Text on surface variant
+
+      // Borders & Separators
+      border: '#444444', // Darker border
+      outline: '#666666', // Outline elements
+      divider: '#777777', // Divider color
+
+      // Text & Labels
       primaryText: '#EAEAEA', // Light text for contrast
       secondaryText: '#CCCCCC', // Softer gray for secondary text
-      text: '#EAEAEA', // Default text color
-      onPrimary: '#FFFFFF', // White text on primary
+      tertiaryText: '#A6A6A6', // Lighter tertiary text
       disabled: '#6E6E6E', // Disabled elements
       placeholder: '#A6A6A6', // Placeholder text
-      border: '#444444', // Darker border
-      notification: '#FF4081', // Notification color
-      onSurface: '#CCCCCC', // Light text on surfaces
 
-      // Buttons & Action Colors
+      // Buttons & Actions
       liked: '#FF4081', // Same pink for like
       onLiked: '#FFFFFF', // White text/icon on Like button
       disliked: '#777777', // Darker Soft Gray for Dislike Button
@@ -93,6 +132,9 @@ export const PaperThemes = {
       onWarning: '#121212', // Dark text on warning
       danger: '#DC3545', // Error red
       onDanger: '#FFFFFF', // White text on danger
+
+      // Notification Colors
+      notification: '#FF4081', // Notification color
     },
     fonts: {
       ...DarkTheme.fonts,

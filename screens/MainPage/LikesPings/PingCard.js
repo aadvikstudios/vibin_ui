@@ -25,7 +25,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
         <Text
           style={[
             styles.name,
-            { color: colors.primaryText, ...fonts.headlineSmall },
+            { color: colors.primaryText, ...fonts.displayMedium },
           ]}
         >
           {ping.senderName}, {ping.senderAge}
@@ -41,7 +41,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
         <Text
           style={[
             styles.pingNote,
-            { color: colors.onSurface, ...fonts.bodyMedium },
+            { color: colors.onSurfaceVariant, ...fonts.bodyMedium },
           ]}
         >
           {ping.pingNote}
@@ -54,16 +54,16 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
           <Avatar.Icon
             size={36}
             icon="close"
-            color={colors.danger}
-            style={[styles.actionIcon, { backgroundColor: colors.surface }]}
+            color={colors.onDanger}
+            style={[styles.actionIcon, { backgroundColor: colors.danger }]}
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={onAccept} style={styles.acceptButton}>
           <Avatar.Icon
             size={36}
             icon="check"
-            color={colors.primary}
-            style={[styles.actionIcon, { backgroundColor: colors.surface }]}
+            color={colors.onPrimary}
+            style={[styles.actionIcon, { backgroundColor: colors.primary }]}
           />
         </TouchableOpacity>
       </View>
@@ -118,4 +118,5 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 });
+
 export default PingCard;

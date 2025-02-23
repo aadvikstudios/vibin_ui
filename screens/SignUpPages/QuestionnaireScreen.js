@@ -65,12 +65,43 @@ const QuestionnaireScreen = ({ navigation }) => {
     navigation.navigate('AddPhotos');
   };
 
+  // **Dynamic Title & Subtitle Generation**
+  const getHeaderTitle = () => {
+    switch (selectedQuestions.length) {
+      case 0:
+        return 'Choose three questions to complete your profile';
+      case 1:
+        return 'Great start! Select two more questions';
+      case 2:
+        return 'Almost there! Pick your final question';
+      case 3:
+        return 'Awesome! Your profile is now more descriptive';
+      default:
+        return 'Select questions to showcase your personality';
+    }
+  };
+
+  const getHeaderSubtitle = () => {
+    switch (selectedQuestions.length) {
+      case 0:
+        return 'Pick any three questions to help others get to know you better.';
+      case 1:
+        return 'Nice choice! Answering two more will make your profile stand out.';
+      case 2:
+        return 'One more question and your profile will be more engaging!';
+      case 3:
+        return 'Great! Your answers will help spark meaningful conversations.';
+      default:
+        return 'Answer these to let people connect with you better.';
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         navigation={navigation}
-        title={`Select ${selectedQuestions.length === 0 ? 'first' : selectedQuestions.length === 1 ? 'second' : 'third'} question`}
-        subtitle="Your answers help people get to know you! You can select up to 3 questions."
+        title={getHeaderTitle()} // ✅ Dynamic title
+        subtitle={getHeaderSubtitle()} // ✅ Dynamic subtitle
         currentStep={9}
       />
       <ScrollView contentContainerStyle={styles.content}>
@@ -83,11 +114,14 @@ const QuestionnaireScreen = ({ navigation }) => {
                 backgroundColor: selectedQuestions.includes(item.key)
                   ? colors.primaryContainer
                   : colors.surface,
+                borderColor: selectedQuestions.includes(item.key)
+                  ? colors.primary
+                  : colors.border,
               },
             ]}
             onPress={() => handleSelectQuestion(item)}
           >
-            <Text style={[styles.questionText, { color: colors.text }]}>
+            <Text style={[styles.questionText, { color: colors.onSurface }]}>
               {item.question}
             </Text>
           </TouchableOpacity>
@@ -106,7 +140,7 @@ const QuestionnaireScreen = ({ navigation }) => {
           <View
             style={[
               styles.modalContent,
-              { backgroundColor: colors.primaryContainer },
+              { backgroundColor: colors.surfaceVariant },
             ]}
           >
             {/* Close Button in the Top-Right Corner */}
@@ -114,7 +148,11 @@ const QuestionnaireScreen = ({ navigation }) => {
               icon="close"
               size={20}
               onPress={() => setModalVisible(false)}
-              style={styles.closeButton}
+              style={[
+                styles.closeButton,
+                { backgroundColor: colors.secondary },
+              ]}
+              iconColor={colors.onSecondary}
             />
             <Text style={[styles.modalTitle, { color: colors.primary }]}>
               {currentQuestion?.question}
@@ -123,7 +161,7 @@ const QuestionnaireScreen = ({ navigation }) => {
               style={[
                 styles.input,
                 {
-                  color: colors.text,
+                  color: colors.onSurface,
                   backgroundColor: colors.surface,
                   borderColor: colors.border,
                 },
@@ -137,7 +175,8 @@ const QuestionnaireScreen = ({ navigation }) => {
             <Button
               mode="contained"
               onPress={handleSaveResponse}
-              style={styles.saveButton}
+              style={[styles.saveButton, { backgroundColor: colors.primary }]}
+              labelStyle={{ color: colors.onPrimary }}
             >
               Save
             </Button>
@@ -160,10 +199,14 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    borderWidth: 1,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   questionText: {
     fontSize: 16,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -175,9 +218,8 @@ const styles = StyleSheet.create({
     width: '85%',
     padding: 20,
     borderRadius: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 8, // For Android shadow
     alignItems: 'center',
@@ -188,7 +230,6 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.1)', // Light transparent background for visibility
   },
   modalTitle: {
     fontSize: 18,
@@ -200,7 +241,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 100,
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
@@ -210,6 +251,8 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: 10,
     width: '100%',
+    borderRadius: 8,
+    paddingVertical: 10,
   },
 });
 

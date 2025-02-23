@@ -11,14 +11,16 @@ const MessageItem = ({
   setMessages,
   fetchImageUrl,
   colors,
-  setReplyMessage, // ✅ New state for reply handling
+  setReplyMessage,
 }) => {
+  const isSentByCurrentUser = item.senderId === profile.emailId;
+
   return (
     <TouchableOpacity
-      onLongPress={() => setReplyMessage(item)} // ✅ Set the reply message
+      onLongPress={() => setReplyMessage(item)}
       style={[
         styles.messageWrapper,
-        item.senderId === profile.emailId
+        isSentByCurrentUser
           ? styles.sentMessageWrapper
           : styles.receivedMessageWrapper,
       ]}
@@ -26,15 +28,24 @@ const MessageItem = ({
       <View
         style={[
           styles.messageContainer,
-          item.senderId === profile.emailId
-            ? { backgroundColor: colors.primary }
-            : { backgroundColor: colors.surface },
+          isSentByCurrentUser
+            ? { backgroundColor: colors.primaryContainer }
+            : { backgroundColor: colors.surfaceVariant },
         ]}
       >
-        {/* Display Reply Message */}
+        {/* Reply Message Preview */}
         {item.replyTo && (
-          <View style={styles.replyContainer}>
-            <Text style={styles.replyText}>{item.replyTo.content}</Text>
+          <View
+            style={[
+              styles.replyContainer,
+              { backgroundColor: colors.secondaryContainer },
+            ]}
+          >
+            <Text
+              style={[styles.replyText, { color: colors.onSecondaryContainer }]}
+            >
+              {item.replyTo.content}
+            </Text>
           </View>
         )}
 
@@ -48,17 +59,18 @@ const MessageItem = ({
           <Text
             style={[
               styles.messageText,
-              item.senderId === profile.emailId
-                ? { color: colors.onPrimary }
-                : { color: colors.primaryText },
+              isSentByCurrentUser
+                ? { color: colors.onPrimaryContainer }
+                : { color: colors.onSurfaceVariant },
             ]}
           >
             {item.content}
           </Text>
         )}
 
-        {/* Like Button - Only Display for Received Messages */}
-        {item.senderId !== profile.emailId && (
+        {/* Heart Button - Different Behavior for Sent & Received Messages */}
+        {!isSentByCurrentUser ? (
+          // ✅ Show outlined heart for received messages (can like or unlike)
           <TouchableOpacity
             onPress={() =>
               likeMessage(
@@ -70,18 +82,26 @@ const MessageItem = ({
                 setMessages
               )
             }
-            style={[styles.heartIcon, styles.heartIconReceived]}
+            style={styles.heartIconReceived}
           >
             <Ionicons
               name={item.liked ? 'heart' : 'heart-outline'}
               size={20}
-              color={colors.accent}
+              color={colors.liked}
             />
           </TouchableOpacity>
+        ) : (
+          // ✅ Show heart for sent messages only if liked
+          item.liked && (
+            <View style={styles.heartIconSent}>
+              <Ionicons name="heart" size={20} color={colors.liked} />
+            </View>
+          )
         )}
       </View>
 
-      <Text style={[styles.timestamp, { color: colors.secondary }]}>
+      {/* Message Timestamp */}
+      <Text style={[styles.timestamp, { color: colors.secondaryText }]}>
         {new Date(item.createdAt).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
@@ -91,28 +111,50 @@ const MessageItem = ({
   );
 };
 
+/** Styles */
 const styles = StyleSheet.create({
-  messageWrapper: { marginBottom: 20 },
-  sentMessageWrapper: { alignItems: 'flex-end' },
-  receivedMessageWrapper: { alignItems: 'flex-start' },
+  messageWrapper: {
+    marginBottom: 15,
+  },
+  sentMessageWrapper: {
+    alignItems: 'flex-end',
+  },
+  receivedMessageWrapper: {
+    alignItems: 'flex-start',
+  },
   messageContainer: {
     maxWidth: '75%',
-    padding: 10,
-    borderRadius: 15,
+    padding: 12,
+    borderRadius: 12,
     marginVertical: 5,
     position: 'relative',
   },
-  messageText: { fontSize: 16 },
-  timestamp: { fontSize: 12, marginTop: 5 },
-  heartIcon: { position: 'absolute', bottom: -10 },
-  heartIconReceived: { left: -1 },
+  messageText: {
+    fontSize: 16,
+  },
+  timestamp: {
+    fontSize: 12,
+    marginTop: 5,
+  },
+  heartIconReceived: {
+    position: 'absolute',
+    bottom: -10,
+    left: -1,
+  },
+  heartIconSent: {
+    position: 'absolute',
+    bottom: -10,
+    right: -1,
+  },
   replyContainer: {
-    backgroundColor: '#f0f0f0',
-    padding: 5,
+    padding: 6,
     borderRadius: 8,
     marginBottom: 5,
   },
-  replyText: { fontSize: 12, fontStyle: 'italic', color: 'gray' },
+  replyText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
 });
 
 export default MessageItem;

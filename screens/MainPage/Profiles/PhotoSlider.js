@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Image, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { getPresignedReadUrlAPI } from '../../../api'; // Import the API function
+import { getPresignedReadUrlAPI } from '../../../api';
 
 const PhotoSlider = ({ photos }) => {
   const { colors } = useTheme();
@@ -28,7 +35,10 @@ const PhotoSlider = ({ photos }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{ color: colors.text }}>Loading...</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={{ color: colors.secondaryText, marginTop: 5 }}>
+          Loading...
+        </Text>
       </View>
     );
   }
@@ -49,20 +59,14 @@ const PhotoSlider = ({ photos }) => {
 };
 
 const styles = StyleSheet.create({
-  photoSliderContainer: {
-    height: 200,
-    marginTop: 20,
-  },
+  photoSliderContainer: { height: 200, marginTop: 20 },
   profilePhoto: {
     width: 150,
     height: 150,
     marginHorizontal: 10,
+    borderRadius: 10,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 export default PhotoSlider;

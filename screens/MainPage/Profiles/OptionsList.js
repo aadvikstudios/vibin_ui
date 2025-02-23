@@ -39,31 +39,40 @@ const options = [
 ];
 
 const OptionsList = ({ navigation }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
 
   return (
-    <View style={styles.optionsContainer}>
+    <View style={[styles.optionsContainer, { borderColor: colors.border }]}>
       {options.map((option, index) => (
         <TouchableOpacity
           key={index}
-          style={styles.optionItem}
+          style={[styles.optionItem, { borderBottomColor: colors.outline }]}
           onPress={() => (option.onPress ? option.onPress(navigation) : null)}
         >
           <View style={styles.optionContent}>
             {/* Icon */}
             <Ionicons
               name={option.icon}
-              size={20}
-              color={colors.text}
+              size={22}
+              color={colors.primaryText}
               style={styles.optionIcon}
             />
             {/* Label */}
-            <Text style={[styles.optionText, { color: colors.text }]}>
+            <Text
+              style={[
+                styles.optionText,
+                { color: colors.primaryText, ...fonts.displaySmall },
+              ]}
+            >
               {option.label}
             </Text>
           </View>
           {/* Chevron */}
-          <Ionicons name="chevron-forward" size={20} color={colors.text} />
+          <Ionicons
+            name="chevron-forward"
+            size={22}
+            color={colors.secondaryText}
+          />
         </TouchableOpacity>
       ))}
     </View>
@@ -81,7 +90,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
   },
   optionContent: {
     flexDirection: 'row',
