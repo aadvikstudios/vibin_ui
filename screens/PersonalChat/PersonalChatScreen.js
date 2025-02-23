@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +22,8 @@ import {
 // Import new components
 import ChatHeader from './PersonalChatComponents/ChatHeader';
 import MessageInput from './PersonalChatComponents/MessageInput';
+import InviteUserModal from './PersonalChatComponents/InviteUserModal'; // ✅ New component
+import ReferralModal from './PersonalChatComponents/ReferralModal'; // ✅ New component
 
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
@@ -34,9 +37,16 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [replyMessage, setReplyMessage] = useState(null); // ✅ Track reply message
+  const [replyMessage, setReplyMessage] = useState(null);
   const messageIds = useRef(new Set());
   const { socket, sendMessage } = useSocket(matchId, setMessages, messageIds);
+
+  // Invite User State
+  const [inviteModalVisible, setInviteModalVisible] = useState(false);
+  const [pendingInvite, setPendingInvite] = useState(null);
+
+  // Match Referral State
+  const [referralModalVisible, setReferralModalVisible] = useState(false);
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
@@ -48,6 +58,53 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const onRefresh = () => {
     setRefreshing(true);
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
+  };
+
+  /** Handle inviting a third person */
+  const handleInviteUser = (userHandle) => {
+    setPendingInvite(userHandle);
+    Alert.alert(
+      'Invite User',
+      `Do you want to invite @${userHandle} to this chat?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Invite',
+          onPress: () => {
+            sendMessage({
+              type: 'invite_request',
+              matchId,
+              from: userData.userHandle,
+              invitedUser: userHandle,
+            });
+            setInviteModalVisible(false);
+          },
+        },
+      ]
+    );
+  };
+
+  /** Handle match referral */
+  const handleReferUser = (userHandle) => {
+    Alert.alert(
+      'Refer a Match',
+      `Do you want to introduce @${userHandle} to @${match.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Refer',
+          onPress: () => {
+            sendMessage({
+              type: 'match_referral',
+              matchId,
+              from: userData.userHandle,
+              referredUser: userHandle,
+            });
+            setReferralModalVisible(false);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -64,6 +121,8 @@ const PersonalChatScreen = ({ route, navigation }) => {
           chatName={chatName}
           navigation={navigation}
           colors={colors}
+          onInvitePress={() => setInviteModalVisible(true)} // ✅ Open Invite Modal
+          onReferPress={() => setReferralModalVisible(true)} // ✅ Open Referral Modal
         />
 
         {/* Chat Content */}
@@ -75,14 +134,14 @@ const PersonalChatScreen = ({ route, navigation }) => {
           />
         ) : (
           <ChatContainer
-            socket={socket} // ✅ Pass socket to ChatContainer
+            socket={socket}
             messages={messages}
             setMessages={setMessages}
             likeMessage={likeMessage}
             profile={userData}
             refreshing={refreshing}
             onRefresh={onRefresh}
-            setReplyMessage={setReplyMessage} // ✅ Pass replyMessage setter
+            setReplyMessage={setReplyMessage}
           />
         )}
 
@@ -95,8 +154,22 @@ const PersonalChatScreen = ({ route, navigation }) => {
           setInputText={setInputText}
           handleSendMessage={handleSendMessage}
           colors={colors}
-          replyMessage={replyMessage} // ✅ Pass replyMessage state
-          setReplyMessage={setReplyMessage} // ✅ Pass function to clear reply
+          replyMessage={replyMessage}
+          setReplyMessage={setReplyMessage}
+        />
+
+        {/* Invite User Modal */}
+        <InviteUserModal
+          visible={inviteModalVisible}
+          onClose={() => setInviteModalVisible(false)}
+          onInvite={handleInviteUser}
+        />
+
+        {/* Referral Modal */}
+        <ReferralModal
+          visible={referralModalVisible}
+          onClose={() => setReferralModalVisible(false)}
+          onRefer={handleReferUser}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

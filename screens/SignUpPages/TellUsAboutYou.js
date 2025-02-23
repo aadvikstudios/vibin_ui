@@ -68,8 +68,9 @@ const TellUsAboutYou = ({ navigation }) => {
             styles.input,
             {
               backgroundColor: colors.surface,
+              color: colors.onSurface,
               borderColor: isFocused ? colors.primary : colors.border,
-              color: colors.text,
+              shadowColor: isFocused ? colors.primary : colors.shadow,
             },
           ]}
           multiline
@@ -80,14 +81,14 @@ const TellUsAboutYou = ({ navigation }) => {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
-        <Text style={[styles.helperText, { color: colors.placeholder }]}>
+        <Text style={[styles.helperText, { color: colors.secondaryText }]}>
           Beliefs, quirks, and dreams—it all belongs here.
         </Text>
         {!isBioValid || charCount >= 100 ? (
           <Text
             style={[
               styles.errorText,
-              { color: charCount < minChars ? colors.error : colors.success },
+              { color: charCount < minChars ? colors.danger : colors.success },
             ]}
           >
             {getErrorMessage()}
@@ -121,6 +122,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: 'top',
     marginBottom: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   helperText: {
     fontSize: 14,
