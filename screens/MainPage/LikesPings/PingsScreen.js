@@ -1,67 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
-import PingCard from './PingCard'; // Import the PingCard component
-import { actionPingAPI } from '../../../api'; // Import your unified API function
+import { useTheme } from 'react-native-paper';
+import PingCard from './PingCard';
+import { actionPingAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
+
 const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
   const { colors } = useTheme();
-  const [updatedPings, setUpdatedPings] = useState([...initialPings]); // Maintain a local state for pings
-  console.log('initialPings ', initialPings, updatedPings);
+  const [updatedPings, setUpdatedPings] = useState([...initialPings]);
+
   useEffect(() => {
     setUpdatedPings(initialPings);
   }, [initialPings]);
 
   const handlePingAction = async (emailId, action, pingNote = null) => {
     try {
-      // Construct request payload conditionally
       const payload = {
         emailId: userProfile.emailId,
         targetEmailId: emailId,
         action,
-        ...(pingNote ? { pingNote } : {}), // Only add pingNote if it's provided
+        ...(pingNote ? { pingNote } : {}),
       };
 
-      console.log('\n\n\n\nSending request:', payload);
-
-      // Call the API
+      console.log('Sending request:', payload);
       const response = await actionPingAPI(payload);
 
-      console.log('API response:', response);
-
       if (response.message) {
-        // Remove the processed ping from the list
         setUpdatedPings(
           updatedPings.filter((ping) => ping.senderEmailId !== emailId)
         );
       } else {
-        console.error(
-          `Error performing action (${actionType}): ${response.message}`
-        );
+        console.error(`Error performing action: ${response.message}`);
       }
     } catch (error) {
-      console.error(
-        `Error in handlePingAction (${actionType}): ${error.message}`
-      );
+      console.error(`Error in handlePingAction: ${error.message}`);
     }
   };
 
-  if (loading) {
-    return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  return (
+  return loading ? (
+    <View
+      style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+    >
+      <ActivityIndicator size="large" color={colors.primary} />
+    </View>
+  ) : (
     <FlatList
-      data={updatedPings} // Use the local state for pings
+      data={updatedPings}
       keyExtractor={(item, index) => `${item.senderEmailId}-${index}`}
       renderItem={({ item }) => (
         <PingCard
@@ -69,24 +53,18 @@ const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
           onAccept={() =>
             handlePingAction(item.senderEmailId, 'accept', item.pingNote)
           }
-          onDecline={() =>
-            handlePingAction(item.senderEmailId, 'decline', null)
-          }
+          onDecline={() => handlePingAction(item.senderEmailId, 'decline')}
         />
       )}
       ListEmptyComponent={
         <EmptyStateView
           title="Good Pings come to those who wait"
-          subtitle="People can send a Ping to let you know they’re into you. Pings can help you connect faster when the feeling’s mutual."
+          subtitle="People can send a Ping to let you know they’re into you."
           secondaryActionText="Edit search settings"
           onSecondaryAction={() => console.log('Edit settings pressed')}
         />
       }
-      contentContainerStyle={{
-        flexGrow: 1,
-        backgroundColor: colors.background, // Ensure the list has a themed background
-        padding: 10,
-      }}
+      contentContainerStyle={{ flexGrow: 1, padding: 10 }}
     />
   );
 };
@@ -96,11 +74,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
   },
 });
 

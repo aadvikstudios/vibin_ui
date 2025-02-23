@@ -10,32 +10,30 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // ✅ Import useNavigation
-
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
 
-import { useUser } from '../../../context/UserContext'; // Assuming UserContext is used to access user data
-import { sendActionToBackendAPI } from '../../../api'; // Update the path to your API file
+import { useUser } from '../../../context/UserContext';
+import { sendActionToBackendAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
+
 const LikesScreen = ({ likes, loading, onRefresh }) => {
-  const { colors } = useTheme();
-  const { userData } = useUser(); // Get user information from context
-  const navigation = useNavigation(); // ✅ Define navigation
+  const { colors, fonts } = useTheme();
+  const { userData } = useUser();
+  const navigation = useNavigation();
 
   const handleAction = async (action, item) => {
     try {
-      console.log('value of', userData.emailId, item.emailId, action);
-      // Call your backend API with the appropriate action
+      console.log('Processing action:', userData.emailId, item.emailId, action);
       const response = await sendActionToBackendAPI(
-        userData.emailId, // Replace with actual user ID
-        item.emailId, // Replace with the user ID of the selected profile
+        userData.emailId,
+        item.emailId,
         action
       );
 
       console.log('Response:', response);
 
-      // Check for match or reload likes
       if (response?.isMatch) {
         Alert.alert(
           'Match Found!',
@@ -43,7 +41,6 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
         );
       }
 
-      // **Reload the Likes list**
       if (onRefresh) {
         onRefresh();
       }
@@ -52,7 +49,7 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
       Alert.alert('Error', 'Failed to process action. Please try again.');
     }
   };
-  // Open ViewProfileScreen and pass emailId
+
   const handleViewProfile = (emailId) => {
     navigation.navigate('ViewProfileScreen', {
       email: userData.emailId,
@@ -60,7 +57,6 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
     });
   };
 
-  // Render a single like profile row
   const renderItem = ({ item }) => (
     <View style={[styles.itemContainer, { backgroundColor: colors.surface }]}>
       <ScrollView
@@ -68,7 +64,7 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.imageScrollContainer}
       >
-        {item.photos && item.photos.length > 0 ? (
+        {item.photos?.length ? (
           item.photos.map((photo, index) => (
             <Image
               key={index}
@@ -91,12 +87,16 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
       </ScrollView>
 
       <View style={styles.rowContainer}>
-        <Text style={[styles.userName, { color: colors.primaryText }]}>
+        <Text
+          style={[
+            styles.userName,
+            { color: colors.primaryText, ...fonts.displaySmall },
+          ]}
+        >
           {item.name}
         </Text>
 
         <View style={styles.actionButtonsContainer}>
-          {/* View Profile Button */}
           <TouchableOpacity
             style={[
               styles.actionButton,
@@ -110,7 +110,6 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
             <Icon name="eye-outline" size={22} color={colors.primary} />
           </TouchableOpacity>
 
-          {/* Dislike Button */}
           <TouchableOpacity
             style={[
               styles.actionButton,
@@ -121,7 +120,6 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
             <Icon name="minus" size={20} color={colors.secondaryText} />
           </TouchableOpacity>
 
-          {/* Like Button */}
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: colors.primary }]}
             onPress={() => handleAction('liked', item)}
@@ -133,20 +131,13 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
     </View>
   );
 
-  if (loading) {
-    return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
-      >
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  return (
+  return loading ? (
+    <View
+      style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+    >
+      <ActivityIndicator size="large" color={colors.primary} />
+    </View>
+  ) : (
     <FlatList
       data={likes}
       keyExtractor={(item, index) => index.toString()}
@@ -154,7 +145,6 @@ const LikesScreen = ({ likes, loading, onRefresh }) => {
       style={[styles.screen, { backgroundColor: colors.background }]}
       contentContainerStyle={{
         flexGrow: 1,
-        backgroundColor: colors.background, // Ensure the list has a themed background
         padding: 10,
       }}
       ListEmptyComponent={
@@ -180,16 +170,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   itemContainer: {
     marginBottom: 20,
     padding: 15,
     borderRadius: 10,
     elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
   },
   imageScrollContainer: {
     flexDirection: 'row',
@@ -216,7 +201,6 @@ const styles = StyleSheet.create({
   },
   rowContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 10,
   },
@@ -226,7 +210,6 @@ const styles = StyleSheet.create({
   },
   actionButtonsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
   },
   actionButton: {
     width: 40,
@@ -237,10 +220,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     elevation: 5,
     borderWidth: 1,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 20,
   },
 });
 

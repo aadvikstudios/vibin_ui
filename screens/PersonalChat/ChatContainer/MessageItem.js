@@ -3,10 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ImageMessage from './ImageMessage';
 
-/**
- * MessageItem Component
- * Handles rendering of individual messages in the chat.
- */
 const MessageItem = ({
   socket,
   item,
@@ -72,8 +68,9 @@ const MessageItem = ({
           </Text>
         )}
 
-        {/* Like Button (Only for Received Messages) */}
-        {!isSentByCurrentUser && (
+        {/* Heart Button - Different Behavior for Sent & Received Messages */}
+        {!isSentByCurrentUser ? (
+          // ✅ Show outlined heart for received messages (can like or unlike)
           <TouchableOpacity
             onPress={() =>
               likeMessage(
@@ -85,7 +82,7 @@ const MessageItem = ({
                 setMessages
               )
             }
-            style={[styles.heartIcon, styles.heartIconReceived]}
+            style={styles.heartIconReceived}
           >
             <Ionicons
               name={item.liked ? 'heart' : 'heart-outline'}
@@ -93,6 +90,13 @@ const MessageItem = ({
               color={colors.liked}
             />
           </TouchableOpacity>
+        ) : (
+          // ✅ Show heart for sent messages only if liked
+          item.liked && (
+            <View style={styles.heartIconSent}>
+              <Ionicons name="heart" size={20} color={colors.liked} />
+            </View>
+          )
         )}
       </View>
 
@@ -132,12 +136,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  heartIcon: {
+  heartIconReceived: {
     position: 'absolute',
     bottom: -10,
-  },
-  heartIconReceived: {
     left: -1,
+  },
+  heartIconSent: {
+    position: 'absolute',
+    bottom: -10,
+    right: -1,
   },
   replyContainer: {
     padding: 6,

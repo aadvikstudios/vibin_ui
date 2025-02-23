@@ -13,21 +13,26 @@ const LikesPingsScreen = ({
   onRefresh,
   userProfile,
 }) => {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
 
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarStyle: {
           backgroundColor: colors.surface, // Tab bar background
+          elevation: 0, // Remove shadow for a cleaner look
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border, // Match border color
         },
         tabBarIndicatorStyle: {
           backgroundColor: colors.primary, // Indicator color
+          height: 3, // Slightly thicker indicator
         },
         tabBarActiveTintColor: colors.primaryText, // Active tab text color
-        tabBarInactiveTintColor: colors.textSecondary, // Inactive tab text color
+        tabBarInactiveTintColor: colors.secondaryText, // Inactive tab text color
         tabBarLabelStyle: {
-          fontWeight: '600', // Text styling for tab labels
+          ...fonts.labelLarge, // Apply typography from theme.js
+          fontWeight: '600',
         },
       }}
     >

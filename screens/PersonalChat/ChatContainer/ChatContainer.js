@@ -67,7 +67,7 @@ const ChatContainer = ({
           profile={profile}
           likeMessage={likeMessage}
           setMessages={setMessages}
-          setReplyMessage={setReplyMessage} // ✅ Pass replyMessage setter
+          setReplyMessage={setReplyMessage}
           fetchImageUrl={fetchImageUrl}
           colors={colors}
         />
