@@ -133,39 +133,58 @@ export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
     return []; // ✅ Return empty array instead of throwing error
   }
 };
-
 export const sendActionToBackendAPI = async (
-  emailId,
-  targetEmailId,
+  senderHandle,
+  receiverHandle,
   action
 ) => {
-  console.log('emailId, targetEmailId, action', emailId, targetEmailId, action);
-
-  // Build the request body dynamically
-  const requestBody = {
-    emailId,
-    targetEmailId,
+  console.log(
+    '📌 Sending action:',
     action,
-  };
+    'Sender:',
+    senderHandle,
+    'Receiver:',
+    receiverHandle
+  );
 
-  const response = await fetch(`${API_BASE_URL}/api/action/action`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
-  console.log(response);
-  if (!response.ok) {
-    console.log('!response.ok', !response.ok, response);
-    const errorDetails = await response.json();
-    console.error('Response Error:', response);
-    throw new Error(
-      errorDetails?.message || 'Failed to send action to backend'
-    );
+  // Determine the correct API endpoint based on the action
+  let endpoint = `${API_BASE_URL}/api/interactions`;
+  if (action === 'like') {
+    endpoint = `${API_BASE_URL}/api/interactions/like`;
+  } else if (action === 'dislike') {
+    endpoint = `${API_BASE_URL}/api/interactions/dislike`;
+  } else {
+    throw new Error("Invalid action. Only 'like' and 'dislike' are supported.");
   }
 
-  return await response.json();
+  // Prepare request body using userhandle
+  const requestBody = {
+    senderHandle, // ✅ Matches backend request format
+    receiverHandle, // ✅ Matches backend request format
+  };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('📌 API Response:', response);
+
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      console.error('🚨 Response Error:', errorDetails);
+      throw new Error(
+        errorDetails?.error || 'Failed to send action to backend'
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ API Error:', error);
+    throw error;
+  }
 };
 
 export const sendPingToBackendAPI = async (

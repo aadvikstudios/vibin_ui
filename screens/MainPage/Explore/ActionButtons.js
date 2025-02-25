@@ -14,7 +14,7 @@ const ActionButtons = ({ onPress }) => {
           styles.actionButton,
           { backgroundColor: colors.disliked, shadowColor: colors.disliked },
         ]}
-        onPress={() => onPress('notliked')}
+        onPress={() => onPress('dislike')}
       >
         <View style={[styles.shadowEffect, { shadowColor: colors.disliked }]} />
         <Icon name="close" size={32} color={colors.onDisliked} />
@@ -26,7 +26,7 @@ const ActionButtons = ({ onPress }) => {
           styles.actionButton,
           { backgroundColor: colors.liked, shadowColor: colors.liked },
         ]}
-        onPress={() => onPress('liked')}
+        onPress={() => onPress('like')}
       >
         <View style={[styles.shadowEffect, { shadowColor: colors.liked }]} />
         <Icon name="heart" size={32} color={colors.onLiked} />

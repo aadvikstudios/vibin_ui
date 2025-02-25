@@ -94,12 +94,12 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const handleAction = async (action) => {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile) return;
-
+    console.log('action', action);
     setIsLoading(true);
     try {
       const response = await sendActionToBackendAPI(
-        userProfile.emailId,
-        currentProfile.emailId,
+        userProfile.userhandle,
+        currentProfile.userhandle,
         action
       );
       console.log('response?.isMatch', response?.isMatch, response);
