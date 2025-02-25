@@ -72,51 +72,65 @@ export const actionPingAPI = async (payload) => {
   }
 };
 
-// Existing APIs
-export const fetchMatchesForProfileAPI = async (emailId, gender) => {
-  const queryParams = new URLSearchParams({ emailId, gender }).toString();
-  console.log(
-    'from fetchMatchesForProfileAPI, emailId, gender',
-    emailId,
-    gender
-  );
+export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
+  console.log('🔍 Fetching matches for:', userhandle, gender);
+
   try {
-    const response = await fetch(`${API_BASE_URL}/api/match?${queryParams}`);
-    const data = await response.json();
-    console.log('matched profiles are ', data);
-    if (response.ok && data.profiles) {
-      // Fetch signed read URLs for photos only if photos exist and are not empty
-      const updatedMatches = await Promise.all(
-        data.profiles.map(async (match) => {
-          if (
-            match.photos &&
-            Array.isArray(match.photos) &&
-            match.photos.length > 0
-          ) {
-            const signedUrls = await Promise.allSettled(
-              match.photos.map((key) => getPresignedReadUrlAPI(key))
-            );
+    const response = await fetch(`${API_BASE_URL}/api/profile/suggestions`, {
+      method: 'POST', // ✅ Changed to POST (recommended for structured filtering)
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userhandle, gender }), // ✅ Sending structured data in the body
+    });
 
-            // Filter fulfilled promises and ignore failed ones
-            const filteredUrls = signedUrls
-              .filter((result) => result.status === 'fulfilled')
-              .map((result) => result.value);
-
-            return { ...match, photos: filteredUrls }; // Replace keys with valid URLs
-          }
-          // Return match as-is if photos is empty or invalid
-          return match;
-        })
-      );
-      console.log('Logs aere  for the matches ', updatedMatches);
-
-      return updatedMatches;
-    } else {
-      throw new Error(data.message || 'Failed to fetch profiles');
+    // ✅ Ensure response is OK before parsing JSON
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
+
+    const data = await response.json();
+    console.log('✅ Matched profiles:', data);
+
+    // ✅ Ensure data is an array before processing
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid response format: Expected an array');
+    }
+
+    // ✅ Fetch signed read URLs for photos if they exist
+    const updatedMatches = await Promise.all(
+      data.map(async (match) => {
+        if (match.photos?.length) {
+          const signedUrls = await Promise.allSettled(
+            match.photos.map((key) => getPresignedReadUrlAPI(key))
+          );
+
+          // ✅ Log errors if some URLs fail to fetch
+          signedUrls.forEach((result, index) => {
+            if (result.status === 'rejected') {
+              console.warn(
+                `⚠️ Failed to fetch signed URL for ${match.photos[index]}:`,
+                result.reason
+              );
+            }
+          });
+
+          // ✅ Keep only successful signed URLs
+          const filteredUrls = signedUrls
+            .filter((result) => result.status === 'fulfilled')
+            .map((result) => result.value);
+
+          return { ...match, photos: filteredUrls };
+        }
+        return match;
+      })
+    );
+
+    console.log('✅ Processed matches:', updatedMatches);
+    return updatedMatches;
   } catch (error) {
-    console.error('Error in fetchMatchesForProfileAPI:', error.message);
-    throw error;
+    console.error('❌ Error in fetchMatchesForProfileAPI:', error.message);
+    return []; // ✅ Return empty array instead of throwing error
   }
 };
 
