@@ -25,30 +25,34 @@ const Name = ({ navigation }) => {
     generateUserHandle(gender);
 
   // State variables
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState(initialUsername); // Stores the original capitalization
-  const [userhandle, setUserHandle] = useState(initialUserHandle); // Stores lowercase version for validation
-  const [userhandleAvailable, setUserHandleAvailable] = useState(true);
-  const [hideName, setHideName] = useState(false); // Controls whether name is visible on other pages
+  const [name, setName] = useState(userData?.name || '');
+  const [username, setUsername] = useState(initialUsername); // Stores original capitalization
+  const [userhandle, setUserHandle] = useState(initialUserHandle); // Stores lowercase for validation
+  const [userhandleAvailable, setUserHandleAvailable] = useState(null); // Null means unchecked
+  const [hideName, setHideName] = useState(userData?.hideName || false);
   const [errorMessage, setErrorMessage] = useState('');
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
+  // Validate preloaded userhandle on page load
   useEffect(() => {
-    const { username, userhandle } = generateUserHandle(gender);
-    setUsername(username);
-    setUserHandle(userhandle);
-  }, [gender]); // Re-run when gender changes
+    const validatePreloadedUserhandle = async () => {
+      if (userhandle.trim()) {
+        await checkUserHandleAvailability(userhandle);
+      }
+    };
+    validatePreloadedUserhandle();
+  }, []); // Runs once when component mounts
 
   // Function to check userhandle availability via API
-  const checkUserHandleAvailability = async () => {
-    if (!userhandle.trim()) return;
+  const checkUserHandleAvailability = async (handle) => {
+    if (!handle.trim()) return;
 
     setCheckingAvailability(true);
-    const isAvailable = await checkUserHandleAPI(userhandle); // Check lowercase handle
-    setUserHandleAvailable(isAvailable);
+    const result = await checkUserHandleAPI(handle.toLowerCase()); // Check lowercase handle
+    setUserHandleAvailable(result.available);
     setCheckingAvailability(false);
 
-    if (!isAvailable) {
+    if (!result.available) {
       setErrorMessage('Oops! This handle is already taken. Try another.');
     } else {
       setErrorMessage('');
@@ -61,7 +65,7 @@ const Name = ({ navigation }) => {
       return;
     }
 
-    if (!userhandleAvailable) {
+    if (userhandleAvailable === false) {
       setErrorMessage('Please choose a unique user handle.');
       return;
     }
@@ -99,9 +103,9 @@ const Name = ({ navigation }) => {
           onChangeText={(text) => {
             setUsername(text); // Store original casing
             setUserHandle(text.toLowerCase()); // Store lowercase for validation
-            setUserHandleAvailable(true); // Reset availability until checked
+            setUserHandleAvailable(null); // Reset availability until checked
           }}
-          onBlur={checkUserHandleAvailability}
+          onBlur={() => checkUserHandleAvailability(userhandle)}
           style={[styles.input, { backgroundColor: colors.surface }]}
           textColor={colors.primaryText}
           underlineColor={colors.primary}
@@ -110,10 +114,12 @@ const Name = ({ navigation }) => {
             checkingAvailability ? (
               <ActivityIndicator animating={true} size="small" />
             ) : (
-              <TextInput.Icon
-                icon={userhandleAvailable ? 'check-circle' : 'close-circle'}
-                color={userhandleAvailable ? 'green' : 'red'}
-              />
+              userhandleAvailable !== null && (
+                <TextInput.Icon
+                  icon={userhandleAvailable ? 'check-circle' : 'close-circle'}
+                  color={userhandleAvailable ? 'green' : 'red'}
+                />
+              )
             )
           }
         />
@@ -158,7 +164,9 @@ const Name = ({ navigation }) => {
       <Footer
         buttonText="Next"
         onPress={handleNext}
-        disabled={!userhandle.trim() || !userhandleAvailable || !name.trim()}
+        disabled={
+          !userhandle.trim() || userhandleAvailable === false || !name.trim()
+        }
       />
     </View>
   );

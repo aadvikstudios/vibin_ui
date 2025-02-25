@@ -30,7 +30,7 @@ const AppContent = () => {
 };
 
 const App = () => {
-  const themeMode = 'light'; // Set 'light' or 'dark' to switch themes
+  const themeMode = 'dark'; // Set 'light' or 'dark' to switch themes
   const currentTheme = PaperThemes[themeMode];
 
   return (

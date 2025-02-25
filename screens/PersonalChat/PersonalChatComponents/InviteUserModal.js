@@ -5,6 +5,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   StyleSheet,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -13,6 +14,12 @@ import { Ionicons } from '@expo/vector-icons';
 const InviteUserModal = ({ visible, onClose, onInvite }) => {
   const { colors } = useTheme();
   const [userHandle, setUserHandle] = useState('');
+  const [loading, setLoading] = useState(false); // ✅ Loading state
+
+  const handleInvitePress = () => {
+    if (!userHandle.trim()) return;
+    onInvite(userHandle, setLoading); // ✅ Pass setLoading to handleUserInvite
+  };
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -57,21 +64,31 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={() => onInvite(userHandle)}
+              onPress={handleInvitePress}
+              disabled={loading} // ✅ Disable button when loading
             >
-              <Ionicons
-                name="send-outline"
-                size={20}
-                color={colors.onPrimary}
-              />
-              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-                Send Invite
-              </Text>
+              {loading ? (
+                <ActivityIndicator color={colors.onPrimary} /> // ✅ Show loader instead of button text
+              ) : (
+                <>
+                  <Ionicons
+                    name="send-outline"
+                    size={20}
+                    color={colors.onPrimary}
+                  />
+                  <Text
+                    style={[styles.buttonText, { color: colors.onPrimary }]}
+                  >
+                    Send Invite
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.secondary }]}
               onPress={onClose}
+              disabled={loading} // ✅ Disable cancel button when loading
             >
               <Ionicons
                 name="close-outline"

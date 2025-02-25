@@ -378,26 +378,34 @@ export const fetchNewLikesAPI = async (emailId) => {
     throw error;
   }
 };
-// api.js
+
 export const checkUserHandleAPI = async (userhandle) => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/profiles/check-userhandle?userhandle=${encodeURIComponent(userhandle)}`,
+      `${API_BASE_URL}/api/profile/check-userhandle?userhandle=${encodeURIComponent(userhandle)}`,
       {
-        method: 'GET', // ✅ Use GET instead of POST
+        method: 'GET', // ✅ GET method (correct)
         headers: { 'Content-Type': 'application/json' },
       }
     );
 
+    // Handle 409 Conflict (Userhandle is taken)
     if (response.status === 409) {
-      return false; // Userhandle is taken
+      return { available: false }; // ❌ Userhandle is already taken
     }
 
-    const data = await response.json();
-    return data.message === 'Userhandle is available';
+    // Handle 200 OK response
+    if (response.ok) {
+      const data = await response.json();
+      return { available: data.available }; // ✅ Userhandle is available
+    }
+
+    // Fallback for unexpected errors
+    console.error('Unexpected response:', response);
+    return { available: false, error: 'Unexpected response from server' };
   } catch (error) {
-    console.error('❌ Error checking user handle:', error);
-    return false; // Assume taken on API failure
+    console.error('❌ API error while checking user handle:', error);
+    return { available: false, error: 'Network or server error' }; // Assume taken on failure
   }
 };
 
@@ -406,7 +414,7 @@ export const fetchUserProfileUsingEmailAPI = async (
   targetEmail = null
 ) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/profiles/email/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/profile/by-email`, {
       method: 'POST', // Use POST to send JSON body
       headers: {
         'Content-Type': 'application/json',
@@ -431,7 +439,7 @@ export const fetchUserProfileUsingEmailAPI = async (
 };
 
 export const createUserProfileAPI = async (profileData) => {
-  const response = await fetch(`${API_BASE_URL}/api/profiles`, {
+  const response = await fetch(`${API_BASE_URL}/api/profile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(profileData),
@@ -445,7 +453,7 @@ export const createUserProfileAPI = async (profileData) => {
 };
 
 export const deleteUserProfileAPI = async (userId) => {
-  const response = await fetch(`${API_BASE_URL}/api/profiles/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/profile/${userId}`, {
     method: 'DELETE',
   });
 
@@ -589,7 +597,7 @@ export const getPresignedReadUrlAPI = async (key) => {
 
 export const updateUserProfileAPI = async (userId, profileData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/profiles/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/profile/${userId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

@@ -34,14 +34,11 @@ const SafetyGuidelines = ({ navigation }) => {
 
       console.log('Profile created successfully:', response);
 
-      if (response && response.profile) {
-        updateUser(response.profile); // Update context
+      if (response) {
+        updateUser(response); // Update context
 
         // Store user profile locally in AsyncStorage
-        await AsyncStorage.setItem(
-          'userProfile',
-          JSON.stringify(response.profile)
-        );
+        await AsyncStorage.setItem('userProfile', JSON.stringify(response));
 
         console.log('User profile stored locally.');
 

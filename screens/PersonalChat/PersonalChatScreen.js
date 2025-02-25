@@ -15,7 +15,6 @@ import { useSocket } from './useSocket';
 import {
   fetchMessages,
   markMessagesRead,
-  handleSendMessage,
   likeMessage,
 } from './ChatContainer/chatUtils';
 
@@ -25,7 +24,7 @@ import MessageInput from './PersonalChatComponents/MessageInput';
 import InviteUserModal from './PersonalChatComponents/InviteUserModal';
 
 // Import Invite Utility
-import { handleUserInvite } from '../../utils/chatUtils';
+import { handleUserInvite, checkPendingInvites } from '../../utils/chatUtils';
 
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
@@ -45,12 +44,24 @@ const PersonalChatScreen = ({ route, navigation }) => {
 
   // Invite State
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState([]);
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
     if (userData.emailId !== senderId) {
       markMessagesRead(matchId);
     }
+
+    // ✅ Check for pending invites when the chat screen loads
+    checkPendingInvites(userData.emailId).then((invites) => {
+      if (invites.length > 0) {
+        setPendingInvites(invites);
+        Alert.alert(
+          'Pending Invitation',
+          'You have a pending chat invitation awaiting approval.'
+        );
+      }
+    });
   }, [matchId, senderId, userData.emailId]);
 
   const onRefresh = () => {
@@ -105,7 +116,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
           userData={userData}
           inputText={inputText}
           setInputText={setInputText}
-          handleSendMessage={handleSendMessage}
           colors={colors}
           replyMessage={replyMessage}
           setReplyMessage={setReplyMessage}
@@ -115,13 +125,14 @@ const PersonalChatScreen = ({ route, navigation }) => {
         <InviteUserModal
           visible={inviteModalVisible}
           onClose={() => setInviteModalVisible(false)}
-          onInvite={(userHandle) =>
+          onInvite={(userHandle, setLoading) =>
             handleUserInvite({
-              userHandle,
-              userData,
+              invitedUserHandle: userHandle,
+              initiatorUserEmail: userData.emailId,
               setModalVisible: setInviteModalVisible,
               sendMessage,
               secondUserEmail: senderId, // The second user who needs to approve
+              setLoading, // ✅ Pass loading state
             })
           }
         />
