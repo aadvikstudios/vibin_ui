@@ -1,5 +1,11 @@
-import React from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useTheme } from 'react-native-paper';
 import ProfileCard from './ProfileCard'; // ✅ Reusable Profile Component
 import { actionPingAPI } from '../../../api';
@@ -12,19 +18,34 @@ import {
 
 const PingsScreen = ({ pings, loading, userProfile }) => {
   const { colors } = useTheme();
+  const [processingAction, setProcessingAction] = useState(null); // ✅ Tracks which action is in progress
 
   const handlePingAction = async (senderHandle, action) => {
+    setProcessingAction(senderHandle); // ✅ Set loading state for the specific sender
+
     try {
+      const endpoint =
+        action === ACCEPT_ACTION
+          ? '/api/interactions/ping/approve'
+          : '/api/interactions/ping/decline';
+      console.log('user data is ', userProfile);
       const payload = {
-        receiverHandle: userProfile.receiverHandle,
+        receiverHandle: userProfile.userhandle,
         senderHandle,
-        action,
       };
 
-      const response = await actionPingAPI(payload);
-      console.log('Ping Action Response:', response);
+      const response = await actionPingAPI(endpoint, payload);
+      console.log(`Ping ${action} Action Response:`, response);
+
+      Alert.alert(
+        'Success',
+        `Ping ${action === ACCEPT_ACTION ? 'approved' : 'declined'} successfully!`
+      );
     } catch (error) {
-      console.error('Error in handlePingAction:', error.message);
+      Alert.alert('Error', `Failed to ${action} ping. Please try again.`);
+      console.error(`Error in handlePingAction (${action}):`, error.message);
+    } finally {
+      setProcessingAction(null); // ✅ Reset processing state
     }
   };
 
@@ -46,6 +67,7 @@ const PingsScreen = ({ pings, loading, userProfile }) => {
           onSecondaryAction={() =>
             handlePingAction(item.senderHandle, DECLINE_ACTION)
           }
+          isLoading={processingAction === item.senderHandle} // ✅ Disables button while processing
         />
       )}
       ListEmptyComponent={

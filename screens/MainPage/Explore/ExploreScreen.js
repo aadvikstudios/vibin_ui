@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, ActivityIndicator, Alert, Animated, Easing } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { View, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 import MatchScreen from './MatchScreen';
@@ -13,10 +13,6 @@ import { sendActionToBackendAPI, sendPingToBackendAPI } from '../../../api';
 
 const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const { colors } = useTheme();
-
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(1)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMatch, setIsMatch] = useState(false);
@@ -37,64 +33,20 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   );
 
   const moveToNextProfile = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -500, // Slide left
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0, // Fade out
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.8, // Slight shrink effect
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1;
-        if (nextIndex >= profiles.length) {
-          setShowNoProfiles(true);
-          return prevIndex;
-        }
-
-        // Reset animation values for new profile
-        slideAnim.setValue(500); // Start new profile off-screen
-        opacityAnim.setValue(0);
-        scaleAnim.setValue(1.2); // Slight zoom-in
-
-        Animated.parallel([
-          Animated.timing(slideAnim, {
-            toValue: 0, // Slide to center
-            duration: 300,
-            easing: Easing.out(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacityAnim, {
-            toValue: 1, // Fade in
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 1, // Back to normal scale
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
-
-        return nextIndex;
-      });
+    setCurrentIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+      if (nextIndex >= profiles.length) {
+        setShowNoProfiles(true);
+        return prevIndex;
+      }
+      return nextIndex;
     });
   };
 
   const handleAction = async (action) => {
     const currentProfile = profiles[currentIndex];
     if (!currentProfile) return;
-    console.log('action', action);
+
     setIsLoading(true);
     try {
       const response = await sendActionToBackendAPI(
@@ -102,7 +54,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         currentProfile.userhandle,
         action
       );
-      console.log('response?.isMatch', response?.isMatch, response);
 
       if (response?.isMatch) {
         setIsMatch(true);
@@ -127,7 +78,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
     try {
       const response = await sendPingToBackendAPI(
-        userProfile.userhandle, // ✅ Updated from `emailId` to `userhandle`
+        userProfile.userhandle,
         profiles[currentIndex]?.userhandle,
         pingNote
       );
@@ -157,14 +108,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       ) : showNoProfiles ? (
         <EmptyStateView title="No profiles available" />
       ) : profiles?.length > 0 && currentIndex < profiles.length ? (
-        <Animated.View
-          style={{
-            transform: [{ translateX: slideAnim }, { scale: scaleAnim }],
-            opacity: opacityAnim,
-          }}
-        >
-          <ProfileScreen profile={profiles[currentIndex]} />
-        </Animated.View>
+        <ProfileScreen profile={profiles[currentIndex]} />
       ) : (
         <EmptyStateView title="No profiles available" />
       )}

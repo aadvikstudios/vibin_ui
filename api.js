@@ -48,9 +48,9 @@ export const sendMessageAPI = async (message) => {
   }
 };
 
-export const actionPingAPI = async (payload) => {
+export const actionPingAPI = async (endpoint, payload) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/action/pingAction`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,17 +58,17 @@ export const actionPingAPI = async (payload) => {
       body: JSON.stringify(payload),
     });
 
-    console.log('API response status:', response.status);
+    console.log(`API response status (${endpoint}):`, response.status);
 
     if (!response.ok) {
       const errorText = await response.text(); // Read response as text to handle non-JSON errors
-      console.error('API Error:', errorText);
-      throw new Error(errorText || 'Failed to send ping action');
+      console.error(`API Error (${endpoint}):`, errorText);
+      throw new Error(errorText || `Failed to process ping action`);
     }
 
     return await response.json(); // Parse only if the response is valid JSON
   } catch (error) {
-    console.error('Error in actionPingAPI:', error.message);
+    console.error(`Error in actionPingAPI (${endpoint}):`, error.message);
     throw error;
   }
 };
