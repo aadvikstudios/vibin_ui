@@ -1,20 +1,36 @@
 import React from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Text, Avatar, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const PingCard = ({ ping, onAccept, onDecline }) => {
+/**
+ * ProfileCard Component - Used for displaying user profiles in Likes, Pings, and Matches.
+ *
+ * @param {Object} profile - The user profile data.
+ * @param {String} type - Defines the context (e.g., "like", "ping", "match").
+ * @param {Function} onPrimaryAction - Function to handle the main action (e.g., like, accept ping).
+ * @param {Function} onSecondaryAction - Function to handle the secondary action (e.g., dislike, decline ping).
+ */
+const ProfileCard = ({ profile, type, onPrimaryAction, onSecondaryAction }) => {
   const { colors, fonts } = useTheme();
+
+  // Define action icons dynamically based on type
+  const actionIcons = {
+    like: { primary: 'heart', secondary: 'minus' }, // Like & Dislike
+    ping: { primary: 'check', secondary: 'close' }, // Accept & Decline
+    match: { primary: 'message-text', secondary: 'close' }, // Start Chat & Unmatch
+  };
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface }]}>
       {/* Profile Photo */}
       <View style={styles.photoContainer}>
-        {ping.senderPhoto ? (
-          <Image source={{ uri: ping.senderPhoto }} style={styles.photo} />
+        {profile.photos && profile.photos.length > 0 ? (
+          <Image source={{ uri: profile.photos[0] }} style={styles.photo} />
         ) : (
           <Avatar.Text
             size={60}
-            label={ping.senderName?.charAt(0).toUpperCase() || '?'}
+            label={profile.name?.charAt(0).toUpperCase() || '?'}
             style={[styles.avatar, { backgroundColor: colors.disabled }]}
           />
         )}
@@ -28,7 +44,7 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
             { color: colors.primaryText, ...fonts.displayMedium },
           ]}
         >
-          {ping.senderName}, {ping.senderAge}
+          {profile.name}, {profile.age}
         </Text>
         <Text
           style={[
@@ -36,32 +52,42 @@ const PingCard = ({ ping, onAccept, onDecline }) => {
             { color: colors.secondaryText, ...fonts.bodyMedium },
           ]}
         >
-          {ping.senderGender}, {ping.senderOrientation}
+          {profile.gender}, {profile.orientation}
         </Text>
-        <Text
-          style={[
-            styles.pingNote,
-            { color: colors.onSurfaceVariant, ...fonts.bodyMedium },
-          ]}
-        >
-          {ping.pingNote}
-        </Text>
+
+        {/* Display message for Pings */}
+        {type === 'ping' && profile.message && (
+          <Text
+            style={[
+              styles.pingNote,
+              { color: colors.onSurfaceVariant, ...fonts.bodyMedium },
+            ]}
+          >
+            {profile.message}
+          </Text>
+        )}
       </View>
 
       {/* Action Buttons */}
       <View style={styles.actions}>
-        <TouchableOpacity onPress={onDecline} style={styles.declineButton}>
+        {/* Secondary Action (Dislike, Decline, Unmatch) */}
+        <TouchableOpacity
+          onPress={onSecondaryAction}
+          style={styles.actionButton}
+        >
           <Avatar.Icon
             size={36}
-            icon="close"
+            icon={actionIcons[type]?.secondary}
             color={colors.onDanger}
             style={[styles.actionIcon, { backgroundColor: colors.danger }]}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onAccept} style={styles.acceptButton}>
+
+        {/* Primary Action (Like, Accept, Start Chat) */}
+        <TouchableOpacity onPress={onPrimaryAction} style={styles.actionButton}>
           <Avatar.Icon
             size={36}
-            icon="check"
+            icon={actionIcons[type]?.primary}
             color={colors.onPrimary}
             style={[styles.actionIcon, { backgroundColor: colors.primary }]}
           />
@@ -110,13 +136,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  actionButton: {
+    marginLeft: 8,
+  },
   actionIcon: {
     borderRadius: 18,
     elevation: 2,
   },
-  declineButton: {
-    marginRight: 8,
-  },
 });
 
-export default PingCard;
+export default ProfileCard;

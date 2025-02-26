@@ -92,19 +92,16 @@ const MainPage = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const [profileData, likesData, pingsData, connectionsData] =
-        await Promise.all([
-          fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
-          fetchInteractionsForUserHandle(userData.userhandle),
-          // fetchNewLikesAPI(userData.emailId),
-          // fetchPingsAPI(userData.emailId),
-          // fetchConnectionsAPI(userData.emailId),
-        ]);
+      const [profileData, interactionData] = await Promise.all([
+        fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
+        fetchInteractionsForUserHandle(userData.userhandle),
+      ]);
 
       setProfiles(profileData || []);
-      setLikes(likesData || []);
-      setPings(pingsData || []);
-      setConnections(connectionsData || []);
+      console.log('likesData', interactionData);
+      setLikes((interactionData || []).filter((like) => like.type === 'like'));
+      setPings((interactionData || []).filter((like) => like.type === 'ping'));
+      // setConnections(connectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {

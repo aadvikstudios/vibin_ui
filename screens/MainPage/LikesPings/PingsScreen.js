@@ -1,39 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import PingCard from './PingCard';
+import ProfileCard from './ProfileCard'; // ✅ Using the new reusable component
 import { actionPingAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
+import {
+  DECLINE_ACTION,
+  ACCEPT_ACTION,
+  PING_ACTION,
+} from '../../../constants/actionConstants'; // ✅ Import constants
 
-const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
+const PingsScreen = ({ pings, loading, userProfile }) => {
   const { colors } = useTheme();
-  const [updatedPings, setUpdatedPings] = useState([...initialPings]);
 
-  useEffect(() => {
-    setUpdatedPings(initialPings);
-  }, [initialPings]);
-
-  const handlePingAction = async (emailId, action, pingNote = null) => {
+  const handlePingAction = async (senderHandle, action) => {
     try {
       const payload = {
-        emailId: userProfile.emailId,
-        targetEmailId: emailId,
+        receiverHandle: userProfile.receiverHandle,
+        senderHandle,
         action,
-        ...(pingNote ? { pingNote } : {}),
       };
 
-      console.log('Sending request:', payload);
       const response = await actionPingAPI(payload);
-
-      if (response.message) {
-        setUpdatedPings(
-          updatedPings.filter((ping) => ping.senderEmailId !== emailId)
-        );
-      } else {
-        console.error(`Error performing action: ${response.message}`);
-      }
+      console.log('Ping Action Response:', response);
     } catch (error) {
-      console.error(`Error in handlePingAction: ${error.message}`);
+      console.error('Error in handlePingAction:', error.message);
     }
   };
 
@@ -45,23 +36,24 @@ const PingsScreen = ({ pings: initialPings, loading, userProfile }) => {
     </View>
   ) : (
     <FlatList
-      data={updatedPings}
-      keyExtractor={(item, index) => `${item.senderEmailId}-${index}`}
+      data={pings}
+      keyExtractor={(item) => item.senderHandle}
       renderItem={({ item }) => (
-        <PingCard
-          ping={item}
-          onAccept={() =>
-            handlePingAction(item.senderEmailId, 'accept', item.pingNote)
+        <ProfileCard
+          profile={item}
+          type={PING_ACTION}
+          onPrimaryAction={() =>
+            handlePingAction(item.senderHandle, ACCEPT_ACTION)
           }
-          onDecline={() => handlePingAction(item.senderEmailId, 'decline')}
+          onSecondaryAction={() =>
+            handlePingAction(item.senderHandle, DECLINE_ACTION)
+          }
         />
       )}
       ListEmptyComponent={
         <EmptyStateView
-          title="Good Pings come to those who wait"
-          subtitle="People can send a Ping to let you know they’re into you."
-          secondaryActionText="Edit search settings"
-          onSecondaryAction={() => console.log('Edit settings pressed')}
+          title="No Pings Yet"
+          subtitle="Waiting for someone to ping you!"
         />
       }
       contentContainerStyle={{ flexGrow: 1, padding: 10 }}

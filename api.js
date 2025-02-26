@@ -1,4 +1,5 @@
 const API_BASE_URL = `https://api.vibinconnect.com`;
+import { LIKE_ACTION, DISLIKE_ACTION } from './constants/actionConstants'; // ✅ Import constants
 
 // Fetch chat messages for a match
 export const fetchMessagesAPI = async (matchId, limit = 20) => {
@@ -149,9 +150,9 @@ export const sendActionToBackendAPI = async (
 
   // Determine the correct API endpoint based on the action
   let endpoint = `${API_BASE_URL}/api/interactions`;
-  if (action === 'like') {
+  if (action === LIKE_ACTION) {
     endpoint = `${API_BASE_URL}/api/interactions/like`;
-  } else if (action === 'dislike') {
+  } else if (action === DISLIKE_ACTION) {
     endpoint = `${API_BASE_URL}/api/interactions/dislike`;
   } else {
     throw new Error("Invalid action. Only 'like' and 'dislike' are supported.");
@@ -188,45 +189,40 @@ export const sendActionToBackendAPI = async (
 };
 
 export const sendPingToBackendAPI = async (
-  emailId,
-  targetEmailId,
-  action,
-  pingNote
+  senderHandle,
+  receiverHandle,
+  message
 ) => {
-  console.log(
-    'emailId, targetEmailId, action, pingNote',
-    emailId,
-    targetEmailId,
-    action,
-    pingNote
-  );
+  console.log('📩 Sending ping:', { senderHandle, receiverHandle, message });
 
   // Build the request body dynamically
   const requestBody = {
-    emailId,
-    targetEmailId,
-    action,
-    pingNote,
+    senderHandle, // ✅ Aligns with backend expectation
+    receiverHandle,
+    message, // ✅ Optional custom message
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/action/sendPing`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
-  console.log(response);
-  if (!response.ok) {
-    console.log('!response.ok', !response.ok, response);
-    const errorDetails = await response.json();
-    console.error('Response Error:', response);
-    throw new Error(
-      errorDetails?.message || 'Failed to send action to backend'
-    );
-  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/interactions/ping`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
 
-  return await response.json();
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      console.error('❌ Response Error:', errorDetails);
+      throw new Error(errorDetails?.message || 'Failed to send ping');
+    }
+
+    console.log('✅ Ping successfully sent to backend');
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Error in sendPingToBackendAPI:', error.message);
+    throw error;
+  }
 };
 
 export const fetchConnectionsAPI = async (emailId) => {
@@ -361,7 +357,9 @@ export const fetchPingsAPI = async (emailId) => {
 
 export const fetchInteractionsForUserHandle = async (receiverHandle) => {
   try {
-    console.log(`🔍 Fetching new likes for receiverHandle: ${receiverHandle}`);
+    console.log(
+      `🔍 Fetching interactions for receiverHandle: ${receiverHandle}`
+    );
 
     const response = await fetch(`${API_BASE_URL}/api/interactions/get`, {
       method: 'POST',
@@ -373,49 +371,55 @@ export const fetchInteractionsForUserHandle = async (receiverHandle) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch new likes');
+      throw new Error(errorData.message || 'Failed to fetch interactions');
     }
 
     const data = await response.json();
-    console.log('✅ Data from fetchNewLikesAPI:', data);
+    console.log('✅ Data from fetchInteractionsForUserHandle:', data);
 
-    if (data.length > 0) {
-      // ✅ Iterate over each interaction and update the photos with pre-signed URLs
-      const likesWithPresignedUrls = await Promise.all(
-        data.map(async (interaction) => {
-          if (interaction.photos && interaction.photos.length > 0) {
-            const updatedPhotos = await Promise.all(
-              interaction.photos.map(async (photoKey) => {
-                try {
-                  const presignedUrl = await getPresignedReadUrlAPI(photoKey);
-                  return presignedUrl; // ✅ Replace the key with the URL
-                } catch (error) {
-                  console.error(
-                    `⚠️ Error fetching pre-signed URL for photo: ${photoKey}`,
-                    error.message
-                  );
-                  return photoKey; // ✅ Return the original key in case of an error
-                }
-              })
-            );
-
-            return {
-              ...interaction,
-              photos: updatedPhotos, // ✅ Replace photos with updated URLs
-            };
-          }
-
-          return interaction; // ✅ Return the interaction as-is if no photos
-        })
-      );
-
-      return likesWithPresignedUrls;
-    } else {
-      return [];
+    // ✅ Ensure data is always an array (default to empty array if null)
+    if (!Array.isArray(data)) {
+      console.warn(`⚠️ No data found for receiverHandle: ${receiverHandle}`);
+      return []; // ✅ Return an empty array instead of crashing
     }
+
+    // ✅ Process interactions and update photo URLs
+    const likesWithPresignedUrls = await Promise.all(
+      data.map(async (interaction) => {
+        if (
+          interaction.photos &&
+          Array.isArray(interaction.photos) &&
+          interaction.photos.length > 0
+        ) {
+          const updatedPhotos = await Promise.all(
+            interaction.photos.map(async (photoKey) => {
+              try {
+                const presignedUrl = await getPresignedReadUrlAPI(photoKey);
+                return presignedUrl; // ✅ Replace the key with the URL
+              } catch (error) {
+                console.error(
+                  `⚠️ Error fetching pre-signed URL for photo: ${photoKey}`,
+                  error.message
+                );
+                return photoKey; // ✅ Return the original key in case of an error
+              }
+            })
+          );
+
+          return {
+            ...interaction,
+            photos: updatedPhotos, // ✅ Replace photos with updated URLs
+          };
+        }
+
+        return interaction; // ✅ Return the interaction as-is if no photos
+      })
+    );
+
+    return likesWithPresignedUrls;
   } catch (error) {
-    console.error('❌ Error fetching new likes:', error.message);
-    throw error;
+    console.error('❌ Error fetching interactions:', error.message);
+    return []; // ✅ Return an empty array instead of crashing
   }
 };
 

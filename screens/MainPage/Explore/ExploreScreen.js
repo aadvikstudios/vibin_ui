@@ -121,14 +121,14 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       Alert.alert('Note Required', 'Please add a note before sending.');
       return;
     }
-    setModalVisible(false);
 
+    setModalVisible(false);
     setIsLoading(true);
+
     try {
       const response = await sendPingToBackendAPI(
-        userProfile.emailId,
-        profiles[currentIndex]?.emailId,
-        'pinged',
+        userProfile.userhandle, // ✅ Updated from `emailId` to `userhandle`
+        profiles[currentIndex]?.userhandle,
         pingNote
       );
 

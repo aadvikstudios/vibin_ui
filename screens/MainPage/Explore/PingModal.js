@@ -20,14 +20,14 @@ const PingModal = ({
       onDismiss={onClose}
       contentContainerStyle={[
         styles.modalContainer,
-        { backgroundColor: colors.surface }, // White background
+        { backgroundColor: colors.surface }, // Dynamically set background
       ]}
     >
-      <View style={styles.indicator} />
+      <View style={[styles.indicator, { backgroundColor: colors.border }]} />
       {profilePhoto && (
         <Image source={{ uri: profilePhoto }} style={styles.avatar} />
       )}
-      <Text style={[styles.modalTitle, { color: colors.text }]}>
+      <Text style={[styles.modalTitle, { color: colors.primaryText }]}>
         Send a Ping
       </Text>
       <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>
@@ -36,8 +36,16 @@ const PingModal = ({
       </Text>
       <TextInput
         mode="outlined"
-        style={[styles.textInput, { borderColor: colors.primary }]}
+        style={[
+          styles.textInput,
+          {
+            borderColor: colors.primary,
+            backgroundColor: colors.surfaceVariant,
+            color: colors.primaryText,
+          },
+        ]}
         placeholder="Add a note..."
+        placeholderTextColor={colors.placeholder}
         value={pingNote}
         onChangeText={setPingNote}
         multiline
@@ -47,15 +55,15 @@ const PingModal = ({
         onPress={onSendPing}
         loading={isLoading}
         disabled={isLoading || !pingNote.trim()}
-        style={[styles.sendButton, { backgroundColor: colors.primary }]}
-        labelStyle={[styles.sendButtonText, { color: colors.onPrimary }]} // White button text
+        style={[styles.sendButton, { backgroundColor: colors.liked }]}
+        labelStyle={[styles.sendButtonText, { color: colors.onLiked }]}
       >
         Send Ping
       </Button>
       <Button
         mode="text"
         onPress={onClose}
-        labelStyle={[styles.cancelButtonText, { color: colors.danger }]} // Error color for Cancel
+        labelStyle={[styles.cancelButtonText, { color: colors.danger }]}
       >
         Cancel
       </Button>
@@ -77,7 +85,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#ccc',
     alignSelf: 'center',
     marginBottom: 10,
   },
@@ -102,6 +109,7 @@ const styles = StyleSheet.create({
   textInput: {
     width: '100%',
     marginBottom: 20,
+    borderRadius: 8,
   },
   sendButton: {
     width: '100%',
