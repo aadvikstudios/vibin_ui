@@ -95,7 +95,7 @@ const MainPage = ({ navigation }) => {
       const [profileData, likesData, pingsData, connectionsData] =
         await Promise.all([
           fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
-          fetchInteractionsForUserHandle(userData.userhandle)
+          fetchInteractionsForUserHandle(userData.userhandle),
           // fetchNewLikesAPI(userData.emailId),
           // fetchPingsAPI(userData.emailId),
           // fetchConnectionsAPI(userData.emailId),

@@ -229,7 +229,6 @@ export const sendPingToBackendAPI = async (
   return await response.json();
 };
 
-
 export const fetchConnectionsAPI = async (emailId) => {
   console.log('fetchConnectionsAPI', emailId);
 
@@ -419,7 +418,6 @@ export const fetchInteractionsForUserHandle = async (receiverHandle) => {
     throw error;
   }
 };
-
 
 export const checkUserHandleAPI = async (userhandle) => {
   try {

@@ -36,7 +36,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
     }, [profiles])
   );
 
-
   const moveToNextProfile = () => {
     Animated.parallel([
       Animated.timing(slideAnim, {
