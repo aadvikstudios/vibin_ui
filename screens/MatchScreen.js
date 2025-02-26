@@ -55,7 +55,7 @@ const MatchScreen = ({ targetProfile, userProfile, matchId, onClose }) => {
         senderId: userProfile.userId,
         content: initialMessage.trim(),
         createdAt: new Date().toISOString(),
-        isUnRead: true,
+        isUnread: 'true',
       };
 
       try {

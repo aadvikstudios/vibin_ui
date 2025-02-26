@@ -32,9 +32,12 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const { match } = route.params;
   console.log('match value is ', match, userData.userhandle);
   const chatName = match.name;
-  const chatImage = match.photo;
+  const chatImage = match?.photos[0];
   const matchId = match.matchId;
-  const senderId = match.senderId;
+  const otherUserHandle =
+    match.user1Handle === userData.userhandle
+      ? match.user2Handle
+      : match.user1Handle;
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -49,12 +52,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
-    markMessagesRead(
-      matchId,
-      match.user1Handle === userData.userhandle
-        ? match.user2Handle
-        : match.user1Handle
-    );
+    markMessagesRead(matchId, otherUserHandle);
 
     // ✅ Check for pending invites when the chat screen loads
     // checkPendingInvites(userData.emailId).then((invites) => {
@@ -66,7 +64,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
     //     );
     //   }
     // });
-  }, [matchId, senderId, userData.emailId]);
+  }, [matchId, otherUserHandle, userData.userhandle]);
 
   const onRefresh = () => {
     setRefreshing(true);

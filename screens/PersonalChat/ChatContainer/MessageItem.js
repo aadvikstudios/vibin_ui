@@ -76,8 +76,7 @@ const MessageItem = ({
               likeMessage(
                 socket,
                 item.matchId,
-                item.createdAt,
-                item.messageId,
+                item.createdAt, // ✅ Use createdAt instead of messageId
                 !item.liked,
                 setMessages
               )

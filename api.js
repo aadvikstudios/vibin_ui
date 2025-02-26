@@ -23,10 +23,10 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
     throw error;
   }
 };
-
 export const sendMessageAPI = async (message) => {
   try {
-    console.log('Sending message to backend:', message);
+    console.log('📤 Sending message to backend:', message);
+
     const response = await fetch(`${API_BASE_URL}/api/chat/message`, {
       method: 'POST',
       headers: {
@@ -37,13 +37,13 @@ export const sendMessageAPI = async (message) => {
 
     if (!response.ok) {
       const data = await response.json();
-      console.error('Backend response error:', data);
+      console.error('❌ Backend response error:', data);
       throw new Error(data.message || 'Failed to send message');
     }
 
-    console.log('Message successfully sent to backend');
+    console.log('✅ Message successfully stored in backend');
   } catch (error) {
-    console.error('Error in sendMessageAPI:', error.message);
+    console.error('❌ Error in sendMessageAPI:', error.message);
     throw error;
   }
 };
@@ -600,25 +600,24 @@ export const markMessagesReadAPI = async (matchId, userHandle) => {
   }
 };
 
-export const likeMessageAPI = async (matchId, createdAt, messageId, liked) => {
+export const likeMessageAPI = async (matchId, createdAt, liked) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/chat/messages/like`, {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ matchId, createdAt, messageId, liked }),
+      body: JSON.stringify({ matchId, createdAt, liked }), // ✅ Send `createdAt`
     });
 
     if (!response.ok) {
-      throw new Error('Failed to like message');
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.error || 'Failed to update like status');
     }
 
-    // Parse and return the response data
-    const responseData = await response.json();
-    return responseData.data; // Assuming the "data" field contains the updated message
+    return await response.json();
   } catch (error) {
-    console.error('Error in likeMessageAPI:', error);
+    console.error('❌ Error in likeMessageAPI:', error.message);
     throw error;
   }
 };

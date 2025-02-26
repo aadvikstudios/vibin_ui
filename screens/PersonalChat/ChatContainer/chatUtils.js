@@ -39,7 +39,6 @@ export const markMessagesRead = async (matchId, userhandle) => {
     console.error('Failed to mark messages as read:', error);
   }
 };
-
 export const handleSendMessage = (
   inputText,
   matchId,
@@ -50,29 +49,34 @@ export const handleSendMessage = (
   if (!inputText.trim()) return;
 
   const message = {
-    messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-    matchId,
-    senderId: userData.emailId,
-    content: inputText.trim(),
-    createdAt: new Date().toISOString(),
-    isUnRead: true,
+    messageId: `${matchId}-${Date.now()}-${Math.random()}`, // Unique message ID
+    matchId, // Match ID
+    senderId: userData.emailId, // Sender's handle (User's email ID)
+    content: inputText.trim(), // Message content
+    createdAt: new Date().toISOString(), // Timestamp in ISO format
+    isUnread: 'true', // Ensure it's stored as a string ("true" or "false")
+    liked: false, // Default message is not liked
   };
 
+  // ✅ Send message with debounce to prevent spam clicks
   debouncedSendMessage(sendMessage, message);
+
+  // ✅ Clear input field
   setInputText('');
 };
 
+// ✅ Debounced function to prevent multiple rapid message sends
 const debouncedSendMessage = debounce((sendMessage, message) => {
   sendMessage(message);
 }, 500);
 
-/** Pick Image & Upload to S3 */
 export const pickImageAndUpload = async (
   matchId,
   sendMessage,
   userData,
   path = 'chat-images/'
 ) => {
+  // ✅ Request permission to access the media library
   const permissionResult =
     await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permissionResult.granted) {
@@ -80,6 +84,7 @@ export const pickImageAndUpload = async (
     return;
   }
 
+  // ✅ Launch image picker
   let result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,
@@ -92,64 +97,48 @@ export const pickImageAndUpload = async (
       const imageUri = result.assets[0].uri;
       const fileName = `${matchId}-${Date.now()}.jpg`;
       const fileType = 'image/jpeg';
-      console.log('path is ', path);
-      // 1️⃣ Generate Pre-Signed URL for chat-images/
+
+      console.log('📂 Upload path:', path);
+
+      // ✅ 1️⃣ Generate Pre-Signed URL for S3 upload
       const { url: uploadUrl, fileName: s3Key } = await generatePresignedUrlAPI(
         fileName,
         fileType,
         path
       );
 
-      // 2️⃣ Upload Image to S3
+      // ✅ 2️⃣ Upload Image to S3
       await uploadImageToS3API(uploadUrl, imageUri, path);
 
-      // 3️⃣ Store only the relative path
+      // ✅ 3️⃣ Store only the relative path in DB
       const storedFilePath = `${path}${fileName}`;
-      console.log('stored file path is ', storedFilePath);
-      // 4️⃣ Send message with the image URL
+      console.log('✅ Stored file path:', storedFilePath);
+
+      // ✅ 4️⃣ Create message payload
       const message = {
-        messageId: `${matchId}-${Date.now()}-${Math.random()}`,
-        matchId: String(matchId),
-        senderId: userData.emailId,
-        content: '[ Image ]',
-        imageUrl: storedFilePath, // Store relative path
-        createdAt: new Date().toISOString(),
-        isUnRead: true,
+        messageId: `${matchId}-${Date.now()}-${Math.random()}`, // Unique ID
+        matchId: String(matchId), // Ensure matchId is a string
+        senderId: userData.emailId, // Sender's ID
+        content: '[ Image ]', // Placeholder text for image messages
+        imageUrl: storedFilePath, // Store relative image path
+        createdAt: new Date().toISOString(), // Timestamp
+        isUnread: 'true', // Stored as a string in DB
+        liked: false, // Default liked status
       };
 
-      sendMessage(message);
-      sendMessageAPI(message);
+      // ✅ 5️⃣ Send message to local state and backend
+      sendMessage(message); // Update UI instantly
+      sendMessageAPI(message); // Send to backend
     } catch (error) {
-      console.error('Image upload failed:', error);
+      console.error('❌ Image upload failed:', error);
     }
   }
 };
 
-/** Like Message */
-// export const likeMessage = async (
-//   matchId,
-//   createdAt,
-//   messageId,
-//   liked,
-//   setMessages
-// ) => {
-//   try {
-//     setMessages((prevMessages) =>
-//       prevMessages.map((msg) =>
-//         msg.messageId === messageId ? { ...msg, liked } : msg
-//       )
-//     );
-
-//     await likeMessageAPI(matchId, createdAt, messageId, liked);
-//   } catch (error) {
-//     console.error('Failed to like message:', error);
-//   }
-// };
 export const likeMessage = async (
   socket,
   matchId,
-  createdAt,
-  messageId,
+  createdAt, // ✅ Use createdAt instead of messageId
   liked,
   setMessages
 ) => {
@@ -159,24 +148,31 @@ export const likeMessage = async (
   }
 
   try {
-    // Optimistically update UI before backend confirmation
+    // ✅ 1️⃣ Optimistically update UI before backend confirmation
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
-        msg.messageId === messageId ? { ...msg, liked } : msg
+        msg.createdAt === createdAt ? { ...msg, liked } : msg
       )
     );
 
-    // Emit event to the server
-    socket.emit('likeMessage', { matchId, createdAt, messageId, liked });
+    // ✅ 2️⃣ Emit event to the WebSocket server (Real-time update)
+    socket.emit('likeMessage', { matchId, createdAt, liked });
 
-    console.log(`👍 Like event sent: Message ${messageId}, Liked: ${liked}`);
+    console.log(`👍 Like event sent: Message at ${createdAt}, Liked: ${liked}`);
+
+    // ✅ 3️⃣ Send like status update to the backend
+    await likeMessageAPI(matchId, createdAt, liked);
+
+    console.log(
+      `✅ Like status updated in backend for message at ${createdAt}`
+    );
   } catch (error) {
     console.error('❌ Failed to like message:', error);
 
-    // Rollback UI update if an error occurs
+    // ❌ 4️⃣ Rollback UI update if an error occurs
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
-        msg.messageId === messageId ? { ...msg, liked: !liked } : msg
+        msg.createdAt === createdAt ? { ...msg, liked: !liked } : msg
       )
     );
   }
