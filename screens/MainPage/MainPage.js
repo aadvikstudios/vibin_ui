@@ -11,7 +11,7 @@ import {
 import { useUser } from '../../context/UserContext';
 import {
   fetchMatchesForProfileAPI,
-  fetchNewLikesAPI,
+  fetchInteractionsForUserHandle,
   fetchPingsAPI,
   fetchConnectionsAPI,
 } from '../../api';
@@ -95,6 +95,7 @@ const MainPage = ({ navigation }) => {
       const [profileData, likesData, pingsData, connectionsData] =
         await Promise.all([
           fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
+          fetchInteractionsForUserHandle(userData.userhandle)
           // fetchNewLikesAPI(userData.emailId),
           // fetchPingsAPI(userData.emailId),
           // fetchConnectionsAPI(userData.emailId),

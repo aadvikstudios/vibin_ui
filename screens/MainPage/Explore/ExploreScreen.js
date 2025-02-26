@@ -1,6 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, ActivityIndicator, Alert, Animated, Easing } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from 'react-native-paper';
 
 import MatchScreen from './MatchScreen';
@@ -35,6 +35,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       setShowNoProfiles(false);
     }, [profiles])
   );
+
 
   const moveToNextProfile = () => {
     Animated.parallel([

@@ -229,6 +229,7 @@ export const sendPingToBackendAPI = async (
   return await response.json();
 };
 
+
 export const fetchConnectionsAPI = async (emailId) => {
   console.log('fetchConnectionsAPI', emailId);
 
@@ -359,11 +360,17 @@ export const fetchPingsAPI = async (emailId) => {
   }
 };
 
-export const fetchNewLikesAPI = async (emailId) => {
+export const fetchInteractionsForUserHandle = async (receiverHandle) => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/match/newLikes?emailId=${emailId}`
-    );
+    console.log(`🔍 Fetching new likes for receiverHandle: ${receiverHandle}`);
+
+    const response = await fetch(`${API_BASE_URL}/api/interactions/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ receiverHandle }), // ✅ Pass receiverHandle in body
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -371,46 +378,48 @@ export const fetchNewLikesAPI = async (emailId) => {
     }
 
     const data = await response.json();
-    console.log('data from fetchNewLikesAPI , ', data, data.likes);
-    if (data.likes) {
-      // Iterate over each profile and update the photos with pre-signed URLs
+    console.log('✅ Data from fetchNewLikesAPI:', data);
+
+    if (data.length > 0) {
+      // ✅ Iterate over each interaction and update the photos with pre-signed URLs
       const likesWithPresignedUrls = await Promise.all(
-        data.likes.map(async (profile) => {
-          if (profile.photos && profile.photos.length > 0) {
+        data.map(async (interaction) => {
+          if (interaction.photos && interaction.photos.length > 0) {
             const updatedPhotos = await Promise.all(
-              profile.photos.map(async (photoKey) => {
+              interaction.photos.map(async (photoKey) => {
                 try {
                   const presignedUrl = await getPresignedReadUrlAPI(photoKey);
-                  return presignedUrl; // Replace the key with the URL
+                  return presignedUrl; // ✅ Replace the key with the URL
                 } catch (error) {
                   console.error(
-                    `Error fetching pre-signed URL for photo: ${photoKey}`,
+                    `⚠️ Error fetching pre-signed URL for photo: ${photoKey}`,
                     error.message
                   );
-                  return photoKey; // Return the original key in case of an error
+                  return photoKey; // ✅ Return the original key in case of an error
                 }
               })
             );
 
             return {
-              ...profile,
-              photos: updatedPhotos, // Replace photos with updated URLs
+              ...interaction,
+              photos: updatedPhotos, // ✅ Replace photos with updated URLs
             };
           }
 
-          return profile; // Return the profile as-is if no photos
+          return interaction; // ✅ Return the interaction as-is if no photos
         })
       );
 
       return likesWithPresignedUrls;
     } else {
-      return null;
+      return [];
     }
   } catch (error) {
-    console.error('Error fetching new likes:', error.message);
+    console.error('❌ Error fetching new likes:', error.message);
     throw error;
   }
 };
+
 
 export const checkUserHandleAPI = async (userhandle) => {
   try {
