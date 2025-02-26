@@ -423,6 +423,72 @@ export const fetchInteractionsForUserHandle = async (receiverHandle) => {
   }
 };
 
+export const fetchMatchesForUserHandle = async (userHandle) => {
+  try {
+    console.log(`🔍 Fetching matches for userHandle: ${userHandle}`);
+
+    const response = await fetch(`${API_BASE_URL}/api/match/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userHandle }), // ✅ Send userHandle in request body
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch matches');
+    }
+
+    const data = await response.json();
+    console.log('✅ Data from fetchMatchesForUserHandle:', data);
+
+    // ✅ Ensure data is always an array (default to empty array if null)
+    if (!Array.isArray(data)) {
+      console.warn(`⚠️ No matches found for userHandle: ${userHandle}`);
+      return []; // ✅ Return an empty array instead of crashing
+    }
+
+    // ✅ Process matches and update photo URLs if they exist
+    const matchesWithPresignedUrls = await Promise.all(
+      data.map(async (match) => {
+        if (
+          match.photos &&
+          Array.isArray(match.photos) &&
+          match.photos.length > 0
+        ) {
+          const updatedPhotos = await Promise.all(
+            match.photos.map(async (photoKey) => {
+              try {
+                const presignedUrl = await getPresignedReadUrlAPI(photoKey);
+                return presignedUrl; // ✅ Replace the key with the URL
+              } catch (error) {
+                console.error(
+                  `⚠️ Error fetching pre-signed URL for photo: ${photoKey}`,
+                  error.message
+                );
+                return photoKey; // ✅ Return the original key in case of an error
+              }
+            })
+          );
+
+          return {
+            ...match,
+            photos: updatedPhotos, // ✅ Replace photos with updated URLs
+          };
+        }
+
+        return match; // ✅ Return the match as-is if no photos
+      })
+    );
+
+    return matchesWithPresignedUrls;
+  } catch (error) {
+    console.error('❌ Error fetching matches:', error.message);
+    return []; // ✅ Return an empty array instead of crashing
+  }
+};
+
 export const checkUserHandleAPI = async (userhandle) => {
   try {
     const response = await fetch(

@@ -53,6 +53,7 @@ const LikesPingsScreen = ({
           <PingsScreen
             pings={pings}
             loading={loading}
+            onRefresh={onRefresh}
             userProfile={userProfile}
           />
         )}

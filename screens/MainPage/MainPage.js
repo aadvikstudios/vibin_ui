@@ -12,8 +12,7 @@ import { useUser } from '../../context/UserContext';
 import {
   fetchMatchesForProfileAPI,
   fetchInteractionsForUserHandle,
-  fetchPingsAPI,
-  fetchConnectionsAPI,
+  fetchMatchesForUserHandle,
 } from '../../api';
 
 // Screens
@@ -92,10 +91,13 @@ const MainPage = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const [profileData, interactionData] = await Promise.all([
-        fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
-        fetchInteractionsForUserHandle(userData.userhandle),
-      ]);
+      const [profileData, interactionData, connectionsData] = await Promise.all(
+        [
+          fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
+          fetchInteractionsForUserHandle(userData.userhandle),
+          fetchMatchesForUserHandle(userData.userhandle),
+        ]
+      );
 
       setProfiles(profileData || []);
       console.log('likesData', interactionData);
@@ -109,7 +111,7 @@ const MainPage = ({ navigation }) => {
           (like) => like.type === 'ping' && like.status === 'pending'
         )
       );
-      // setConnections(connectionsData || []);
+      setConnections(connectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {

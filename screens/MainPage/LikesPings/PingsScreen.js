@@ -16,7 +16,7 @@ import {
   PING_ACTION,
 } from '../../../constants/actionConstants'; // ✅ Import constants
 
-const PingsScreen = ({ pings, loading, userProfile }) => {
+const PingsScreen = ({ pings, loading, userProfile, onRefresh }) => {
   const { colors } = useTheme();
   const [processingAction, setProcessingAction] = useState(null); // ✅ Tracks which action is in progress
 
@@ -36,11 +36,11 @@ const PingsScreen = ({ pings, loading, userProfile }) => {
 
       const response = await actionPingAPI(endpoint, payload);
       console.log(`Ping ${action} Action Response:`, response);
-
-      Alert.alert(
-        'Success',
-        `Ping ${action === ACCEPT_ACTION ? 'approved' : 'declined'} successfully!`
-      );
+      // ✅ If like action is successful, trigger refetch
+      if (response?.status === 'success') {
+        console.log('✅ Refreshing data after like action');
+        onRefresh(); // 🔄 Calls the function passed from MainPage to refetch data
+      }
     } catch (error) {
       Alert.alert('Error', `Failed to ${action} ping. Please try again.`);
       console.error(`Error in handlePingAction (${action}):`, error.message);
