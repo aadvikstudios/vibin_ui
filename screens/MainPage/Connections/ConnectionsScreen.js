@@ -11,6 +11,7 @@ import {
 import { useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import EmptyStateView from '../../../components/EmptyStateView';
+import ChatItem from './ChatItem'; // ✅ Import ChatItem component
 
 const ConnectionsScreen = ({ connections, loading, userProfile }) => {
   const { colors, fonts } = useTheme();
@@ -18,60 +19,29 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
 
   console.log('ConnectionsScreen:', connections);
 
-  const newMatches = connections.filter((item) => !item.senderId);
-  const chats = connections.filter((item) => item.senderId);
+  // ✅ Filter new matches and active chats
+  const newMatches = connections.filter((item) => item.status === 'active'); // Matches with no chat history
+  const chats = connections.filter((item) => item.lastMessage); // Matches where a chat has started
 
   const handlePress = (item) => {
     navigation.navigate('PersonalChatScreen', { match: item });
   };
 
+  // ✅ Render new match cards (Horizontal List)
   const renderNewMatch = ({ item }) => (
     <TouchableOpacity
       style={[styles.newMatchCard, { backgroundColor: colors.surfaceVariant }]}
       onPress={() => handlePress(item)}
     >
-      <Image source={{ uri: item.photo }} style={styles.newMatchAvatar} />
+      <Image
+        source={{
+          uri: item.photos?.[0] || 'https://via.placeholder.com/50', // Default placeholder
+        }}
+        style={styles.newMatchAvatar}
+      />
       <Text style={[styles.newMatchName, { color: colors.primaryText }]}>
         {item.name}
       </Text>
-      {item.isUnread && (
-        <View
-          style={[styles.redDot, { backgroundColor: colors.notification }]}
-        />
-      )}
-    </TouchableOpacity>
-  );
-
-  const renderChatItem = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.surface }]}
-      onPress={() => handlePress(item)}
-    >
-      <Image source={{ uri: item.photo }} style={styles.avatar} />
-      <View style={styles.infoContainer}>
-        <Text
-          style={[
-            styles.name,
-            { color: colors.primaryText, ...fonts.displaySmall },
-          ]}
-        >
-          {item.name}
-        </Text>
-        <Text
-          style={[
-            styles.lastMessage,
-            { color: colors.secondaryText, ...fonts.displaySmall },
-          ]}
-          numberOfLines={1}
-        >
-          {item.lastMessage || 'No messages yet'}
-        </Text>
-      </View>
-      {item.isUnread && item.senderId !== userProfile.userId && (
-        <View
-          style={[styles.redDot, { backgroundColor: colors.notification }]}
-        />
-      )}
     </TouchableOpacity>
   );
 
@@ -101,6 +71,8 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
             {connections.length}
           </Text>
         </View>
+
+        {/* ✅ Render new matches if available */}
         {newMatches.length > 0 && (
           <FlatList
             data={newMatches}
@@ -112,16 +84,19 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
         )}
       </View>
 
+      {/* ✅ Render Chat List using ChatItem component */}
       <FlatList
         data={chats}
         keyExtractor={(item) => item.matchId}
-        renderItem={renderChatItem}
+        renderItem={({ item }) => (
+          <ChatItem item={item} userProfile={userProfile} />
+        )}
         contentContainerStyle={
           chats.length ? styles.chatList : styles.emptyContainer
         }
         ListEmptyComponent={
           newMatches.length === 0 && chats.length === 0 ? (
-            // Case 1: No new matches and no old matches
+            // Case 1: No matches or chats
             <EmptyStateView
               title="See your Connections here"
               subtitle="When you like someone and the feelings are mutual, they become a Connection. Start your journey by tapping Like on the profiles that catch your eye."
@@ -131,7 +106,7 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
               }
             />
           ) : newMatches.length > 0 && chats.length === 0 ? (
-            // Case 2: No old matches but new matches exist
+            // Case 2: No chats but new matches exist
             <EmptyStateView
               title="You have new connections!"
               subtitle="Start connecting by sending a message to your new matches."
@@ -140,8 +115,7 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
                 console.log('View new connections pressed')
               }
             />
-          ) : // Case 3: Both new and old matches exist (default fallback)
-          null
+          ) : null
         }
       />
     </View>
@@ -190,40 +164,6 @@ const styles = StyleSheet.create({
   },
   chatList: {
     padding: 10,
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    marginVertical: 5,
-    borderRadius: 10,
-    elevation: 2,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  lastMessage: {
-    fontSize: 14,
-    marginTop: 5,
-  },
-  redDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    position: 'absolute',
-    top: 5,
-    right: 5,
   },
   loadingContainer: {
     flex: 1,

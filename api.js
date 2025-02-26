@@ -572,7 +572,7 @@ export const deleteUserProfileAPI = async (userId) => {
   }
 };
 
-export const markMessagesReadAPI = async (matchId) => {
+export const markMessagesReadAPI = async (matchId, userHandle) => {
   try {
     const response = await fetch(
       `${API_BASE_URL}/api/chat/messages/mark-as-read`,
@@ -581,7 +581,7 @@ export const markMessagesReadAPI = async (matchId) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ matchId }), // Ensure matchId is passed here
+        body: JSON.stringify({ matchId, userHandle }), // Ensure matchId is passed here
       }
     );
 

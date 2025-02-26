@@ -30,6 +30,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { userData } = useUser();
   const { match } = route.params;
+  console.log('match value is ', match, userData.userhandle);
   const chatName = match.name;
   const chatImage = match.photo;
   const matchId = match.matchId;
@@ -48,20 +49,23 @@ const PersonalChatScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
-    if (userData.emailId !== senderId) {
-      markMessagesRead(matchId);
-    }
+    markMessagesRead(
+      matchId,
+      match.user1Handle === userData.userhandle
+        ? match.user2Handle
+        : match.user1Handle
+    );
 
     // ✅ Check for pending invites when the chat screen loads
-    checkPendingInvites(userData.emailId).then((invites) => {
-      if (invites.length > 0) {
-        setPendingInvites(invites);
-        Alert.alert(
-          'Pending Invitation',
-          'You have a pending chat invitation awaiting approval.'
-        );
-      }
-    });
+    // checkPendingInvites(userData.emailId).then((invites) => {
+    //   if (invites.length > 0) {
+    //     setPendingInvites(invites);
+    //     Alert.alert(
+    //       'Pending Invitation',
+    //       'You have a pending chat invitation awaiting approval.'
+    //     );
+    //   }
+    // });
   }, [matchId, senderId, userData.emailId]);
 
   const onRefresh = () => {

@@ -32,9 +32,9 @@ export const fetchMessages = async (
 };
 
 /** Mark Messages as Read */
-export const markMessagesRead = async (matchId) => {
+export const markMessagesRead = async (matchId, userhandle) => {
   try {
-    await markMessagesReadAPI(matchId);
+    await markMessagesReadAPI(matchId, userhandle);
   } catch (error) {
     console.error('Failed to mark messages as read:', error);
   }
