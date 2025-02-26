@@ -9,7 +9,7 @@ import {
   DISLIKE_ACTION,
 } from '../../../constants/actionConstants'; // ✅ Import constants
 
-const LikesScreen = ({ likes, loading, userProfile }) => {
+const LikesScreen = ({ likes, loading, userProfile, onRefresh }) => {
   const { colors } = useTheme();
 
   const handleLikeAction = async (senderHandle, action) => {
@@ -19,7 +19,14 @@ const LikesScreen = ({ likes, loading, userProfile }) => {
         senderHandle,
         action
       );
+
       console.log('Like Action Response:', response);
+
+      // ✅ If like action is successful, trigger refetch
+      if (response?.status === 'success') {
+        console.log('✅ Refreshing data after like action');
+        onRefresh(); // 🔄 Calls the function passed from MainPage to refetch data
+      }
     } catch (error) {
       console.error('Error in handleLikeAction:', error.message);
     }

@@ -99,8 +99,16 @@ const MainPage = ({ navigation }) => {
 
       setProfiles(profileData || []);
       console.log('likesData', interactionData);
-      setLikes((interactionData || []).filter((like) => like.type === 'like'));
-      setPings((interactionData || []).filter((like) => like.type === 'ping'));
+      setLikes(
+        (interactionData || []).filter(
+          (like) => like.type === 'like' && like.status === 'pending'
+        )
+      );
+      setPings(
+        (interactionData || []).filter(
+          (like) => like.type === 'ping' && like.status === 'pending'
+        )
+      );
       // setConnections(connectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
