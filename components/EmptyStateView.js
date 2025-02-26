@@ -2,6 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
+/**
+ * A reusable Empty State View for various sections like Likes, Pings, and Matches.
+ *
+ * @param {Function} onPrimaryAction - Function to handle the primary action button click.
+ * @param {Function} onSecondaryAction - Function to handle the secondary action button click.
+ * @param {String} title - The title text for the empty state.
+ * @param {String} subtitle - The subtitle text for more context.
+ * @param {String} primaryActionText - Text for the primary action button.
+ * @param {String} secondaryActionText - Text for the secondary action button.
+ * @param {ReactNode} icon - Optional icon to display.
+ */
 const EmptyStateView = ({
   onPrimaryAction,
   onSecondaryAction,
@@ -15,7 +26,7 @@ const EmptyStateView = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Optional Icon or Circle */}
+      {/* Optional Icon or Decorative Circle */}
       {icon ? (
         <View style={styles.iconContainer}>{icon}</View>
       ) : (
@@ -60,10 +71,7 @@ const EmptyStateView = ({
         <TouchableOpacity
           style={[
             styles.secondaryButton,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.outline,
-            },
+            { backgroundColor: colors.surface, borderColor: colors.outline },
           ]}
           onPress={onSecondaryAction}
         >

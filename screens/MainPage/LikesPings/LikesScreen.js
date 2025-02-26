@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import ProfileCard from './ProfileCard'; // ✅ Using the new reusable component
+import ProfileCard from './ProfileCard'; // ✅ Reusable Profile Component
 import { sendActionToBackendAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
 import {
@@ -26,9 +26,7 @@ const LikesScreen = ({ likes, loading, userProfile }) => {
   };
 
   return loading ? (
-    <View
-      style={[styles.loadingContainer, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ActivityIndicator size="large" color={colors.primary} />
     </View>
   ) : (
@@ -51,16 +49,19 @@ const LikesScreen = ({ likes, loading, userProfile }) => {
         <EmptyStateView title="No Likes Yet" subtitle="Keep swiping!" />
       }
       contentContainerStyle={{ flexGrow: 1, padding: 10 }}
+      style={[styles.flatList, { backgroundColor: colors.background }]} // ✅ Setting background for FlatList
     />
   );
 };
 
-// ✅ Adding missing styles to prevent errors
 const styles = StyleSheet.create({
-  loadingContainer: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flatList: {
+    flex: 1, // Ensures it takes the full height
   },
 });
 

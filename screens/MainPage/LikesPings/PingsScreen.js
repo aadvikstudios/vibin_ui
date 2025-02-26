@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import ProfileCard from './ProfileCard'; // ✅ Using the new reusable component
+import ProfileCard from './ProfileCard'; // ✅ Reusable Profile Component
 import { actionPingAPI } from '../../../api';
 import EmptyStateView from '../../../components/EmptyStateView';
 import {
@@ -29,9 +29,7 @@ const PingsScreen = ({ pings, loading, userProfile }) => {
   };
 
   return loading ? (
-    <View
-      style={[styles.loadingContainer, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ActivityIndicator size="large" color={colors.primary} />
     </View>
   ) : (
@@ -57,15 +55,19 @@ const PingsScreen = ({ pings, loading, userProfile }) => {
         />
       }
       contentContainerStyle={{ flexGrow: 1, padding: 10 }}
+      style={[styles.flatList, { backgroundColor: colors.background }]} // ✅ Ensuring background color
     />
   );
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  flatList: {
+    flex: 1, // Ensures it takes full height
   },
 });
 

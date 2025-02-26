@@ -31,7 +31,7 @@ const LikesPingsScreen = ({
         tabBarActiveTintColor: colors.primaryText, // Active tab text color
         tabBarInactiveTintColor: colors.secondaryText, // Inactive tab text color
         tabBarLabelStyle: {
-          ...fonts.labelLarge, // Apply typography from theme.js
+          ...fonts.displaySmall, // Apply typography from theme.js
           fontWeight: '600',
         },
       }}
