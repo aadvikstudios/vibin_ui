@@ -21,6 +21,7 @@ export const fetchMessages = async (
   try {
     if (!setRefreshing) setLoading(true);
     const data = await fetchMessagesAPI(matchId, 50);
+    console.log('data is ', data);
     setMessages(data);
     data.forEach((msg) => messageIds.current.add(msg.messageId));
   } catch (error) {

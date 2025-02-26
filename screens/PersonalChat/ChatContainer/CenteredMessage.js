@@ -5,7 +5,7 @@ const CenteredMessage = ({ message, colors }) => {
   return (
     <View style={styles.centerMessageContainer}>
       <Text style={[styles.centerMessageText, { color: colors.primary }]}>
-        {message.content}
+        Hey! You both matched! 🎉 Start a conversation now!
       </Text>
     </View>
   );

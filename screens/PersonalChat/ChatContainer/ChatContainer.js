@@ -48,14 +48,14 @@ const ChatContainer = ({
 
   // ✅ Check if only one message exists and senderId is empty (system message)
   const shouldCenterMessage =
-    uniqueMessages.length === 1 && uniqueMessages[0].senderId === '';
+    uniqueMessages.length === 1 && uniqueMessages[0].content === '';
 
   if (shouldCenterMessage) {
     return <CenteredMessage message={uniqueMessages[0]} colors={colors} />;
   }
 
   // ✅ Filter out messages with an empty senderId (except system messages)
-  const filteredMessages = uniqueMessages.filter((msg) => msg.senderId !== '');
+  const filteredMessages = uniqueMessages.filter((msg) => msg.content !== '');
 
   return (
     <FlatList
