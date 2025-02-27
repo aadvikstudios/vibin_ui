@@ -134,38 +134,13 @@ export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
     return []; // ✅ Return empty array instead of throwing error
   }
 };
-export const sendActionToBackendAPI = async (
-  senderHandle,
-  receiverHandle,
-  action
-) => {
-  console.log(
-    '📌 Sending action:',
-    action,
-    'Sender:',
-    senderHandle,
-    'Receiver:',
-    receiverHandle
-  );
 
-  // Determine the correct API endpoint based on the action
-  let endpoint = `${API_BASE_URL}/api/interactions`;
-  if (action === LIKE_ACTION) {
-    endpoint = `${API_BASE_URL}/api/interactions/like`;
-  } else if (action === DISLIKE_ACTION) {
-    endpoint = `${API_BASE_URL}/api/interactions/dislike`;
-  } else {
-    throw new Error("Invalid action. Only 'like' and 'dislike' are supported.");
-  }
-
-  // Prepare request body using userhandle
-  const requestBody = {
-    senderHandle, // ✅ Matches backend request format
-    receiverHandle, // ✅ Matches backend request format
-  };
+// ✅ Common function to handle API calls
+const callBackendAPI = async (requestBody) => {
+  console.log('📡 Sending request to:', endpoint, 'Payload:', requestBody);
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(`${API_BASE_URL}/api/interactions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
@@ -177,7 +152,7 @@ export const sendActionToBackendAPI = async (
       const errorDetails = await response.json();
       console.error('🚨 Response Error:', errorDetails);
       throw new Error(
-        errorDetails?.error || 'Failed to send action to backend'
+        errorDetails?.error || 'Failed to send interaction to backend'
       );
     }
 
@@ -188,6 +163,38 @@ export const sendActionToBackendAPI = async (
   }
 };
 
+// ✅ Handles "like", "dislike", and "approve/reject" actions
+export const sendActionToBackendAPI = async (
+  senderHandle,
+  receiverHandle,
+  action // "like", "dislike", "approve", "reject"
+) => {
+  console.log(
+    '📌 Sending interaction action:',
+    action,
+    'Sender:',
+    senderHandle,
+    'Receiver:',
+    receiverHandle
+  );
+
+  // Determine the interaction type based on action
+  let interactionType;
+
+  interactionType = 'like'; // like or dislike
+
+  // Construct request body
+  const requestBody = {
+    senderHandle,
+    receiverHandle,
+    interactionType, // like, dislike
+    action, // like, dislike, approve, reject
+  };
+
+  return callBackendAPI(requestBody);
+};
+
+// ✅ Handles "ping" interactions
 export const sendPingToBackendAPI = async (
   senderHandle,
   receiverHandle,
@@ -195,34 +202,16 @@ export const sendPingToBackendAPI = async (
 ) => {
   console.log('📩 Sending ping:', { senderHandle, receiverHandle, message });
 
-  // Build the request body dynamically
+  // Construct request body
   const requestBody = {
-    senderHandle, // ✅ Aligns with backend expectation
+    senderHandle,
     receiverHandle,
+    interactionType: 'ping', // ✅ Always "ping"
+    action: 'ping', // ✅ Indicates ping action
     message, // ✅ Optional custom message
   };
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/interactions/ping`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await response.json();
-      console.error('❌ Response Error:', errorDetails);
-      throw new Error(errorDetails?.message || 'Failed to send ping');
-    }
-
-    console.log('✅ Ping successfully sent to backend');
-    return await response.json();
-  } catch (error) {
-    console.error('❌ Error in sendPingToBackendAPI:', error.message);
-    throw error;
-  }
+  return callBackendAPI(requestBody);
 };
 
 export const fetchConnectionsAPI = async (emailId) => {
