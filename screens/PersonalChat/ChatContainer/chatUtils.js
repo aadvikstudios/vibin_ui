@@ -48,15 +48,18 @@ export const handleSendMessage = (
   setInputText
 ) => {
   if (!inputText.trim()) return;
+  const generateUniqueId = () =>
+    `${matchId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const message = {
-    messageId: `${matchId}-${Date.now()}-${Math.random()}`, // Unique message ID
+    messageId: generateUniqueId(), // Unique message ID
     matchId, // Match ID
     senderId: userData.emailId, // Sender's handle (User's email ID)
     content: inputText.trim(), // Message content
     createdAt: new Date().toISOString(), // Timestamp in ISO format
     isUnread: 'true', // Ensure it's stored as a string ("true" or "false")
     liked: false, // Default message is not liked
+    imageUrl: null,
   };
 
   // ✅ Send message with debounce to prevent spam clicks
@@ -66,9 +69,13 @@ export const handleSendMessage = (
   setInputText('');
 };
 
-// ✅ Debounced function to prevent multiple rapid message sends
+const sentMessageIds = new Set(); // Prevent duplicate messages
+
 const debouncedSendMessage = debounce((sendMessage, message) => {
-  sendMessage(message);
+  if (!sentMessageIds.has(message.messageId)) {
+    sentMessageIds.add(message.messageId);
+    sendMessage(message);
+  }
 }, 500);
 
 export const pickImageAndUpload = async (

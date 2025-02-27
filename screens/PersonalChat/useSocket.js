@@ -18,14 +18,17 @@ export const useSocket = (matchId, setMessages, messageIds) => {
       setSocket(newSocket);
     });
 
-    // ✅ Handle incoming messages (Text & Image)
     newSocket.on('newMessage', (message) => {
       console.log('📩 New message received:', message);
 
-      if (!messageIds.current.has(message.messageId)) {
-        messageIds.current.add(message.messageId);
-        setMessages((prev) => [...prev, message]); // ✅ Update UI instantly
+      // ✅ Ignore self-sent messages already added
+      if (messageIds.current.has(message.messageId)) {
+        console.warn('⚠️ Duplicate message received:', message.messageId);
+        return;
       }
+
+      messageIds.current.add(message.messageId);
+      setMessages((prev) => [...prev, message]);
     });
 
     // ✅ Handle real-time message likes
@@ -58,17 +61,17 @@ export const useSocket = (matchId, setMessages, messageIds) => {
     };
   }, [matchId]);
 
-  // ✅ Send message through socket and backend
   const sendMessage = async (message) => {
     if (socket) {
       console.log('📤 Sending message:', message);
-      socket.emit('sendMessage', message);
-      setMessages((prev) => [...prev, message]); // ✅ Update UI instantly
 
-      try {
-        await sendMessageAPI(message); // ✅ Store message in backend
-      } catch (error) {
-        console.error('❌ Backend message storage failed:', error);
+      // ✅ Only send via WebSocket
+      socket.emit('sendMessage', message);
+
+      // ✅ Update UI only if not already added
+      if (!messageIds.current.has(message.messageId)) {
+        messageIds.current.add(message.messageId);
+        setMessages((prev) => [...prev, message]);
       }
     } else {
       console.error('❌ Socket is not connected!');
