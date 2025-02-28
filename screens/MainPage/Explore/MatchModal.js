@@ -8,71 +8,59 @@ import {
   Modal,
   TextInput,
   Dimensions,
-  Alert,
 } from 'react-native';
-import { getPresignedReadUrlAPI, sendMessageToChatAPI } from '../../../api'; // ✅ Import sendMessageToChatAPI
+import { getPresignedReadUrlAPI } from '../../../api';
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const MatchModal = ({
-  visible,
-  profile,
-  userhandle,
-  onSendMessage,
-  onLater,
-}) => {
+const MatchModal = ({ visible, profile, onSendMessage, onLater }) => {
   const [photoUrl, setPhotoUrl] = useState(null);
   const [message, setMessage] = useState('');
-  const { colors } = useTheme(); // ✅ Get colors from theme
-
-  console.log('profile', profile);
+  const { colors } = useTheme();
 
   useEffect(() => {
-    const fetchPhotoUrl = async () => {
-      if (profile?.photo) {
-        try {
-          const url = await getPresignedReadUrlAPI(profile.photo);
-          setPhotoUrl(url);
-        } catch (error) {
-          console.error('Error fetching pre-signed URL:', error);
-        }
-      }
-    };
-
-    fetchPhotoUrl();
+    if (profile?.photo) {
+      getPresignedReadUrlAPI(profile.photo)
+        .then(setPhotoUrl)
+        .catch((error) => console.error('Error fetching photo:', error));
+    }
   }, [profile]);
+  useEffect(() => {
+    console.log('🚀 MatchModal Visibility Updated:', visible);
+    console.log('🚀 Profile Data:', profile);
+  }, [visible, profile]);
+
+  if (!visible) {
+    console.log('🚫 Modal is not visible, returning null.');
+    return null;
+  }
 
   return (
     <Modal animationType="fade" transparent visible={visible}>
-      <View style={styles.overlay}>
+      <View style={styles.overlay} pointerEvents="box-none">
         <View style={[styles.container, { backgroundColor: colors.primary }]}>
-          {/* Image section */}
           <View style={styles.imageContainer}>
             {photoUrl ? (
               <Image source={{ uri: photoUrl }} style={styles.image} />
             ) : (
-              <View style={styles.placeholderContainer}>
-                <Text
-                  style={[styles.placeholderText, { color: colors.onSurface }]}
-                >
-                  Loading photo...
-                </Text>
-              </View>
+              <Text
+                style={[styles.placeholderText, { color: colors.onSurface }]}
+              >
+                Loading photo...
+              </Text>
             )}
           </View>
 
-          {/* Text and buttons section */}
           <View style={styles.textContainer}>
             <Text style={[styles.title, { color: colors.onPrimary }]}>
               You connected with {profile?.name || 'Unknown'}
             </Text>
             <Text style={[styles.subtitle, { color: colors.onPrimary }]}>
-              Feelings are mutual. Be bold and play nice.
+              Be bold and say hi!
             </Text>
 
-            {/* ✅ Input Field for Message */}
             <View
               style={[
                 styles.inputContainer,
@@ -89,7 +77,7 @@ const MatchModal = ({
               <TouchableOpacity
                 onPress={() => {
                   if (message.trim()) {
-                    onSendMessage(message); // ✅ Use the function from `ExploreScreen.js`
+                    onSendMessage(message);
                     setMessage('');
                   }
                 }}
@@ -99,7 +87,6 @@ const MatchModal = ({
               </TouchableOpacity>
             </View>
 
-            {/* Later Button */}
             <TouchableOpacity
               style={[
                 styles.secondaryButton,

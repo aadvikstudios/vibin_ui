@@ -1,7 +1,7 @@
 module.exports = {
   presets: ['babel-preset-expo'],
   plugins: [
-    // Add this plugin at the end
+    ['@babel/plugin-transform-runtime', { regenerator: true }],
     'react-native-reanimated/plugin',
   ],
 };

@@ -7,6 +7,12 @@ import StackNavigator from './navigation/StackNavigator'; // Modular stack navig
 import { PaperThemes } from './PaperThemes'; // Import custom themes
 import * as NavigationBar from 'expo-navigation-bar';
 import { UserProvider } from './context/UserContext';
+import { LogBox } from 'react-native';
+
+// Disable Reanimated warnings
+LogBox.ignoreLogs([
+  '[Reanimated] Reading from `value` during component render.',
+]);
 
 const AppContent = () => {
   useEffect(() => {

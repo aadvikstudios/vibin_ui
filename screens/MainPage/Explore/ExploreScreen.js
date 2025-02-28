@@ -23,7 +23,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const [matchedProfile, setMatchedProfile] = useState(null);
   const [showNoProfiles, setShowNoProfiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isPingModalVisible, setPingModalVisible] = useState(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [pingNote, setPingNote] = useState('');
 
@@ -36,6 +36,13 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       setShowNoProfiles(false);
     }, [profiles])
   );
+
+  useEffect(() => {
+    if (isMatch) {
+      console.log('🔹 Triggering modal re-render...');
+      setTimeout(() => setIsMatch(true), 100); // Small delay to ensure re-render
+    }
+  }, [isMatch]);
 
   const moveToNextProfile = () => {
     setCurrentIndex((prevIndex) => {
@@ -86,9 +93,11 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       );
 
       if (response?.isMatch) {
+        console.log('✅ Match found!');
         setIsMatch(true);
-        console.log('response of match is ', response);
-        setMatchedProfile(response?.matchedProfile);
+        setMatchedProfile(response.matchedProfile);
+        setIsSuccessModalVisible(false);
+        setPingModalVisible(false);
       } else {
         moveToNextProfile();
       }
@@ -105,7 +114,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       return;
     }
 
-    setModalVisible(false);
+    setPingModalVisible(false);
     setIsLoading(true);
 
     try {
@@ -116,7 +125,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       );
 
       if (response.message) {
-        setModalVisible(false);
+        setPingModalVisible(false);
         setIsSuccessModalVisible(true);
         setPingNote('');
         setTimeout(() => setIsSuccessModalVisible(false), 2000);
@@ -131,6 +140,15 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <MatchModal
+        visible={isMatch}
+        profile={matchedProfile}
+        onSendMessage={handleSendMessage}
+        onLater={() => {
+          setIsMatch(false);
+          moveToNextProfile();
+        }}
+      />
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -142,29 +160,18 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       ) : (
         <EmptyStateView title="No profiles available" />
       )}
-      // ✅ Pass `handleSendMessage` to `MatchModal`
-      <MatchModal
-        visible={isMatch}
-        profile={matchedProfile}
-        userhandle={userProfile.userhandle}
-        onSendMessage={handleSendMessage} // ✅ Pass function as a prop
-        onLater={() => {
-          setIsMatch(false);
-          moveToNextProfile();
-        }}
-      />
-      ;
-      {/* ✅ Action Buttons only appear when profiles exist and it's not loading */}
       {!isLoading && !showNoProfiles && profiles?.length > 0 && !isMatch && (
         <ActionButtons
           onPress={(action) =>
-            action === 'pinged' ? setModalVisible(true) : handleAction(action)
+            action === 'pinged'
+              ? setPingModalVisible(true)
+              : handleAction(action)
           }
         />
       )}
       <PingModal
-        visible={isModalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={isPingModalVisible}
+        onClose={() => setPingModalVisible(false)}
         onSendPing={handleSendPing}
         pingNote={pingNote}
         setPingNote={setPingNote}
