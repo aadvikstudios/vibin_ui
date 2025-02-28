@@ -59,6 +59,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
       if (response?.isMatch) {
         setIsMatch(true);
+        console.log('response of match is ', response);
         setMatchedProfile(response?.matchedProfile);
       } else {
         moveToNextProfile();
