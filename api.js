@@ -234,7 +234,12 @@ export const fetchConnectionsAPI = async (userHandle) => {
     const matches = await response.json();
     console.log('✅ Data from fetchMutualMatches:', matches);
 
-    return matches;
+    // ✅ Process matches to ensure proper rendering
+    return matches.map((match) => ({
+      userHandle: match.userHandle,
+      name: match.name || 'Unknown', // Default if no name is found
+      profilePic: match.profilePic || 'default-avatar.png', // Default profile pic
+    }));
   } catch (error) {
     console.error('❌ Error fetching mutual matches:', error.message);
     return []; // ✅ Return an empty array instead of crashing

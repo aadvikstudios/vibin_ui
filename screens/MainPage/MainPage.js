@@ -95,7 +95,7 @@ const MainPage = ({ navigation }) => {
         [
           fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
           fetchInteractionsForUserHandle(userData.userhandle),
-          // fetchConnectionsAPI(userData.userhandle)
+          fetchConnectionsAPI(userData.userhandle),
           // fetchMatchesForUserHandle(userData.userhandle),
         ]
       );
@@ -121,7 +121,7 @@ const MainPage = ({ navigation }) => {
             interactionItem.status === 'pending'
         )
       );
-      // setConnections(connectionsData || []);
+      setConnections(connectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {
