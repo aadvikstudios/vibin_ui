@@ -28,7 +28,7 @@ const PingsScreen = ({ pings, loading, userProfile, onRefresh }) => {
         action === ACCEPT_ACTION
           ? '/api/interactions/ping/approve'
           : '/api/interactions/ping/decline';
-      console.log('user data is ', userProfile);
+
       const payload = {
         receiverHandle: userProfile.userhandle,
         senderHandle,
@@ -36,10 +36,10 @@ const PingsScreen = ({ pings, loading, userProfile, onRefresh }) => {
 
       const response = await actionPingAPI(endpoint, payload);
       console.log(`Ping ${action} Action Response:`, response);
-      // ✅ If like action is successful, trigger refetch
-      if (response?.status === 'success') {
-        console.log('✅ Refreshing data after like action');
-        onRefresh(); // 🔄 Calls the function passed from MainPage to refetch data
+
+      if (response?.message) {
+        console.log('✅ Refreshing data after ping action');
+        onRefresh(); // 🔄 Refresh UI
       }
     } catch (error) {
       Alert.alert('Error', `Failed to ${action} ping. Please try again.`);

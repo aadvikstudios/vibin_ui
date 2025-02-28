@@ -48,31 +48,6 @@ export const sendMessageAPI = async (message) => {
   }
 };
 
-export const actionPingAPI = async (endpoint, payload) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    console.log(`API response status (${endpoint}):`, response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text(); // Read response as text to handle non-JSON errors
-      console.error(`API Error (${endpoint}):`, errorText);
-      throw new Error(errorText || `Failed to process ping action`);
-    }
-
-    return await response.json(); // Parse only if the response is valid JSON
-  } catch (error) {
-    console.error(`Error in actionPingAPI (${endpoint}):`, error.message);
-    throw error;
-  }
-};
-
 export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
   console.log('🔍 Fetching matches for:', userhandle, gender);
 
@@ -134,35 +109,30 @@ export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
     return []; // ✅ Return empty array instead of throwing error
   }
 };
-
-// ✅ Common function to handle API calls
-const callBackendAPI = async (requestBody) => {
-  console.log('📡 Sending request to:', endpoint, 'Payload:', requestBody);
-
+export const actionPingAPI = async (endpoint, payload) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/interactions`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
     });
 
-    console.log('📌 API Response:', response);
+    console.log(`API response status (${endpoint}):`, response.status);
 
     if (!response.ok) {
-      const errorDetails = await response.json();
-      console.error('🚨 Response Error:', errorDetails);
-      throw new Error(
-        errorDetails?.error || 'Failed to send interaction to backend'
-      );
+      const errorText = await response.text(); // Read response as text to handle non-JSON errors
+      console.error(`API Error (${endpoint}):`, errorText);
+      throw new Error(errorText || `Failed to process ping action`);
     }
 
-    return await response.json();
+    return await response.json(); // Parse only if the response is valid JSON
   } catch (error) {
-    console.error('❌ API Error:', error);
+    console.error(`Error in actionPingAPI (${endpoint}):`, error.message);
     throw error;
   }
 };
-
 // ✅ Handles "like", "dislike", and "approve/reject" actions
 export const sendActionToBackendAPI = async (
   senderHandle,
@@ -190,8 +160,36 @@ export const sendActionToBackendAPI = async (
     interactionType, // like, dislike
     action, // like, dislike, approve, reject
   };
+  console.log('✅ Request Body Prepared:', requestBody); // Add this log
 
   return callBackendAPI(requestBody);
+};
+// ✅ Common function to handle API calls
+const callBackendAPI = async (requestBody) => {
+  console.log('📡 Preparing API call...', requestBody);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/interactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('📌 API Response:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      console.error('🚨 Response Error:', errorDetails);
+      throw new Error(
+        errorDetails?.error || 'Failed to send interaction to backend'
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ API Error:', error);
+    throw error;
+  }
 };
 
 // ✅ Handles "ping" interactions
@@ -214,80 +212,32 @@ export const sendPingToBackendAPI = async (
   return callBackendAPI(requestBody);
 };
 
-export const fetchConnectionsAPI = async (emailId) => {
-  console.log('fetchConnectionsAPI', emailId);
-
+export const fetchConnectionsAPI = async (userHandle) => {
   try {
+    console.log(`🔍 Fetching mutual matches for userHandle: ${userHandle}`);
+
     const response = await fetch(
-      `${API_BASE_URL}/api/match/connections?emailId=${emailId}`
+      `${API_BASE_URL}/api/interactions/matches?userHandle=${userHandle}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch connections');
+      throw new Error(errorData.message || 'Failed to fetch mutual matches');
     }
 
-    const data = await response.json();
+    const matches = await response.json();
+    console.log('✅ Data from fetchMutualMatches:', matches);
 
-    if (data.matches) {
-      console.log('log is from connections ', data.matches);
-
-      // Iterate over each match and update the photo with a pre-signed URL
-      const matchesWithSignedPhotos = await Promise.all(
-        data.matches.map(async (match) => {
-          if (match.photo) {
-            try {
-              // Fetch the pre-signed URL for the single photo
-              const presignedUrl = await getPresignedReadUrlAPI(match.photo);
-
-              return {
-                matchId: match?.matchId,
-                emailId: match?.emailId,
-                name: match?.name,
-                photo: presignedUrl || null, // Replace the key with the signed URL
-                lastMessage: match?.lastMessage,
-                isUnread: match?.isUnread,
-                senderId: match?.senderId,
-              };
-            } catch (error) {
-              console.error(
-                `Error fetching pre-signed URL for photo: ${match.photos}`,
-                error.message
-              );
-
-              // Return the match with the original photo key in case of an error
-              return {
-                matchId: match?.matchId,
-                userId: match?.userId,
-                name: match?.name,
-                photo: match?.photos || null,
-                lastMessage: match?.lastMessage,
-                isUnread: match?.isUnread,
-                senderId: match?.senderId,
-              };
-            }
-          }
-
-          // If no photo is available, return the match as-is
-          return {
-            matchId: match?.matchId,
-            userId: match?.userId,
-            name: match?.name,
-            photo: null,
-            lastMessage: match?.lastMessage,
-            isUnread: match?.isUnread,
-            senderId: match?.senderId,
-          };
-        })
-      );
-
-      return matchesWithSignedPhotos;
-    } else {
-      throw new Error('No matches data available');
-    }
+    return matches;
   } catch (error) {
-    console.error('Error fetching current matches:', error.message);
-    throw error;
+    console.error('❌ Error fetching mutual matches:', error.message);
+    return []; // ✅ Return an empty array instead of crashing
   }
 };
 
@@ -344,19 +294,19 @@ export const fetchPingsAPI = async (emailId) => {
   }
 };
 
-export const fetchInteractionsForUserHandle = async (receiverHandle) => {
+export const fetchInteractionsForUserHandle = async (userHandle) => {
   try {
-    console.log(
-      `🔍 Fetching interactions for receiverHandle: ${receiverHandle}`
-    );
+    console.log(`🔍 Fetching interactions for userHandle: ${userHandle}`);
 
-    const response = await fetch(`${API_BASE_URL}/api/interactions/get`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ receiverHandle }), // ✅ Pass receiverHandle in body
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/interactions/received?userHandle=${userHandle}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -368,19 +318,17 @@ export const fetchInteractionsForUserHandle = async (receiverHandle) => {
 
     // ✅ Ensure data is always an array (default to empty array if null)
     if (!Array.isArray(data)) {
-      console.warn(`⚠️ No data found for receiverHandle: ${receiverHandle}`);
+      console.warn(`⚠️ No interactions found for userHandle: ${userHandle}`);
       return []; // ✅ Return an empty array instead of crashing
     }
 
     // ✅ Process interactions and update photo URLs
-    const likesWithPresignedUrls = await Promise.all(
+    const processedInteractions = await Promise.all(
       data.map(async (interaction) => {
-        if (
-          interaction.photos &&
-          Array.isArray(interaction.photos) &&
-          interaction.photos.length > 0
-        ) {
-          const updatedPhotos = await Promise.all(
+        let updatedPhotos = [];
+
+        if (interaction.photos && Array.isArray(interaction.photos)) {
+          updatedPhotos = await Promise.all(
             interaction.photos.map(async (photoKey) => {
               try {
                 const presignedUrl = await getPresignedReadUrlAPI(photoKey);
@@ -394,18 +342,17 @@ export const fetchInteractionsForUserHandle = async (receiverHandle) => {
               }
             })
           );
-
-          return {
-            ...interaction,
-            photos: updatedPhotos, // ✅ Replace photos with updated URLs
-          };
         }
 
-        return interaction; // ✅ Return the interaction as-is if no photos
+        return {
+          ...interaction,
+          photos: updatedPhotos, // ✅ Attach updated photos
+          isMatch: interaction.status === 'match', // ✅ Mark mutual matches
+        };
       })
     );
 
-    return likesWithPresignedUrls;
+    return processedInteractions;
   } catch (error) {
     console.error('❌ Error fetching interactions:', error.message);
     return []; // ✅ Return an empty array instead of crashing

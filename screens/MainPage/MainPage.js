@@ -12,7 +12,7 @@ import { useUser } from '../../context/UserContext';
 import {
   fetchMatchesForProfileAPI,
   fetchInteractionsForUserHandle,
-  fetchMatchesForUserHandle,
+  fetchConnectionsAPI,
 } from '../../api';
 
 // Screens
@@ -95,23 +95,33 @@ const MainPage = ({ navigation }) => {
         [
           fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
           fetchInteractionsForUserHandle(userData.userhandle),
-          fetchMatchesForUserHandle(userData.userhandle),
+          // fetchConnectionsAPI(userData.userhandle)
+          // fetchMatchesForUserHandle(userData.userhandle),
         ]
       );
 
       setProfiles(profileData || []);
-      console.log('likesData', interactionData);
+      console.log(
+        'likesData',
+        interactionData,
+        '\nconnections are ',
+        connectionsData
+      );
       setLikes(
         (interactionData || []).filter(
-          (like) => like.type === 'like' && like.status === 'pending'
+          (interactionItem) =>
+            interactionItem.interactionType === 'like' &&
+            interactionItem.status === 'pending'
         )
       );
       setPings(
         (interactionData || []).filter(
-          (like) => like.type === 'ping' && like.status === 'pending'
+          (interactionItem) =>
+            interactionItem.interactionType === 'ping' &&
+            interactionItem.status === 'pending'
         )
       );
-      setConnections(connectionsData || []);
+      // setConnections(connectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {
