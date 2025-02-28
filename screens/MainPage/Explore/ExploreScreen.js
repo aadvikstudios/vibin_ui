@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-import MatchScreen from './MatchScreen';
+import MatchScreen from './MatchModal';
 import ProfileScreen from './ProfileScreen';
 import ActionButtons from './ActionButtons';
 import PingModal from './PingModal';
