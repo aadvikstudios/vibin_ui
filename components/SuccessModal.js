@@ -3,33 +3,36 @@ import { View, Text, Modal, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
 
-const SuccessModal = ({ visible, message, onClose, autoCloseTime = 2000 }) => {
+const SuccessModal = ({
+  visible,
+  successType,
+  onClose,
+  autoCloseTime = 1000, // ✅ Reduced to 1 second
+}) => {
   const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current; // Start fully expanded
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
-      // Start animations: fade in & start fully expanded
-      Animated.parallel([
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      // ✅ Fade in animation (completes in 300ms)
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
 
-      // Auto close after delay
+      // ✅ Auto close after delay
       const timeout = setTimeout(() => {
         Animated.parallel([
           Animated.timing(scaleAnim, {
             toValue: 0, // Shrinks to center
-            duration: 600,
+            duration: 400, // ✅ Reduced duration for 1s animation
             useNativeDriver: true,
           }),
           Animated.timing(opacityAnim, {
             toValue: 0,
-            duration: 500,
+            duration: 400, // ✅ Reduced duration for 1s animation
             useNativeDriver: true,
           }),
         ]).start(() => {
@@ -43,29 +46,42 @@ const SuccessModal = ({ visible, message, onClose, autoCloseTime = 2000 }) => {
 
   if (!visible) return null;
 
+  // ✅ Determine icon, text, and transparent background color dynamically
+  const successConfig = {
+    ping: {
+      icon: 'paper-plane-outline',
+      message: 'Ping Sent!',
+      background: `${colors.primary}AA`, // ✅ 66% transparency
+    },
+    like: {
+      icon: 'heart-outline',
+      message: 'Like Sent!',
+      background: `${colors.liked}AA`, // ✅ 66% transparency
+    },
+  };
+
+  const { icon, message, background } =
+    successConfig[successType] || successConfig.like;
+
   return (
     <Modal transparent={true} visible={visible} onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Animated.View
           style={[
             styles.fullscreenContainer,
-            { backgroundColor: colors.primary, opacity: opacityAnim },
+            { backgroundColor: background, opacity: opacityAnim },
           ]}
         >
           <Animated.View
             style={[
               styles.shrinkingEffect,
               {
-                backgroundColor: colors.primaryContainer,
+                backgroundColor: `${colors.primaryContainer}99`, // ✅ 60% transparency
                 transform: [{ scale: scaleAnim }],
               },
             ]}
           />
-          <Ionicons
-            name="checkmark-circle-outline"
-            size={80}
-            color={colors.success}
-          />
+          <Ionicons name={icon} size={80} color={colors.onPrimary} />
           <Text style={[styles.successText, { color: colors.onPrimary }]}>
             {message}
           </Text>
@@ -80,14 +96,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ 50% opacity for background
   },
   fullscreenContainer: {
+    flex: 1, // ✅ Fullscreen modal
     width: '100%',
-    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
   },
   shrinkingEffect: {
     position: 'absolute',
@@ -98,7 +113,7 @@ const styles = StyleSheet.create({
   },
   successText: {
     marginTop: 15,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
   },

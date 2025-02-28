@@ -25,6 +25,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPingModalVisible, setPingModalVisible] = useState(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [successType, setSuccessType] = useState(null); // ✅ Track success type (ping or like)
   const [pingNote, setPingNote] = useState('');
 
   useEffect(() => setIsLoading(loading), [loading]);
@@ -54,6 +55,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       return nextIndex;
     });
   };
+
   const handleSendMessage = async (messageText) => {
     if (!messageText.trim()) {
       Alert.alert('Message Required', 'Please type a message before sending.');
@@ -98,7 +100,13 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         setMatchedProfile(response.matchedProfile);
         setIsSuccessModalVisible(false);
         setPingModalVisible(false);
-      } else {
+      } else if (action === 'like' && !response.isMatch) {
+        setIsMatch(false);
+        setPingModalVisible(false);
+        setSuccessType('like'); // ✅ Set correct success type
+        setIsSuccessModalVisible(true);
+        setPingNote('');
+        setTimeout(() => setIsSuccessModalVisible(false), 1000);
         moveToNextProfile();
       }
     } catch (error) {
@@ -126,9 +134,10 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
       if (response.message) {
         setPingModalVisible(false);
+        setSuccessType('ping'); // ✅ Set success type as ping
         setIsSuccessModalVisible(true);
         setPingNote('');
-        setTimeout(() => setIsSuccessModalVisible(false), 2000);
+        setTimeout(() => setIsSuccessModalVisible(false), 1000);
         moveToNextProfile();
       }
     } catch (error) {
@@ -149,6 +158,17 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
           moveToNextProfile();
         }}
       />
+
+      {/* ✅ Dynamic Success Modal (Ping or Like) */}
+      <SuccessModal
+        visible={isSuccessModalVisible}
+        successType={successType} // ✅ Pass success type
+        onClose={() => {
+          setIsSuccessModalVisible(false);
+          moveToNextProfile();
+        }}
+      />
+
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -160,6 +180,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       ) : (
         <EmptyStateView title="No profiles available" />
       )}
+
       {!isLoading && !showNoProfiles && profiles?.length > 0 && !isMatch && (
         <ActionButtons
           onPress={(action) =>
@@ -169,6 +190,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
           }
         />
       )}
+
       <PingModal
         visible={isPingModalVisible}
         onClose={() => setPingModalVisible(false)}
@@ -176,14 +198,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         pingNote={pingNote}
         setPingNote={setPingNote}
         isLoading={isLoading}
-      />
-      <SuccessModal
-        visible={isSuccessModalVisible}
-        message="Ping Sent Successfully!"
-        onClose={() => {
-          setIsSuccessModalVisible(false);
-          moveToNextProfile();
-        }}
       />
     </View>
   );

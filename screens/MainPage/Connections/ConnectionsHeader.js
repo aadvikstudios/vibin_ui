@@ -9,7 +9,11 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-const ConnectionsHeader = ({ connectionsCount, newMatches, onPressMatch }) => {
+const ConnectionsHeader = ({
+  connectionsCount,
+  newMatches = [],
+  onPressMatch,
+}) => {
   const { colors } = useTheme();
 
   return (
@@ -36,7 +40,7 @@ const ConnectionsHeader = ({ connectionsCount, newMatches, onPressMatch }) => {
         <FlatList
           data={newMatches}
           horizontal
-          keyExtractor={(item) => item.matchId}
+          keyExtractor={(item, index) => item.matchId || `match-${index}`} // ✅ Unique key fix
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
@@ -48,7 +52,7 @@ const ConnectionsHeader = ({ connectionsCount, newMatches, onPressMatch }) => {
               <View style={styles.avatarContainer}>
                 <Image
                   source={{
-                    uri: item.photos?.[0] || 'https://via.placeholder.com/50',
+                    uri: item.photo,
                   }}
                   style={styles.newMatchAvatar}
                 />

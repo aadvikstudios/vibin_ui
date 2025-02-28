@@ -211,7 +211,6 @@ export const sendPingToBackendAPI = async (
 
   return callBackendAPI(requestBody);
 };
-
 export const fetchConnectionsAPI = async (userHandle) => {
   try {
     console.log(`🔍 Fetching mutual matches for userHandle: ${userHandle}`);
@@ -237,11 +236,41 @@ export const fetchConnectionsAPI = async (userHandle) => {
     // 🛠 Ensure matches is an array (handles null gracefully)
     const matches = Array.isArray(data.matches) ? data.matches : [];
 
+    // Fetch presigned URLs for profile photos (only if photo is present)
+    const updatedMatches = await Promise.all(
+      matches.map(async (match) => {
+        if (
+          match.photo &&
+          typeof match.photo === 'string' &&
+          match.photo.trim() !== ''
+        ) {
+          try {
+            const presignedUrl = await getPresignedReadUrlAPI(match.photo);
+            return {
+              ...match,
+              photo: presignedUrl, // ✅ Replace the photo key with the presigned URL
+            };
+          } catch (error) {
+            console.error(
+              '⚠️ Error fetching presigned URL for match photo:',
+              error.message
+            );
+            return match; // Return the match as is if the presigned URL fetch fails
+          }
+        }
+
+        return match; // Return the match as is if no photo exists
+      })
+    );
+
+    console.log('✅ Matches with presigned photo URLs:', updatedMatches);
+
     // ✅ Process matches safely
-    return matches.map((match) => ({
-      userHandle: match.userHandle || 'unknown', // Default handle
-      name: match.name || 'Unknown', // Default name
-      profilePic: match.profilePic || 'default-avatar.png', // Default profile pic
+    return updatedMatches.map((match) => ({
+      userHandle: match.userHandle, // Default handle
+      name: match.name, // Default name
+      photo: match.photo || 'default-avatar.png', // Use presigned URL or default
+      matchId: match.matchId,
     }));
   } catch (error) {
     console.error('❌ Error fetching mutual matches:', error.message);

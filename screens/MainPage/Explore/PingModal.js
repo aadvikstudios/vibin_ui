@@ -12,7 +12,7 @@ const PingModal = ({
   currentProfile,
 }) => {
   const { colors } = useTheme();
-  const profilePhoto = currentProfile?.photos?.[0]; // Get the first photo
+  const profilePhoto = currentProfile?.photo; // ✅ Use single `photo` instead of `photos`
 
   return (
     <Modal
@@ -20,20 +20,24 @@ const PingModal = ({
       onDismiss={onClose}
       contentContainerStyle={[
         styles.modalContainer,
-        { backgroundColor: colors.surface }, // Dynamically set background
+        { backgroundColor: colors.surface }, // ✅ Background from theme.js
       ]}
     >
       <View style={[styles.indicator, { backgroundColor: colors.border }]} />
+
       {profilePhoto && (
         <Image source={{ uri: profilePhoto }} style={styles.avatar} />
       )}
+
       <Text style={[styles.modalTitle, { color: colors.primaryText }]}>
         Send a Ping
       </Text>
+
       <Text style={[styles.modalSubtitle, { color: colors.secondaryText }]}>
         Let {currentProfile?.name || 'this user'} know they caught your eye. Add
         a note if you'd like.
       </Text>
+
       <TextInput
         mode="outlined"
         style={[
@@ -50,6 +54,7 @@ const PingModal = ({
         onChangeText={setPingNote}
         multiline
       />
+
       <Button
         mode="contained"
         onPress={onSendPing}
@@ -60,6 +65,7 @@ const PingModal = ({
       >
         Send Ping
       </Button>
+
       <Button
         mode="text"
         onPress={onClose}

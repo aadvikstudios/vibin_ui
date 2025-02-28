@@ -12,17 +12,18 @@ import EmptyStateView from '../../../components/EmptyStateView';
 import ChatItem from './ChatItem';
 import ConnectionsHeader from './ConnectionsHeader'; // ✅ Import new component
 
-const ConnectionsScreen = ({ connections, loading, userProfile }) => {
+const ConnectionsScreen = ({ connections = [], loading, userProfile }) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
-  console.log('ConnectionsScreen:', connections[0]?.lastMessage);
+  console.log('value of connections', connections);
+  // ✅ Avoid crashes if `connections` is undefined
+  const safeConnections = connections ?? [];
+  console.log('ConnectionsScreen:', safeConnections);
 
   // ✅ Filter new matches and active chats
-  const newMatches = connections.filter(
-    (item) => item.lastMessage === undefined
-  );
-  const chats = connections.filter((item) => item.lastMessage);
+  const newMatches = safeConnections.filter((item) => !item.lastMessage);
+  const chats = safeConnections.filter((item) => item.lastMessage);
 
   const handlePress = (item) => {
     navigation.navigate('PersonalChatScreen', { match: item });
@@ -39,7 +40,7 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ✅ Connections Header Component */}
       <ConnectionsHeader
-        connectionsCount={connections.length}
+        connectionsCount={safeConnections.length}
         newMatches={newMatches}
         onPressMatch={handlePress}
       />
@@ -47,7 +48,7 @@ const ConnectionsScreen = ({ connections, loading, userProfile }) => {
       {/* ✅ Render Chat List using ChatItem component */}
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.matchId}
+        keyExtractor={(item, index) => item.matchId || `chat-${index}`} // ✅ Unique key
         renderItem={({ item }) => (
           <ChatItem item={item} userProfile={userProfile} />
         )}

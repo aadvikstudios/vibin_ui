@@ -32,12 +32,9 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const { match } = route.params;
   console.log('match value is ', match, userData.userhandle);
   const chatName = match.name;
-  const chatImage = match?.photos[0];
+  const chatImage = match.photo;
   const matchId = match.matchId;
-  const otherUserHandle =
-    match.user1Handle === userData.userhandle
-      ? match.user2Handle
-      : match.user1Handle;
+  const otherUserHandle = match.userHandle;
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
