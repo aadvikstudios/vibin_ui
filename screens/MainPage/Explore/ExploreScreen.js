@@ -3,13 +3,17 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-import MatchScreen from './MatchModal';
+import MatchModal from './MatchModal'; // ✅ Using MatchModal instead of MatchScreen
 import ProfileScreen from './ProfileScreen';
 import ActionButtons from './ActionButtons';
 import PingModal from './PingModal';
 import SuccessModal from '../../../components/SuccessModal';
 import EmptyStateView from '../../../components/EmptyStateView';
-import { sendActionToBackendAPI, sendPingToBackendAPI } from '../../../api';
+import {
+  sendActionToBackendAPI,
+  sendPingToBackendAPI,
+  sendMessageAPI,
+} from '../../../api';
 
 const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const { colors } = useTheme();
@@ -17,7 +21,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMatch, setIsMatch] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState(null);
-
   const [showNoProfiles, setShowNoProfiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -43,6 +46,31 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       }
       return nextIndex;
     });
+  };
+  const handleSendMessage = async (messageText) => {
+    if (!messageText.trim()) {
+      Alert.alert('Message Required', 'Please type a message before sending.');
+      return;
+    }
+
+    const payload = {
+      matchId: matchedProfile?.matchId,
+      content: messageText.trim(),
+      isUnread: 'true',
+      liked: false,
+      senderId: userProfile.userhandle,
+    };
+
+    try {
+      console.log('📩 Sending message:', payload);
+      const response = await sendMessageAPI(payload);
+      console.log('✅ Message sent successfully:', response);
+      setIsMatch(false);
+      moveToNextProfile();
+    } catch (error) {
+      console.error('❌ Error sending message:', error);
+      Alert.alert('Error', 'Failed to send message. Please try again.');
+    }
   };
 
   const handleAction = async (action) => {
@@ -107,8 +135,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      ) : isMatch ? (
-        <MatchScreen profile={matchedProfile} />
       ) : showNoProfiles ? (
         <EmptyStateView title="No profiles available" />
       ) : profiles?.length > 0 && currentIndex < profiles.length ? (
@@ -116,7 +142,18 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
       ) : (
         <EmptyStateView title="No profiles available" />
       )}
-
+      // ✅ Pass `handleSendMessage` to `MatchModal`
+      <MatchModal
+        visible={isMatch}
+        profile={matchedProfile}
+        userhandle={userProfile.userhandle}
+        onSendMessage={handleSendMessage} // ✅ Pass function as a prop
+        onLater={() => {
+          setIsMatch(false);
+          moveToNextProfile();
+        }}
+      />
+      ;
       {/* ✅ Action Buttons only appear when profiles exist and it's not loading */}
       {!isLoading && !showNoProfiles && profiles?.length > 0 && !isMatch && (
         <ActionButtons
@@ -125,7 +162,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
           }
         />
       )}
-
       <PingModal
         visible={isModalVisible}
         onClose={() => setModalVisible(false)}
@@ -134,7 +170,6 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
         setPingNote={setPingNote}
         isLoading={isLoading}
       />
-
       <SuccessModal
         visible={isSuccessModalVisible}
         message="Ping Sent Successfully!"

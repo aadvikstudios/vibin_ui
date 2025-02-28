@@ -6,14 +6,26 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  TextInput,
   Dimensions,
+  Alert,
 } from 'react-native';
-import { getPresignedReadUrlAPI } from '../../../api';
+import { getPresignedReadUrlAPI, sendMessageToChatAPI } from '../../../api'; // ✅ Import sendMessageToChatAPI
+import { useTheme } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const MatchModal = ({ visible, profile, onSendMessage, onLater }) => {
+const MatchModal = ({
+  visible,
+  profile,
+  userhandle,
+  onSendMessage,
+  onLater,
+}) => {
   const [photoUrl, setPhotoUrl] = useState(null);
+  const [message, setMessage] = useState('');
+  const { colors } = useTheme(); // ✅ Get colors from theme
 
   console.log('profile', profile);
 
@@ -35,36 +47,74 @@ const MatchModal = ({ visible, profile, onSendMessage, onLater }) => {
   return (
     <Modal animationType="fade" transparent visible={visible}>
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.primary }]}>
           {/* Image section */}
           <View style={styles.imageContainer}>
             {photoUrl ? (
               <Image source={{ uri: photoUrl }} style={styles.image} />
             ) : (
               <View style={styles.placeholderContainer}>
-                <Text style={styles.placeholderText}>Loading photo...</Text>
+                <Text
+                  style={[styles.placeholderText, { color: colors.onSurface }]}
+                >
+                  Loading photo...
+                </Text>
               </View>
             )}
           </View>
 
           {/* Text and buttons section */}
           <View style={styles.textContainer}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: colors.onPrimary }]}>
               You connected with {profile?.name || 'Unknown'}
             </Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { color: colors.onPrimary }]}>
               Feelings are mutual. Be bold and play nice.
             </Text>
 
-            {/* Action buttons */}
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={onSendMessage}
+            {/* ✅ Input Field for Message */}
+            <View
+              style={[
+                styles.inputContainer,
+                { backgroundColor: colors.surface },
+              ]}
             >
-              <Text style={styles.primaryButtonText}>Send a message</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton} onPress={onLater}>
-              <Text style={styles.secondaryButtonText}>Later</Text>
+              <TextInput
+                style={[styles.input, { color: colors.onSurface }]}
+                placeholder="Send a message..."
+                placeholderTextColor={colors.placeholder}
+                value={message}
+                onChangeText={setMessage}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  if (message.trim()) {
+                    onSendMessage(message); // ✅ Use the function from `ExploreScreen.js`
+                    setMessage('');
+                  }
+                }}
+                style={styles.sendButton}
+              >
+                <Ionicons name="send" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Later Button */}
+            <TouchableOpacity
+              style={[
+                styles.secondaryButton,
+                { backgroundColor: colors.secondary },
+              ]}
+              onPress={onLater}
+            >
+              <Text
+                style={[
+                  styles.secondaryButtonText,
+                  { color: colors.onSecondary },
+                ]}
+              >
+                Later
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -73,6 +123,7 @@ const MatchModal = ({ visible, profile, onSendMessage, onLater }) => {
   );
 };
 
+// ✅ Updated Styles
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -82,7 +133,6 @@ const styles = StyleSheet.create({
   },
   container: {
     width: screenWidth * 0.9,
-    backgroundColor: '#ff4500', // Match background color
     borderRadius: 20,
     overflow: 'hidden',
     alignItems: 'center',
@@ -103,7 +153,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    color: '#888',
     fontSize: 16,
   },
   textContainer: {
@@ -114,30 +163,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#fff',
     textAlign: 'center',
     marginBottom: 20,
   },
-  primaryButton: {
-    backgroundColor: '#fff',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     marginBottom: 15,
+    width: '100%',
   },
-  primaryButtonText: {
+  input: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ff4500',
+  },
+  sendButton: {
+    marginLeft: 10,
   },
   secondaryButton: {
-    backgroundColor: '#a63c00',
     borderRadius: 25,
     paddingVertical: 12,
     paddingHorizontal: 40,
@@ -145,7 +195,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
   },
 });
 
