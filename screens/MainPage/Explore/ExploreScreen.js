@@ -16,6 +16,8 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMatch, setIsMatch] = useState(false);
+  const [matchedProfile, setMatchedProfile] = useState(null);
+
   const [showNoProfiles, setShowNoProfiles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -57,6 +59,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
 
       if (response?.isMatch) {
         setIsMatch(true);
+        setMatchedProfile(response?.matchedProfile);
       } else {
         moveToNextProfile();
       }
@@ -104,7 +107,7 @@ const ExploreScreen = ({ profiles, userProfile, loading }) => {
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : isMatch ? (
-        <MatchScreen />
+        <MatchScreen profile={matchedProfile} />
       ) : showNoProfiles ? (
         <EmptyStateView title="No profiles available" />
       ) : profiles?.length > 0 && currentIndex < profiles.length ? (

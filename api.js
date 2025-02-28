@@ -231,13 +231,16 @@ export const fetchConnectionsAPI = async (userHandle) => {
       throw new Error(errorData.message || 'Failed to fetch mutual matches');
     }
 
-    const matches = await response.json();
-    console.log('✅ Data from fetchMutualMatches:', matches);
+    const data = await response.json();
+    console.log('✅ Data from fetchMutualMatches:', data);
 
-    // ✅ Process matches to ensure proper rendering
+    // 🛠 Ensure matches is an array (handles null gracefully)
+    const matches = Array.isArray(data.matches) ? data.matches : [];
+
+    // ✅ Process matches safely
     return matches.map((match) => ({
-      userHandle: match.userHandle,
-      name: match.name || 'Unknown', // Default if no name is found
+      userHandle: match.userHandle || 'unknown', // Default handle
+      name: match.name || 'Unknown', // Default name
       profilePic: match.profilePic || 'default-avatar.png', // Default profile pic
     }));
   } catch (error) {
@@ -298,7 +301,6 @@ export const fetchPingsAPI = async (emailId) => {
     return []; // Return an empty array instead of throwing an error
   }
 };
-
 export const fetchInteractionsForUserHandle = async (userHandle) => {
   try {
     console.log(`🔍 Fetching interactions for userHandle: ${userHandle}`);
@@ -321,15 +323,19 @@ export const fetchInteractionsForUserHandle = async (userHandle) => {
     const data = await response.json();
     console.log('✅ Data from fetchInteractionsForUserHandle:', data);
 
-    // ✅ Ensure data is always an array (default to empty array if null)
-    if (!Array.isArray(data)) {
+    // ✅ Extract interactions from data, ensuring it's always an array
+    const interactions = Array.isArray(data.interactions)
+      ? data.interactions
+      : [];
+
+    if (interactions.length === 0) {
       console.warn(`⚠️ No interactions found for userHandle: ${userHandle}`);
-      return []; // ✅ Return an empty array instead of crashing
+      return [];
     }
 
     // ✅ Process interactions and update photo URLs
     const processedInteractions = await Promise.all(
-      data.map(async (interaction) => {
+      interactions.map(async (interaction) => {
         let updatedPhotos = [];
 
         if (interaction.photos && Array.isArray(interaction.photos)) {

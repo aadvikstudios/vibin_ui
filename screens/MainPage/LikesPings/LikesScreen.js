@@ -23,7 +23,7 @@ const LikesScreen = ({ likes, loading, userProfile, onRefresh }) => {
       console.log('Like Action Response:', response);
 
       // ✅ If like action is successful, trigger refetch
-      if (response?.status === 'success') {
+      if (response?.message === 'Interaction processed successfully') {
         console.log('✅ Refreshing data after like action');
         onRefresh(); // 🔄 Calls the function passed from MainPage to refetch data
       }
