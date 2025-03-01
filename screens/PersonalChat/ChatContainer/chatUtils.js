@@ -5,8 +5,10 @@ import {
   generatePresignedUrlAPI,
   uploadImageToS3API,
   sendMessageAPI,
+  checkUserHandleAPI,
 } from '../../../api';
 import { debounce } from 'lodash';
+import { Alert } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -183,5 +185,66 @@ export const likeMessage = async (
         msg.createdAt === createdAt ? { ...msg, liked: !liked } : msg
       )
     );
+  }
+};
+
+/**
+ * Handles user invitation with validation
+ * @param {Object} params - Invitation parameters
+ * @param {string} params.invitedUserHandle - User to be invited
+ * @param {string} params.initiatorUserEmail - Email of the initiator
+ * @param {Function} params.setModalVisible - Function to close modal
+ * @param {Function} params.sendMessage - Function to send a message
+ * @param {string} params.secondUserEmail - Second user who must approve
+ * @param {Function} params.setLoading - Function to set loading state
+ */
+export const handleUserInvite = async ({
+  invitedUserHandle,
+  initiatorUserEmail,
+  setModalVisible,
+  sendMessage,
+  secondUserEmail,
+  setLoading,
+}) => {
+  try {
+    setLoading(true); // Start loading indicator
+
+    // ✅ Check if user handle exists
+    const userCheck = await checkUserHandleAPI(invitedUserHandle);
+    if (!userCheck.available) {
+      Alert.alert(
+        'Invalid User',
+        'The username entered does not exist. Please check and try again.'
+      );
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Send invite message to backend (Simulating API call)
+    const invitePayload = {
+      initiator: initiatorUserEmail,
+      invitedUser: invitedUserHandle,
+      approver: secondUserEmail,
+    };
+
+    // Simulate sending message via WebSocket or API (replace with actual API call)
+    sendMessage({
+      type: 'group_invite',
+      content: `You have been invited to join a group chat by ${initiatorUserEmail}.`,
+      recipient: invitedUserHandle,
+    });
+
+    // ✅ Show success message
+    Alert.alert(
+      'Invite Sent!',
+      `${invitedUserHandle} has been invited. Waiting for approval.`
+    );
+
+    setModalVisible(false); // Close modal
+  } catch (error) {
+    console.error('❌ Error sending invite:', error);
+    Alert.alert('Error', 'Something went wrong. Please try again.');
+  } finally {
+    setLoading(false); // Stop loading indicator
   }
 };
