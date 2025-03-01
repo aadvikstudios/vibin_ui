@@ -3,35 +3,34 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
-const ChatItem = ({ item }) => {
+const ChatItem = ({ item, userProfile }) => {
   const { colors, fonts } = useTheme();
   const navigation = useNavigation();
-
   const handlePress = () => {
     navigation.navigate('PersonalChatScreen', { match: item });
   };
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.surface }]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
       onPress={handlePress}
+      activeOpacity={0.7}
     >
       {/* Profile Picture */}
-      <View style={styles.avatarContainer}>
-        <Image
-          source={{
-            uri: item.photos?.[0] || 'https://via.placeholder.com/50',
-          }}
-          style={styles.avatar}
-        />
-      </View>
+      <Image source={{ uri: item.photo }} style={styles.avatar} />
 
-      {/* User Info */}
+      {/* Chat Info */}
       <View style={styles.infoContainer}>
         <Text
           style={[
             styles.name,
-            { color: colors.primaryText, ...fonts.displaySmall },
+            {
+              color: colors.primaryText,
+              fontFamily: fonts.displayMedium.fontFamily,
+            },
           ]}
         >
           {item.name}
@@ -39,7 +38,10 @@ const ChatItem = ({ item }) => {
         <Text
           style={[
             styles.lastMessage,
-            { color: colors.secondaryText, ...fonts.displaySmall },
+            {
+              color: colors.secondaryText,
+              fontFamily: fonts.displaySmall.fontFamily,
+            },
           ]}
           numberOfLines={1}
         >
@@ -47,8 +49,13 @@ const ChatItem = ({ item }) => {
         </Text>
       </View>
 
-      {/* 🔴 Red Dot at Rightmost Center for Unread Messages */}
-      {item.isUnread && <View style={styles.unreadDot} />}
+      {/* Unread Message Indicator */}
+      {!item.lastMessageIsRead &&
+        item.lastMessageSender !== userProfile.userhandle && (
+          <View
+            style={[styles.unreadDot, { backgroundColor: colors.notification }]}
+          />
+        )}
     </TouchableOpacity>
   );
 };
@@ -57,20 +64,18 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 15,
-    marginVertical: 5,
-    borderRadius: 10,
-    elevation: 2,
-    position: 'relative',
-  },
-  avatarContainer: {
-    marginRight: 10,
+    marginVertical: 6,
+    borderRadius: 12,
+    elevation: 3,
+    borderWidth: 1,
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginRight: 12,
   },
   infoContainer: {
     flex: 1,
@@ -78,20 +83,20 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 2,
   },
   lastMessage: {
     fontSize: 14,
-    marginTop: 5,
+    opacity: 0.8,
   },
   unreadDot: {
-    position: 'absolute',
-    right: 15, // Rightmost position
-    top: '50%', // Center vertically
-    transform: [{ translateY: -6 }], // Adjust for centering
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: 'red', // 🔴 Red dot for unread messages
+    position: 'absolute',
+    right: 15,
+    top: '50%',
+    transform: [{ translateY: -6 }],
   },
 });
 

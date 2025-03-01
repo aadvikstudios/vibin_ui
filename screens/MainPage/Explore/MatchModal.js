@@ -114,7 +114,7 @@ const MatchModal = ({ visible, profile, onSendMessage, onLater }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)', // Dimmed background
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // 0.3 for 70% transparency
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -15,11 +15,8 @@ import ConnectionsHeader from './ConnectionsHeader'; // ✅ Import new component
 const ConnectionsScreen = ({ connections = [], loading, userProfile }) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
-
-  console.log('value of connections', connections);
   // ✅ Avoid crashes if `connections` is undefined
   const safeConnections = connections ?? [];
-  console.log('ConnectionsScreen:', safeConnections);
 
   // ✅ Filter new matches and active chats
   const newMatches = safeConnections.filter((item) => !item.lastMessage);

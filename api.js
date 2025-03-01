@@ -271,6 +271,9 @@ export const fetchConnectionsAPI = async (userHandle) => {
       name: match.name, // Default name
       photo: match.photo || 'default-avatar.png', // Use presigned URL or default
       matchId: match.matchId,
+      lastMessage: match.lastMessage,
+      lastMessageSender: match.lastMessageSender,
+      lastMessageIsRead: match.lastMessageIsRead,
     }));
   } catch (error) {
     console.error('❌ Error fetching mutual matches:', error.message);
