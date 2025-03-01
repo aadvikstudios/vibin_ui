@@ -281,6 +281,88 @@ export const fetchConnectionsAPI = async (userHandle) => {
   }
 };
 
+export const fetchPendingApprovalsAPI = async (userHandle) => {
+  try {
+    console.log(`🔍 Fetching pending approvals for userHandle: ${userHandle}`);
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/groupinteractions/pending?approverHandle=${userHandle}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch pending approvals');
+    }
+
+    const data = await response.json();
+    console.log('✅ Data from fetchPendingApprovalsAPI:', data);
+
+    // 🛠 Ensure pendingInvites is an array (handles null gracefully)
+    const pendingInvites = Array.isArray(data) ? data : [];
+
+    // Fetch presigned URLs for invitee profile photos (if present)
+    const updatedInvites = await Promise.all(
+      pendingInvites.map(async (invite) => {
+        let updatedInvite = { ...invite };
+
+        if (
+          invite.inviteeProfile?.photo &&
+          typeof invite.inviteeProfile.photo === 'string' &&
+          invite.inviteeProfile.photo.trim() !== ''
+        ) {
+          try {
+            const presignedUrl = await getPresignedReadUrlAPI(
+              invite.inviteeProfile.photo
+            );
+            updatedInvite = {
+              ...invite,
+              inviteeProfile: {
+                ...invite.inviteeProfile,
+                photo: presignedUrl, // ✅ Replace the photo key with the presigned URL
+              },
+            };
+          } catch (error) {
+            console.error(
+              '⚠️ Error fetching presigned URL for invitee profile photo:',
+              error.message
+            );
+          }
+        }
+
+        return updatedInvite;
+      })
+    );
+
+    console.log(
+      '✅ Pending invites with presigned photo URLs:',
+      updatedInvites
+    );
+
+    // ✅ Process invites safely
+    return updatedInvites.map((invite) => ({
+      groupId: invite.groupId || invite.SK.split('#')[1], // Extract Group ID from SK if not explicitly provided
+      interactionType: invite.interactionType,
+      status: invite.status,
+      inviterHandle: invite.inviterHandle,
+      inviteeHandle: invite.inviteeHandle,
+      approverHandle: invite.approverHandle,
+      createdAt: invite.createdAt,
+      lastUpdated: invite.lastUpdated,
+      members: invite.members?.map((member) => member.S) || [], // Extract members properly
+      inviteeProfile: invite.inviteeProfile, // ✅ Updated profile with presigned photo
+    }));
+  } catch (error) {
+    console.error('❌ Error fetching pending approvals:', error.message);
+    return []; // ✅ Return an empty array instead of crashing
+  }
+};
+
 export const fetchPingsAPI = async (emailId) => {
   try {
     const response = await fetch(

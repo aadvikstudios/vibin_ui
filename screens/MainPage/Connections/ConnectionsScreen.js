@@ -17,12 +17,19 @@ import { MESSAGE_TYPES } from '../../../constants/messageConstants';
 const isInitialMessage = (item) =>
   item.lastMessage === MESSAGE_TYPES.MATCH_BOT &&
   item.lastMessageIsRead === false;
-const ConnectionsScreen = ({ connections = [], loading, userProfile }) => {
+const ConnectionsScreen = ({
+  connections = [],
+  pendingInvites = [],
+  loading,
+  userProfile,
+}) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
   // ✅ Ensure `connections` is defined
   const safeConnections = connections ?? [];
+  const safePendingInvites = pendingInvites ?? [];
+  console.log('pending invites is ', safePendingInvites);
 
   // ✅ Separate new matches and active chats
   const newMatches = safeConnections.filter(isInitialMessage);
@@ -45,6 +52,7 @@ const ConnectionsScreen = ({ connections = [], loading, userProfile }) => {
       <ConnectionsHeader
         connectionsCount={safeConnections.length}
         newMatches={newMatches}
+        pendingInvites={safePendingInvites}
         onPressMatch={handlePress}
       />
 

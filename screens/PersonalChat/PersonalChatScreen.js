@@ -24,7 +24,7 @@ import MessageInput from './PersonalChatComponents/MessageInput';
 import InviteUserModal from './PersonalChatComponents/InviteUserModal';
 
 // Import Invite Utility
-import { handleUserInvite, checkPendingInvites } from '../../utils/chatUtils';
+import { handleUserInvite } from '../../utils/chatUtils';
 
 const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
@@ -36,6 +36,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const otherUserHandle = match.userHandle;
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
+  const [inviteError, setInviteError] = useState(''); // ✅ Add error state
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyMessage, setReplyMessage] = useState(null);
@@ -44,22 +45,10 @@ const PersonalChatScreen = ({ route, navigation }) => {
 
   // Invite State
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
-  const [pendingInvites, setPendingInvites] = useState([]);
 
   useEffect(() => {
     fetchMessages(matchId, setMessages, setLoading, setRefreshing, messageIds);
     markMessagesRead(matchId, otherUserHandle);
-
-    // ✅ Check for pending invites when the chat screen loads
-    // checkPendingInvites(userData.emailId).then((invites) => {
-    //   if (invites.length > 0) {
-    //     setPendingInvites(invites);
-    //     Alert.alert(
-    //       'Pending Invitation',
-    //       'You have a pending chat invitation awaiting approval.'
-    //     );
-    //   }
-    // });
   }, [matchId, otherUserHandle, userData.userhandle]);
 
   const onRefresh = () => {
@@ -86,7 +75,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
             Alert.alert('Coming Soon', 'This feature is not available yet!')
           }
         />
-
         {/* Chat Content */}
         {loading && !refreshing ? (
           <ActivityIndicator
@@ -106,7 +94,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
             setReplyMessage={setReplyMessage}
           />
         )}
-
         {/* Message Input */}
         <MessageInput
           matchId={matchId}
@@ -117,22 +104,12 @@ const PersonalChatScreen = ({ route, navigation }) => {
           colors={colors}
           replyMessage={replyMessage}
           setReplyMessage={setReplyMessage}
-        />
-
-        {/* Invite User Modal */}
+        />{' '}
         <InviteUserModal
           visible={inviteModalVisible}
           onClose={() => setInviteModalVisible(false)}
-          onInvite={(userHandle, setLoading) =>
-            handleUserInvite({
-              invitedUserHandle: userHandle,
-              initiatorUserEmail: userData.emailId,
-              setModalVisible: setInviteModalVisible,
-              sendMessage,
-              secondUserEmail: senderId, // The second user who needs to approve
-              setLoading, // ✅ Pass loading state
-            })
-          }
+          inviterHandle={userData.userhandle}
+          approverHandle={otherUserHandle}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

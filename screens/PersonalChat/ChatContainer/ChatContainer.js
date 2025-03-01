@@ -4,7 +4,6 @@ import { useTheme } from 'react-native-paper';
 import { getPresignedReadUrlAPI } from '../../../api';
 import MessageItem from './MessageItem'; // ✅ Updated MessageItem
 import CenteredMessage from './CenteredMessage'; // ✅ Handles system messages
-import { useSocket } from '../useSocket';
 import { MESSAGE_TYPES } from '../../../constants/messageConstants'; // ✅ Import the constant
 
 const ChatContainer = ({
@@ -57,7 +56,9 @@ const ChatContainer = ({
   }
 
   // ✅ Filter out messages with an empty senderId (except system messages)
-  const filteredMessages = uniqueMessages.filter((msg) => msg.content !== '');
+  const filteredMessages = uniqueMessages.filter(
+    (msg) => msg.content !== MESSAGE_TYPES.MATCH_BOT
+  );
 
   return (
     <FlatList

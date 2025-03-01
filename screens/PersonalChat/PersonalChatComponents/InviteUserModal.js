@@ -10,13 +10,19 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert } from 'react-native';
+import { handleUserInvite } from '../ChatContainer/chatUtils';
 
-const InviteUserModal = ({ visible, onClose, onInvite }) => {
+const InviteUserModal = ({
+  visible,
+  onClose,
+  inviterHandle,
+  approverHandle,
+}) => {
   const { colors } = useTheme();
   const [userHandle, setUserHandle] = useState('');
-  const [loading, setLoading] = useState(false); // ✅ Loading state
-  const [error, setError] = useState(''); // ✅ Error state
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState('');
 
   const handleInvitePress = async () => {
     if (!userHandle.trim()) {
@@ -24,18 +30,23 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
       return;
     }
 
-    setError(''); // ✅ Clear previous errors
-    setLoading(true); // ✅ Start loading
+    setError('');
+    setMessage('');
+    setLoading(true);
 
-    try {
-      await onInvite(userHandle, setLoading);
-      Alert.alert('Invite Sent!', `${userHandle} has been invited.`);
-      setUserHandle(''); // ✅ Clear input on success
-      onClose(); // ✅ Close modal
-    } catch (err) {
-      setError(err.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+    const { success, message } = await handleUserInvite({
+      inviteeHandle: userHandle,
+      inviterHandle,
+      approverHandle,
+    });
+
+    setLoading(false);
+
+    if (success) {
+      setMessage(message); // ✅ Show success message
+      setUserHandle(''); // ✅ Clear input field
+    } else {
+      setError(message); // ❌ Show error message
     }
   };
 
@@ -43,7 +54,7 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={[styles.modal, { backgroundColor: colors.surface }]}>
-          {/* Modal Header with Icon */}
+          {/* Header */}
           <View style={styles.header}>
             <Ionicons
               name="people-circle-outline"
@@ -75,17 +86,43 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
             placeholder="Enter @username"
             placeholderTextColor={colors.secondaryText}
             value={userHandle}
-            onChangeText={setUserHandle}
-            editable={!loading} // ✅ Disable input while loading
+            onChangeText={(text) => {
+              setUserHandle(text);
+              setError('');
+              setMessage('');
+            }}
+            editable={!loading}
           />
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {/* Action Buttons */}
+          {/* Error or Success Message */}
+          {error ? (
+            <View style={styles.messageContainer}>
+              <Ionicons
+                name="close-circle-outline"
+                size={20}
+                color={colors.error}
+              />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {message ? (
+            <View style={styles.messageContainer}>
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={20}
+                color={colors.success}
+              />
+              <Text style={styles.successText}>{message}</Text>
+            </View>
+          ) : null}
+
+          {/* Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.primary }]}
               onPress={handleInvitePress}
-              disabled={loading} // ✅ Disable button when loading
+              disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color={colors.onPrimary} />
@@ -108,7 +145,7 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.secondary }]}
               onPress={onClose}
-              disabled={loading} // ✅ Disable cancel button when loading
+              disabled={loading}
             >
               <Ionicons
                 name="close-outline"
@@ -116,16 +153,10 @@ const InviteUserModal = ({ visible, onClose, onInvite }) => {
                 color={colors.onSecondary}
               />
               <Text style={[styles.buttonText, { color: colors.onSecondary }]}>
-                Cancel
+                Close
               </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Footer Note */}
-          <Text style={[styles.footerNote, { color: colors.secondaryText }]}>
-            Your match will be notified and must approve this invite before the
-            chat expands.
-          </Text>
         </View>
       </View>
     </Modal>
@@ -137,14 +168,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // ✅ Dim background effect
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modal: {
     width: '85%',
     padding: 20,
     borderRadius: 15,
     alignItems: 'center',
-    elevation: 5, // ✅ Subtle shadow
+    elevation: 5,
   },
   header: {
     alignItems: 'center',
@@ -167,19 +198,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 5,
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
   },
   errorText: {
     color: 'red',
     fontSize: 14,
-    alignSelf: 'flex-start',
-    marginLeft: 10,
-    marginBottom: 10,
+    marginLeft: 5,
+  },
+  successText: {
+    color: 'green',
+    fontSize: 14,
+    marginLeft: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    marginTop: 15,
   },
   button: {
     flex: 1,
@@ -194,12 +233,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 5,
-  },
-  footerNote: {
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 10,
-    fontStyle: 'italic',
   },
 });
 

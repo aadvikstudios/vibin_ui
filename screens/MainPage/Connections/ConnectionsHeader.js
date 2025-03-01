@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,25 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Ionicons';
+import NotificationDropdown from './NotificationDropdown'; // ✅ Import the new component
 
 const ConnectionsHeader = ({
   connectionsCount,
   newMatches = [],
+  pendingInvites = [],
   onPressMatch,
+  onPressNotifications,
 }) => {
   const { colors } = useTheme();
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (onPressNotifications) {
+      onPressNotifications();
+    }
+  };
 
   return (
     <View style={styles.headerContainer}>
@@ -40,7 +52,7 @@ const ConnectionsHeader = ({
         <FlatList
           data={newMatches}
           horizontal
-          keyExtractor={(item, index) => item.matchId || `match-${index}`} // ✅ Unique key fix
+          keyExtractor={(item, index) => item.matchId || `match-${index}`}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
@@ -51,9 +63,7 @@ const ConnectionsHeader = ({
             >
               <View style={styles.avatarContainer}>
                 <Image
-                  source={{
-                    uri: item.photo,
-                  }}
+                  source={{ uri: item.photo }}
                   style={styles.newMatchAvatar}
                 />
                 {/* 🔴 Red Dot Indicator for New Match */}
@@ -69,6 +79,26 @@ const ConnectionsHeader = ({
           contentContainerStyle={styles.newMatchesContainer}
         />
       )}
+
+      {/* ✅ Notification Bell Icon with Badge */}
+      <TouchableOpacity
+        style={styles.notificationIcon}
+        onPress={toggleNotifications}
+      >
+        <Icon name="notifications-outline" size={28} color={colors.primary} />
+        {pendingInvites.length > 0 && (
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>{pendingInvites.length}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      {/* ✅ Notification Dropdown */}
+      <NotificationDropdown
+        visible={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        pendingInvites={pendingInvites}
+      />
     </View>
   );
 };
@@ -77,7 +107,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Aligns elements properly
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 12,
     backgroundColor: 'transparent',
@@ -114,7 +144,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   avatarContainer: {
-    position: 'relative', // Needed for Red Dot positioning
+    position: 'relative',
   },
   newMatchAvatar: {
     width: 55,
@@ -130,7 +160,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: 'red', // 🔴 Red dot for new matches
+    backgroundColor: 'red',
     borderWidth: 2,
     borderColor: 'white',
   },
@@ -139,6 +169,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  notificationIcon: {
+    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

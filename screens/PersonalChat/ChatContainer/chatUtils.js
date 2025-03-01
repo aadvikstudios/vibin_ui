@@ -8,7 +8,9 @@ import {
   checkUserHandleAPI,
 } from '../../../api';
 import { debounce } from 'lodash';
-import { Alert } from 'react-native';
+
+import axios from 'axios'; // ✅ Integrate backend API calls
+import { API_BASE_URL } from '../../../config';
 
 import * as ImagePicker from 'expo-image-picker';
 
@@ -188,63 +190,81 @@ export const likeMessage = async (
   }
 };
 
-/**
- * Handles user invitation with validation
- * @param {Object} params - Invitation parameters
- * @param {string} params.invitedUserHandle - User to be invited
- * @param {string} params.initiatorUserEmail - Email of the initiator
- * @param {Function} params.setModalVisible - Function to close modal
- * @param {Function} params.sendMessage - Function to send a message
- * @param {string} params.secondUserEmail - Second user who must approve
- * @param {Function} params.setLoading - Function to set loading state
- */
-export const handleUserInvite = async ({
-  invitedUserHandle,
-  initiatorUserEmail,
-  setModalVisible,
-  sendMessage,
-  secondUserEmail,
-  setLoading,
-}) => {
+export const checkPendingInvites = async (approverId) => {
+  console.log('🚀 checkPendingInvites called');
+  console.log('📌 Approver ID received:', approverId);
+
   try {
-    setLoading(true); // Start loading indicator
-
-    // ✅ Check if user handle exists
-    const userCheck = await checkUserHandleAPI(invitedUserHandle);
-    if (!userCheck.available) {
-      Alert.alert(
-        'Invalid User',
-        'The username entered does not exist. Please check and try again.'
-      );
-      setLoading(false);
-      return;
-    }
-
-    // ✅ Send invite message to backend (Simulating API call)
-    const invitePayload = {
-      initiator: initiatorUserEmail,
-      invitedUser: invitedUserHandle,
-      approver: secondUserEmail,
-    };
-
-    // Simulate sending message via WebSocket or API (replace with actual API call)
-    sendMessage({
-      type: 'group_invite',
-      content: `You have been invited to join a group chat by ${initiatorUserEmail}.`,
-      recipient: invitedUserHandle,
-    });
-
-    // ✅ Show success message
-    Alert.alert(
-      'Invite Sent!',
-      `${invitedUserHandle} has been invited. Waiting for approval.`
+    console.log('⏳ Fetching pending invites from API...');
+    const response = await axios.get(
+      `${API_BASE_URL}/api/invites/pending/${approverId}`
     );
 
-    setModalVisible(false); // Close modal
+    console.log('📨 API Response:', response.data);
+
+    if (response.status === 200) {
+      console.log(`✅ Found ${response.data.length} pending invites`);
+      return response.data; // Returns the list of pending invites
+    }
+
+    console.log('❌ No pending invites found.');
+    return [];
   } catch (error) {
-    console.error('❌ Error sending invite:', error);
-    Alert.alert('Error', 'Something went wrong. Please try again.');
-  } finally {
-    setLoading(false); // Stop loading indicator
+    console.error(
+      '❌ Error checking pending invites:',
+      error?.response?.data || error
+    );
+    return [];
+  }
+};
+
+export const handleUserInvite = async ({
+  inviteeHandle,
+  inviterHandle,
+  approverHandle,
+}) => {
+  console.log('🚀 handleUserInvite called');
+
+  if (!inviteeHandle.trim()) {
+    return { success: false, message: 'Please enter a valid user handle.' };
+  }
+
+  try {
+    // ✅ Ensure all handles are lowercase before sending the request
+    const payload = {
+      inviterHandle: inviterHandle.toLowerCase(),
+      inviteeHandle: inviteeHandle.toLowerCase(),
+      approverHandle: approverHandle.toLowerCase(),
+    };
+
+    console.log('📨 Payload being sent to API:', payload);
+
+    const response = await axios.post(
+      `${API_BASE_URL}/api/groupinteractions/invite`,
+      payload
+    );
+
+    console.log('✅ Invite sent successfully:', response.data);
+
+    return {
+      success: true,
+      message: `Invitation successfully sent to @${inviteeHandle.toLowerCase()} and is pending approval by @${approverHandle.toLowerCase()}.`,
+    };
+  } catch (error) {
+    console.error('❌ Error sending invite:', error?.response?.data || error);
+
+    if (error?.response?.status === 404) {
+      return { success: false, message: 'The entered user does not exist.' };
+    } else if (error?.response?.status === 400) {
+      return {
+        success: false,
+        message: 'Invalid request. Please check details.',
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Failed to send the invite. Please try again.',
+      };
+    }
   }
 };

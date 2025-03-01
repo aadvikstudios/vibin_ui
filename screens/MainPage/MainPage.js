@@ -13,6 +13,7 @@ import {
   fetchMatchesForProfileAPI,
   fetchInteractionsForUserHandle,
   fetchConnectionsAPI,
+  fetchPendingApprovalsAPI,
 } from '../../api';
 
 // Screens
@@ -79,6 +80,7 @@ const MainPage = ({ navigation }) => {
   const [likes, setLikes] = useState([]);
   const [pings, setPings] = useState([]);
   const [connections, setConnections] = useState([]);
+  const [pendingInvites, setPendingInvites] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -91,14 +93,17 @@ const MainPage = ({ navigation }) => {
     setLoading(true);
 
     try {
-      const [profileData, interactionData, connectionsData] = await Promise.all(
-        [
-          fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
-          fetchInteractionsForUserHandle(userData.userhandle),
-          fetchConnectionsAPI(userData.userhandle),
-          // fetchMatchesForUserHandle(userData.userhandle),
-        ]
-      );
+      const [
+        profileData,
+        interactionData,
+        connectionsData,
+        pendingInvitesData,
+      ] = await Promise.all([
+        fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
+        fetchInteractionsForUserHandle(userData.userhandle),
+        fetchConnectionsAPI(userData.userhandle),
+        fetchPendingApprovalsAPI(userData.userhandle),
+      ]);
 
       setProfiles(profileData || []);
       console.log(
@@ -122,6 +127,7 @@ const MainPage = ({ navigation }) => {
         )
       );
       setConnections(connectionsData || []);
+      setPendingInvites(pendingInvitesData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {
@@ -219,6 +225,7 @@ const MainPage = ({ navigation }) => {
             {() => (
               <ConnectionsScreen
                 connections={connections}
+                pendingInvites={pendingInvites}
                 loading={loading}
                 onRefresh={fetchData}
                 userProfile={userData}
