@@ -98,6 +98,12 @@ const ConnectionsHeader = ({
         visible={showNotifications}
         onClose={() => setShowNotifications(false)}
         pendingInvites={pendingInvites}
+        onAcceptInvite={(groupId) =>
+          console.log('Accepted invite for:', groupId)
+        } // ✅ Pass a function
+        onRejectInvite={(groupId) =>
+          console.log('Rejected invite for:', groupId)
+        } // ✅ Pass a function
       />
     </View>
   );

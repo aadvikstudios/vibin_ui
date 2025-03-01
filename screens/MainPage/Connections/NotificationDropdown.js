@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,19 @@ import NotificationItem from './NotificationItem';
 const NotificationDropdown = ({
   visible,
   onClose,
-  pendingInvites,
-  onAcceptInvite,
-  onRejectInvite,
+  pendingInvites = [],
+  onAcceptInvite = () => {},
+  onRejectInvite = () => {},
 }) => {
   const { colors, roundness, fonts } = useTheme();
+  const [localInvites, setLocalInvites] = useState(pendingInvites);
+
+  // ✅ Remove invite from UI after action
+  const handleRemoveInvite = (groupId) => {
+    setLocalInvites((prevInvites) =>
+      prevInvites.filter((invite) => invite.groupId !== groupId)
+    );
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -48,17 +56,25 @@ const NotificationDropdown = ({
             📩 Pending Invites
           </Text>
 
-          {pendingInvites.length > 0 ? (
+          {localInvites.length > 0 ? (
             <FlatList
-              data={pendingInvites}
+              data={localInvites}
               keyExtractor={(item, index) => item.groupId || `invite-${index}`}
               renderItem={({ item }) => (
                 <NotificationItem
                   inviterHandle={item.inviterHandle}
+                  inviteeHandle={item.inviteeHandle}
                   inviteeProfile={item.inviteeProfile}
                   groupId={item.groupId}
-                  onAccept={onAcceptInvite}
-                  onReject={onRejectInvite}
+                  approverHandle={item.approverHandle}
+                  onAccept={() => {
+                    onAcceptInvite(item.groupId);
+                    handleRemoveInvite(item.groupId);
+                  }}
+                  onReject={() => {
+                    onRejectInvite(item.groupId);
+                    handleRemoveInvite(item.groupId);
+                  }}
                 />
               )}
             />

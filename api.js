@@ -363,6 +363,46 @@ export const fetchPendingApprovalsAPI = async (userHandle) => {
   }
 };
 
+export const approveOrDeclineInviteAPI = async (
+  approverHandle,
+  inviterHandle,
+  inviteeHandle,
+  status
+) => {
+  try {
+    console.log(
+      `📩 Sending ${status} action for invitee: ${inviteeHandle} by ${approverHandle}`
+    );
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/groupinteractions/approve`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          approverHandle,
+          inviterHandle,
+          inviteeHandle,
+          status,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `Failed to ${status} invite`);
+    }
+
+    console.log(`✅ Successfully ${status} invite for ${inviteeHandle}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`❌ Error in approveOrDeclineInviteAPI:`, error.message);
+    throw error;
+  }
+};
+
 export const fetchPingsAPI = async (emailId) => {
   try {
     const response = await fetch(

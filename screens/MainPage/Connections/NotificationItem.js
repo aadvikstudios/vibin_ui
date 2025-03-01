@@ -1,18 +1,52 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from 'react-native-paper';
-import QuickProfileModal from './QuickProfileModal'; // ✅ Import the profile modal
+import QuickProfileModal from './QuickProfileModal';
+import { approveOrDeclineInviteAPI } from '../../../api'; // ✅ API Call
 
 const NotificationItem = ({
   inviterHandle,
+  inviteeHandle,
   inviteeProfile,
   groupId,
+  approverHandle,
   onAccept,
   onReject,
 }) => {
   const [isProfileVisible, setProfileVisible] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const { colors, fonts, roundness } = useTheme();
+
+  // ✅ Handle Accept & Reject actions
+  const handleInviteAction = async (status) => {
+    try {
+      setLoading(true);
+      await approveOrDeclineInviteAPI(
+        approverHandle,
+        inviterHandle,
+        inviteeHandle,
+        status
+      );
+      if (status === 'approved' && typeof onAccept === 'function') {
+        onAccept();
+      } else if (status === 'declined' && typeof onReject === 'function') {
+        onReject();
+      } else {
+        console.warn(`⚠️ No handler found for status: ${status}`);
+      }
+    } catch (error) {
+      console.error(`Error processing ${status} action:`, error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View
@@ -39,7 +73,7 @@ const NotificationItem = ({
         <Text style={[styles.bold, { color: colors.primary }]}>
           {inviterHandle}
         </Text>{' '}
-        is inviting you to join a group with{' '}
+        invited you to join a group with{' '}
         <Text style={[styles.bold, { color: colors.secondary }]}>
           {inviteeProfile.name}
         </Text>
@@ -58,30 +92,44 @@ const NotificationItem = ({
         >
           <Icon name="person-circle-outline" size={32} color={colors.primary} />
           <Text style={[styles.viewProfileText, { color: colors.primaryText }]}>
-            View Profile
+            View
           </Text>
         </TouchableOpacity>
 
         {/* ✅ Accept Button */}
         <TouchableOpacity
-          onPress={() => onAccept(groupId)}
+          onPress={() => handleInviteAction('approved')}
           style={styles.acceptButton}
+          disabled={isLoading}
         >
-          <Icon name="checkmark-circle" size={40} color={colors.success} />
-          <Text style={[styles.buttonText, { color: colors.success }]}>
-            Accept
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={colors.success} />
+          ) : (
+            <>
+              <Icon name="checkmark-circle" size={40} color={colors.success} />
+              <Text style={[styles.buttonText, { color: colors.success }]}>
+                Accept
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* ❌ Reject Button */}
         <TouchableOpacity
-          onPress={() => onReject(groupId)}
+          onPress={() => handleInviteAction('declined')}
           style={styles.rejectButton}
+          disabled={isLoading}
         >
-          <Icon name="close-circle" size={40} color={colors.danger} />
-          <Text style={[styles.buttonText, { color: colors.danger }]}>
-            Reject
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={colors.danger} />
+          ) : (
+            <>
+              <Icon name="close-circle" size={40} color={colors.danger} />
+              <Text style={[styles.buttonText, { color: colors.danger }]}>
+                Reject
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -101,7 +149,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     marginBottom: 10,
-    elevation: 2, // Adds subtle shadow for better visibility
+    elevation: 2,
   },
   inviteText: {
     fontSize: 14,
