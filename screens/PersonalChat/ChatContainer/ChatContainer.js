@@ -5,6 +5,7 @@ import { getPresignedReadUrlAPI } from '../../../api';
 import MessageItem from './MessageItem'; // ✅ Updated MessageItem
 import CenteredMessage from './CenteredMessage'; // ✅ Handles system messages
 import { useSocket } from '../useSocket';
+import { MESSAGE_TYPES } from '../../../constants/messageConstants'; // ✅ Import the constant
 
 const ChatContainer = ({
   socket,
@@ -48,7 +49,8 @@ const ChatContainer = ({
 
   // ✅ Check if only one message exists and senderId is empty (system message)
   const shouldCenterMessage =
-    uniqueMessages.length === 1 && uniqueMessages[0].content === '';
+    uniqueMessages.length === 1 &&
+    uniqueMessages[0].content === MESSAGE_TYPES.MATCH_BOT;
 
   if (shouldCenterMessage) {
     return <CenteredMessage message={uniqueMessages[0]} colors={colors} />;

@@ -11,16 +11,22 @@ import { useNavigation } from '@react-navigation/native';
 import EmptyStateView from '../../../components/EmptyStateView';
 import ChatItem from './ChatItem';
 import ConnectionsHeader from './ConnectionsHeader'; // ✅ Import new component
+import { MESSAGE_TYPES } from '../../../constants/messageConstants';
 
+// ✅ Helper function to check if the message is an initial match message
+const isInitialMessage = (item) =>
+  item.lastMessage === MESSAGE_TYPES.MATCH_BOT &&
+  item.lastMessageIsRead === false;
 const ConnectionsScreen = ({ connections = [], loading, userProfile }) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
-  // ✅ Avoid crashes if `connections` is undefined
+
+  // ✅ Ensure `connections` is defined
   const safeConnections = connections ?? [];
 
-  // ✅ Filter new matches and active chats
-  const newMatches = safeConnections.filter((item) => !item.lastMessage);
-  const chats = safeConnections.filter((item) => item.lastMessage);
+  // ✅ Separate new matches and active chats
+  const newMatches = safeConnections.filter(isInitialMessage);
+  const chats = safeConnections.filter((item) => !isInitialMessage(item));
 
   const handlePress = (item) => {
     navigation.navigate('PersonalChatScreen', { match: item });

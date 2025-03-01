@@ -2,12 +2,20 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { MESSAGE_TYPES } from '../../../constants/messageConstants';
 
 const ChatItem = ({ item, userProfile }) => {
   const { colors, fonts } = useTheme();
   const navigation = useNavigation();
   const handlePress = () => {
     navigation.navigate('PersonalChatScreen', { match: item });
+  };
+  // ✅ Helper function to format last message display text
+  const getLastMessageDisplayTextForInitial = (lastMessage) => {
+    if (lastMessage === MESSAGE_TYPES.MATCH_BOT) {
+      return '🎉 Congratulations! Make your move, start chatting!';
+    }
+    return item.lastMessage || 'No messages yet';
   };
 
   return (
@@ -45,7 +53,7 @@ const ChatItem = ({ item, userProfile }) => {
           ]}
           numberOfLines={1}
         >
-          {item.lastMessage || 'No messages yet'}
+          {getLastMessageDisplayTextForInitial(item.lastMessage)}
         </Text>
       </View>
 

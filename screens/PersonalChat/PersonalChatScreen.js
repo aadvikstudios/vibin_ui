@@ -30,7 +30,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { userData } = useUser();
   const { match } = route.params;
-  console.log('match value is ', match, userData.userhandle);
   const chatName = match.name;
   const chatImage = match.photo;
   const matchId = match.matchId;
