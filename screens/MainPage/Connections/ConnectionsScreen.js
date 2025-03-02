@@ -106,7 +106,7 @@ const ConnectionsScreen = ({
             data={safeGroupConnections}
             keyExtractor={(group) => group.groupId}
             renderItem={({ item }) => (
-              <GroupChatItem group={item} onPress={handleGroupPress} />
+              <GroupChatItem group={item} onPress={handleGroupPress} /> // ✅ Pass handleGroupPress
             )}
             contentContainerStyle={styles.groupChatList}
           />

@@ -1,29 +1,22 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const GroupChatItem = ({ group }) => {
+const GroupChatItem = ({ group, onPress }) => {
   const { colors } = useTheme();
-
-  const handlePress = () => {
-    Alert.alert(
-      'Coming Soon',
-      'Group chats will be available in a future update!'
-    );
-  };
 
   return (
     <TouchableOpacity
       style={[styles.container, { backgroundColor: colors.surface }]}
-      onPress={handlePress}
+      onPress={() => onPress(group)} // ✅ Calls the onPress function with the group data
     >
       <View style={styles.iconContainer}>
         <Icon name="account-group" size={32} color={colors.primary} />
       </View>
       <View style={styles.infoContainer}>
         <Text style={[styles.groupName, { color: colors.primaryText }]}>
-          {group.groupId}
+          {group.groupName} {/* ✅ Display group name instead of ID */}
         </Text>
         <Text style={[styles.memberCount, { color: colors.secondaryText }]}>
           {group.members.length} members

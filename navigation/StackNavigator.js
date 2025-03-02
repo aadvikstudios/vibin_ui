@@ -20,6 +20,8 @@ import Permissions from '../screens/SignUpPages/Permissions';
 import SafetyGuidelines from '../screens/SignUpPages/SafetyGuidelines';
 import MainPage from '../screens/MainPage/MainPage';
 import PersonalChatScreen from '../screens/PersonalChat/PersonalChatScreen';
+import GroupChatScreen from '../screens/GroupChat/GroupChatScreen';
+
 import ViewProfileScreen from '../screens/MainPage/Explore/ViewProfileScreen';
 
 const Stack = createStackNavigator();
@@ -119,6 +121,12 @@ const StackNavigator = ({ initialRouteName }) => {
         component={PersonalChatScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="GroupChatScreen"
+        component={GroupChatScreen}
+        options={{ headerShown: false }}
+      />
+
       {/* ✅ Added ViewProfileScreen */}
       <Stack.Screen
         name="ViewProfileScreen"
