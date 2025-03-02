@@ -14,6 +14,7 @@ import {
   fetchInteractionsForUserHandle,
   fetchConnectionsAPI,
   fetchPendingApprovalsAPI,
+  fetchActiveGroupsAPI,
 } from '../../api';
 
 // Screens
@@ -81,6 +82,7 @@ const MainPage = ({ navigation }) => {
   const [pings, setPings] = useState([]);
   const [connections, setConnections] = useState([]);
   const [pendingInvites, setPendingInvites] = useState([]);
+  const [groupConnections, setGroupConnections] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -98,11 +100,13 @@ const MainPage = ({ navigation }) => {
         interactionData,
         connectionsData,
         pendingInvitesData,
+        groupConnectionsData,
       ] = await Promise.all([
         fetchMatchesForProfileAPI(userData.userhandle, userData.lookingFor),
         fetchInteractionsForUserHandle(userData.userhandle),
         fetchConnectionsAPI(userData.userhandle),
         fetchPendingApprovalsAPI(userData.userhandle),
+        fetchActiveGroupsAPI(userData.userhandle), // ✅ Fetch Active Groups
       ]);
 
       setProfiles(profileData || []);
@@ -128,6 +132,7 @@ const MainPage = ({ navigation }) => {
       );
       setConnections(connectionsData || []);
       setPendingInvites(pendingInvitesData || []);
+      setGroupConnections(groupConnectionsData || []);
     } catch (error) {
       console.error('❌ Error fetching data:', error.message);
     } finally {
@@ -226,6 +231,7 @@ const MainPage = ({ navigation }) => {
               <ConnectionsScreen
                 connections={connections}
                 pendingInvites={pendingInvites}
+                groupConnections={groupConnections}
                 loading={loading}
                 onRefresh={fetchData}
                 userProfile={userData}

@@ -66,7 +66,6 @@ export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
     }
 
     const data = await response.json();
-    console.log('✅ Matched profiles:', data);
 
     // ✅ Ensure data is an array before processing
     if (!Array.isArray(data)) {
@@ -102,7 +101,6 @@ export const fetchMatchesForProfileAPI = async (userhandle, gender) => {
       })
     );
 
-    console.log('✅ Processed matches:', updatedMatches);
     return updatedMatches;
   } catch (error) {
     console.error('❌ Error in fetchMatchesForProfileAPI:', error.message);
@@ -231,7 +229,6 @@ export const fetchConnectionsAPI = async (userHandle) => {
     }
 
     const data = await response.json();
-    console.log('✅ Data from fetchMutualMatches:', data);
 
     // 🛠 Ensure matches is an array (handles null gracefully)
     const matches = Array.isArray(data.matches) ? data.matches : [];
@@ -262,8 +259,6 @@ export const fetchConnectionsAPI = async (userHandle) => {
         return match; // Return the match as is if no photo exists
       })
     );
-
-    console.log('✅ Matches with presigned photo URLs:', updatedMatches);
 
     // ✅ Process matches safely
     return updatedMatches.map((match) => ({
@@ -403,6 +398,34 @@ export const approveOrDeclineInviteAPI = async (
   }
 };
 
+export const fetchActiveGroupsAPI = async (userHandle) => {
+  try {
+    console.log(`🔍 Fetching active groups for user: ${userHandle}`);
+
+    const response = await fetch(
+      `${API_BASE_URL}/api/groupinteractions/active/${userHandle}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch active groups');
+    }
+
+    const data = await response.json();
+    console.log(`✅ Active groups retrieved for ${userHandle}:`, data);
+    return data;
+  } catch (error) {
+    console.error(`❌ Error in fetchActiveGroupsAPI:`, error.message);
+    throw error;
+  }
+};
+
 export const fetchPingsAPI = async (emailId) => {
   try {
     const response = await fetch(
@@ -475,7 +498,6 @@ export const fetchInteractionsForUserHandle = async (userHandle) => {
     }
 
     const data = await response.json();
-    console.log('✅ Data from fetchInteractionsForUserHandle:', data);
 
     // ✅ Extract interactions from data, ensuring it's always an array
     const interactions = Array.isArray(data.interactions)

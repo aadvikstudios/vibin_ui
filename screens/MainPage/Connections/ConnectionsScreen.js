@@ -10,33 +10,40 @@ import { useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import EmptyStateView from '../../../components/EmptyStateView';
 import ChatItem from './ChatItem';
-import ConnectionsHeader from './ConnectionsHeader'; // ✅ Import new component
+import GroupChatItem from './GroupChatItem'; // ✅ New component for groups
+import ConnectionsHeader from './ConnectionsHeader';
 import { MESSAGE_TYPES } from '../../../constants/messageConstants';
 
-// ✅ Helper function to check if the message is an initial match message
 const isInitialMessage = (item) =>
   item.lastMessage === MESSAGE_TYPES.MATCH_BOT &&
   item.lastMessageIsRead === false;
+
 const ConnectionsScreen = ({
   connections = [],
   pendingInvites = [],
+  groupConnections = [],
   loading,
   userProfile,
 }) => {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
-  // ✅ Ensure `connections` is defined
   const safeConnections = connections ?? [];
   const safePendingInvites = pendingInvites ?? [];
-  console.log('pending invites is ', safePendingInvites);
+  const safeGroupConnections = groupConnections ?? [];
 
-  // ✅ Separate new matches and active chats
+  console.log('Group Connections:', safeGroupConnections);
+
+  // Separate new matches and active chats
   const newMatches = safeConnections.filter(isInitialMessage);
   const chats = safeConnections.filter((item) => !isInitialMessage(item));
 
   const handlePress = (item) => {
     navigation.navigate('PersonalChatScreen', { match: item });
+  };
+
+  const handleGroupPress = (group) => {
+    navigation.navigate('GroupChatScreen', { group });
   };
 
   return loading ? (
@@ -48,7 +55,7 @@ const ConnectionsScreen = ({
     </View>
   ) : (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ✅ Connections Header Component */}
+      {/* ✅ Connections Header */}
       <ConnectionsHeader
         connectionsCount={safeConnections.length}
         newMatches={newMatches}
@@ -56,10 +63,10 @@ const ConnectionsScreen = ({
         onPressMatch={handlePress}
       />
 
-      {/* ✅ Render Chat List using ChatItem component */}
+      {/* ✅ Personal Chat List */}
       <FlatList
         data={chats}
-        keyExtractor={(item, index) => item.matchId || `chat-${index}`} // ✅ Unique key
+        keyExtractor={(item, index) => item.matchId || `chat-${index}`}
         renderItem={({ item }) => (
           <ChatItem item={item} userProfile={userProfile} />
         )}
@@ -88,6 +95,23 @@ const ConnectionsScreen = ({
           ) : null
         }
       />
+
+      {/* ✅ Group Chat List */}
+      {safeGroupConnections.length > 0 && (
+        <View style={styles.groupChatSection}>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>
+            Group Chats
+          </Text>
+          <FlatList
+            data={safeGroupConnections}
+            keyExtractor={(group) => group.groupId}
+            renderItem={({ item }) => (
+              <GroupChatItem group={item} onPress={handleGroupPress} />
+            )}
+            contentContainerStyle={styles.groupChatList}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -113,6 +137,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+  },
+  groupChatSection: {
+    marginTop: 20,
+    paddingHorizontal: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  groupChatList: {
+    paddingBottom: 10,
   },
 });
 
