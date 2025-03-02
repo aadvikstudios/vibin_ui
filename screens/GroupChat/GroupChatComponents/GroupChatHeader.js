@@ -3,8 +3,13 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text, Avatar, useTheme } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
-const GroupChatHeader = ({ groupImage, groupName, members, navigation }) => {
-  const { colors } = useTheme(); // ✅ Get latest theme colors
+const GroupChatHeader = ({ group, navigation }) => {
+  const { colors } = useTheme();
+
+  // ✅ Safe fallback values in case group is undefined or missing properties
+  const groupImage = group?.photo || 'https://via.placeholder.com/40'; // Placeholder image
+  const groupName = group?.name || 'Unnamed Group';
+  const membersCount = group?.members?.length || 0;
 
   return (
     <View style={[styles.header, { backgroundColor: colors.surface }]}>
@@ -26,7 +31,7 @@ const GroupChatHeader = ({ groupImage, groupName, members, navigation }) => {
           {groupName}
         </Text>
         <Text style={[styles.members, { color: colors.secondaryText }]}>
-          {members.length} members
+          {membersCount} members
         </Text>
       </View>
 

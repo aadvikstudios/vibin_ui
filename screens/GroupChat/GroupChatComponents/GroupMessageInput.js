@@ -25,12 +25,21 @@ const GroupMessageInput = ({
 
   /** ✅ Handle Sending Message */
   const onSend = async () => {
-    if (!inputText.trim() && !attachedImage) return;
+    if (!inputText.trim() && !attachedImage) return; // Ensure at least text or image exists
 
-    await sendMessage(attachedImage ? '' : inputText, attachedImage); // Send text or image
-    setInputText('');
-    setReplyMessage(null);
-    setAttachedImage(null); // ✅ Clear image after sending
+    try {
+      // ✅ Correctly pass content & imageUrl separately
+      await sendMessage(
+        inputText.trim() ? inputText.trim() : null,
+        attachedImage ? attachedImage : null
+      );
+
+      setInputText(''); // Reset text input
+      setReplyMessage(null);
+      setAttachedImage(null); // ✅ Clear image after sending
+    } catch (error) {
+      console.error('❌ Error sending message:', error);
+    }
   };
 
   /** ✅ Handle Sending Image */
@@ -41,10 +50,7 @@ const GroupMessageInput = ({
         userData,
         'group-chat-images/'
       );
-
-      if (imageUrl) {
-        setAttachedImage(imageUrl); // ✅ Store image URL before sending
-      }
+      if (imageUrl) setAttachedImage(imageUrl); // ✅ Store image URL before sending
     } catch (error) {
       console.error('❌ Image upload failed:', error);
     }
@@ -52,7 +58,6 @@ const GroupMessageInput = ({
 
   return (
     <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
-      {/* 🔹 Reply Preview */}
       {replyMessage && (
         <View
           style={[
@@ -97,7 +102,7 @@ const GroupMessageInput = ({
         value={inputText}
         onChangeText={setInputText}
         placeholderTextColor={colors.secondaryText}
-        editable={!attachedImage} // Disable input if an image is attached
+        editable={!attachedImage} // ✅ Disable input if an image is attached
       />
 
       {/* 🔹 Send Button */}

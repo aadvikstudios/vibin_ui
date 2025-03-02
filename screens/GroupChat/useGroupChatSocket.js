@@ -4,11 +4,16 @@ import {
   sendGroupMessageAPI,
   markGroupMessagesReadAPI,
   likeGroupMessageAPI,
-} from '../../api'; // ✅ Ensure backend storage
+} from '../../api';
 
 const SOCKET_URL = 'https://socket.vibinconnect.com';
 
-export const useGroupChatSocket = (groupId, setMessages, messageIds) => {
+export const useGroupChatSocket = (
+  groupId,
+  setMessages,
+  messageIds,
+  userData
+) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -26,7 +31,6 @@ export const useGroupChatSocket = (groupId, setMessages, messageIds) => {
     newSocket.on('newGroupMessage', (message) => {
       console.log('📩 New group message received:', message);
 
-      // ✅ Ignore self-sent messages already added
       if (messageIds.current.has(message.messageId)) {
         console.warn('⚠️ Duplicate group message received:', message.messageId);
         return;
@@ -47,42 +51,35 @@ export const useGroupChatSocket = (groupId, setMessages, messageIds) => {
       );
     });
 
-    // ✅ Handle read receipts (group messages marked as read)
-    newSocket.on('groupMessagesRead', ({ groupId, readerId }) => {
-      console.log(
-        `👀 Group Messages marked as read by ${readerId} in group ${groupId}`
-      );
-
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.senderId !== readerId ? { ...msg, isUnread: false } : msg
-        )
-      );
-    });
-
     return () => {
       console.log('❌ Disconnecting group socket...');
       newSocket.disconnect();
     };
   }, [groupId]);
 
-  /** ✅ Send Group Message */
-  const sendGroupMessage = async (content, imageUrl = null, senderId) => {
+  const sendGroupMessage = async (content, imageUrl = null) => {
     if (!socket) {
       console.error('❌ Group Socket is not connected!');
       return;
     }
 
+    if (!userData?.userhandle) {
+      console.error('❌ Missing senderId! userData:', userData);
+      return;
+    }
+
     const message = {
       groupId,
-      senderId,
-      content: imageUrl ? '' : content, // ✅ Ensure text is empty if image is present
-      imageUrl,
+      senderId: userData.userhandle, // ✅ Ensure senderId is assigned
+      content: content ? content.trim() : null, // ✅ Avoid empty strings
+      imageUrl: imageUrl ? imageUrl : null,
       createdAt: new Date().toISOString(),
       messageId: `${groupId}-${Date.now()}-${Math.random()}`,
     };
 
-    // ✅ Emit message to the WebSocket server
+    console.log('📤 Sending group message:', message);
+
+    // ✅ Emit message to WebSocket server
     socket.emit('sendGroupMessage', message);
 
     // ✅ Optimistically update UI
@@ -92,24 +89,15 @@ export const useGroupChatSocket = (groupId, setMessages, messageIds) => {
     }
 
     try {
-      await sendGroupMessageAPI(groupId, senderId, content, imageUrl, []);
+      await sendGroupMessageAPI(
+        groupId,
+        userData.userhandle, // ✅ Ensure correct senderId is passed to the API
+        message.content,
+        message.imageUrl
+      );
       console.log('✅ Group message successfully stored in backend');
     } catch (error) {
       console.error('❌ Failed to send group message:', error);
-    }
-  };
-
-  /** ✅ Mark Group Messages as Read */
-  const markGroupMessagesAsRead = async (userHandle) => {
-    if (!socket) return;
-
-    console.log(`🔄 Marking group messages as read for ${userHandle}`);
-    socket.emit('markGroupMessagesAsRead', { groupId, userHandle });
-
-    try {
-      await markGroupMessagesReadAPI(groupId, userHandle);
-    } catch (error) {
-      console.error('❌ Failed to mark group messages as read:', error);
     }
   };
 
@@ -128,35 +116,24 @@ export const useGroupChatSocket = (groupId, setMessages, messageIds) => {
         )
       );
 
-      // ✅ Emit event to the WebSocket server
       socket.emit('likeGroupMessage', { groupId, messageId, liked });
 
       console.log(
         `👍 Group Like event sent: Message ${messageId}, Liked: ${liked}`
       );
 
-      // ✅ Update like status in backend
       await likeGroupMessageAPI(groupId, messageId, liked);
-
       console.log(
         `✅ Group Like status updated in backend for message ${messageId}`
       );
     } catch (error) {
       console.error('❌ Failed to like group message:', error);
-
-      // ❌ Rollback UI update if an error occurs
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.messageId === messageId ? { ...msg, liked: !liked } : msg
-        )
-      );
     }
   };
 
   return {
     socket,
     sendGroupMessage,
-    markGroupMessagesAsRead,
     likeGroupMessage,
   };
 };

@@ -8,40 +8,37 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ChatContainer from '../PersonalChat/ChatContainer/ChatContainer';
-import { useUser } from '../../context/UserContext';
 import {
   fetchGroupMessages,
   markGroupMessagesRead,
 } from './GroupChatComponents/groupChatUtils';
 import { useGroupChatSocket } from './useGroupChatSocket';
+import { useUser } from '../../context/UserContext';
 
 // Import Components
 import GroupChatHeader from './GroupChatComponents/GroupChatHeader';
 import GroupMessageInput from './GroupChatComponents/GroupMessageInput';
+import GroupChatContainer from './GroupChatComponents/GroupChatContainer';
 
 const GroupChatScreen = ({ route, navigation }) => {
   const { colors } = useTheme();
   const { userData } = useUser();
   const { group } = route.params;
 
-  const groupName = group.name;
-  const groupImage = group.photo;
   const groupId = group.groupId;
-  const members = group.members;
+  const messageIds = useRef(new Set());
 
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyMessage, setReplyMessage] = useState(null);
-  const messageIds = useRef(new Set());
 
-  // ✅ Use Group Chat Socket for real-time messaging
   const { socket, sendGroupMessage, likeGroupMessage } = useGroupChatSocket(
     groupId,
     setMessages,
-    messageIds
+    messageIds,
+    userData
   );
 
   useEffect(() => {
@@ -53,7 +50,6 @@ const GroupChatScreen = ({ route, navigation }) => {
       messageIds
     );
 
-    // ✅ Mark messages as read when user joins
     if (userData.userhandle) {
       markGroupMessagesRead(socket, groupId, userData.userhandle);
     }
@@ -69,18 +65,11 @@ const GroupChatScreen = ({ route, navigation }) => {
       messageIds
     );
   };
-
-  /** ✅ Send Group Message */
-  const handleSendMessage = async (imageUrl = null) => {
-    if (!inputText.trim() && !imageUrl) return;
+  const handleSendMessage = async (content = '', imageUrl = null) => {
+    if (!content.trim() && !imageUrl) return;
 
     try {
-      await sendGroupMessage(
-        imageUrl ? '' : inputText, // ✅ If image is present, send an empty text
-        imageUrl,
-        userData.userId // ✅ Send userId from context
-      );
-
+      await sendGroupMessage(content.trim() || null, imageUrl || null);
       setInputText('');
       setReplyMessage(null);
     } catch (error) {
@@ -96,15 +85,8 @@ const GroupChatScreen = ({ route, navigation }) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* 🔹 Updated Group Chat Header */}
-        <GroupChatHeader
-          groupImage={groupImage}
-          groupName={groupName}
-          members={members}
-          navigation={navigation}
-        />
+        <GroupChatHeader group={group} navigation={navigation} />
 
-        {/* 🔹 Chat Content */}
         {loading && !refreshing ? (
           <ActivityIndicator
             style={styles.center}
@@ -112,21 +94,19 @@ const GroupChatScreen = ({ route, navigation }) => {
             color={colors.primary}
           />
         ) : (
-          <ChatContainer
+          <GroupChatContainer
             messages={messages}
             setMessages={setMessages}
-            likeMessage={likeGroupMessage} // ✅ Handle real-time likes
+            likeMessage={likeGroupMessage}
             profile={userData}
             refreshing={refreshing}
             onRefresh={onRefresh}
-            setReplyMessage={setReplyMessage}
           />
         )}
 
-        {/* 🔹 Group Message Input */}
         <GroupMessageInput
           groupId={groupId}
-          sendMessage={handleSendMessage} // ✅ Uses socket-integrated sendMessage function
+          sendMessage={handleSendMessage}
           userData={userData}
           inputText={inputText}
           setInputText={setInputText}
