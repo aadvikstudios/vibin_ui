@@ -94,7 +94,6 @@ const PersonalChatScreen = ({ route, navigation }) => {
             setReplyMessage={setReplyMessage}
           />
         )}
-        {/* Message Input */}
         <MessageInput
           matchId={matchId}
           sendMessage={sendMessage}
@@ -104,7 +103,7 @@ const PersonalChatScreen = ({ route, navigation }) => {
           colors={colors}
           replyMessage={replyMessage}
           setReplyMessage={setReplyMessage}
-        />{' '}
+        />
         <InviteUserModal
           visible={inviteModalVisible}
           onClose={() => setInviteModalVisible(false)}
