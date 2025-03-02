@@ -19,7 +19,10 @@ const GroupChatHeader = ({ groupImage, groupName, members, navigation }) => {
       {/* 🟡 Group Avatar & Name */}
       <Avatar.Image source={{ uri: groupImage }} size={40} />
       <View style={styles.infoContainer}>
-        <Text style={[styles.groupName, { color: colors.primaryText }]}>
+        <Text
+          style={[styles.groupName, { color: colors.primaryText }]}
+          numberOfLines={1}
+        >
           {groupName}
         </Text>
         <Text style={[styles.members, { color: colors.secondaryText }]}>
@@ -35,6 +38,7 @@ const GroupChatHeader = ({ groupImage, groupName, members, navigation }) => {
   );
 };
 
+/** Styles */
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',

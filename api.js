@@ -23,6 +23,7 @@ export const fetchMessagesAPI = async (matchId, limit = 20) => {
     throw error;
   }
 };
+
 export const sendMessageAPI = async (message) => {
   try {
     console.log('📤 Sending message to backend:', message);
@@ -44,6 +45,65 @@ export const sendMessageAPI = async (message) => {
     console.log('✅ Message successfully stored in backend');
   } catch (error) {
     console.error('❌ Error in sendMessageAPI:', error.message);
+    throw error;
+  }
+};
+
+export const fetchGroupMessagesAPI = async (groupId, limit = 50) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/groupchat/messages?groupId=${groupId}&limit=${limit}`
+    );
+    const data = await response.json();
+
+    if (response.ok && data) {
+      return data.map((msg) => ({
+        ...msg,
+        imageUrl: msg.imageUrl ? `${msg.imageUrl}` : null, // Convert relative to full URL
+      }));
+    } else {
+      throw new Error(data.message || 'Failed to fetch group messages');
+    }
+  } catch (error) {
+    console.error('Error in fetchGroupMessagesAPI:', error.message);
+    throw error;
+  }
+};
+export const sendGroupMessageAPI = async (
+  groupId,
+  senderId,
+  content,
+  imageUrl = null,
+  members
+) => {
+  try {
+    const message = {
+      groupId,
+      senderId,
+      content,
+      imageUrl,
+      members, // List of group members
+    };
+
+    console.log('📤 Sending group message:', message);
+
+    const response = await fetch(`${API_BASE_URL}/api/groupchat/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      console.error('❌ Backend response error:', data);
+      throw new Error(data.message || 'Failed to send group message');
+    }
+
+    console.log('✅ Group message successfully stored in backend');
+  } catch (error) {
+    console.error('❌ Error in sendGroupMessageAPI:', error.message);
     throw error;
   }
 };

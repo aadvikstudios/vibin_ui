@@ -13,8 +13,8 @@ import { useUser } from '../../context/UserContext';
 import {
   fetchGroupMessages,
   markGroupMessagesRead,
-  likeGroupMessage,
 } from './GroupChatComponents/groupChatUtils';
+import { useGroupChatSocket } from './useGroupChatSocket';
 
 // Import Components
 import GroupChatHeader from './GroupChatComponents/GroupChatHeader';
@@ -37,6 +37,13 @@ const GroupChatScreen = ({ route, navigation }) => {
   const [replyMessage, setReplyMessage] = useState(null);
   const messageIds = useRef(new Set());
 
+  // ✅ Use Group Chat Socket for real-time messaging
+  const { socket, sendGroupMessage, likeGroupMessage } = useGroupChatSocket(
+    groupId,
+    setMessages,
+    messageIds
+  );
+
   useEffect(() => {
     fetchGroupMessages(
       groupId,
@@ -45,7 +52,11 @@ const GroupChatScreen = ({ route, navigation }) => {
       setRefreshing,
       messageIds
     );
-    markGroupMessagesRead(groupId, userData.userhandle);
+
+    // ✅ Mark messages as read when user joins
+    if (userData.userhandle) {
+      markGroupMessagesRead(socket, groupId, userData.userhandle);
+    }
   }, [groupId, userData.userhandle]);
 
   const onRefresh = () => {
@@ -57,6 +68,24 @@ const GroupChatScreen = ({ route, navigation }) => {
       setRefreshing,
       messageIds
     );
+  };
+
+  /** ✅ Send Group Message */
+  const handleSendMessage = async (imageUrl = null) => {
+    if (!inputText.trim() && !imageUrl) return;
+
+    try {
+      await sendGroupMessage(
+        imageUrl ? '' : inputText, // ✅ If image is present, send an empty text
+        imageUrl,
+        userData.userId // ✅ Send userId from context
+      );
+
+      setInputText('');
+      setReplyMessage(null);
+    } catch (error) {
+      console.error('❌ Failed to send group message:', error);
+    }
   };
 
   return (
@@ -86,7 +115,7 @@ const GroupChatScreen = ({ route, navigation }) => {
           <ChatContainer
             messages={messages}
             setMessages={setMessages}
-            likeMessage={likeGroupMessage}
+            likeMessage={likeGroupMessage} // ✅ Handle real-time likes
             profile={userData}
             refreshing={refreshing}
             onRefresh={onRefresh}
@@ -97,7 +126,7 @@ const GroupChatScreen = ({ route, navigation }) => {
         {/* 🔹 Group Message Input */}
         <GroupMessageInput
           groupId={groupId}
-          sendMessage={() => {}} // Placeholder, replace with actual sendMessage function
+          sendMessage={handleSendMessage} // ✅ Uses socket-integrated sendMessage function
           userData={userData}
           inputText={inputText}
           setInputText={setInputText}
