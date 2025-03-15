@@ -30,6 +30,12 @@ const ChatContainer = ({
     seenMessageIds.add(message.messageId);
     return true;
   });
+  // ✅ Auto-scroll to the latest message
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
 
   // ✅ Fetch pre-signed URLs for images
   const fetchImageUrl = async (imageKey) => {

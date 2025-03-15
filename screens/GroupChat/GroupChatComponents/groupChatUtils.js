@@ -1,6 +1,5 @@
 import {
   fetchGroupMessagesAPI,
-  sendGroupMessageAPI,
   markGroupMessagesReadAPI,
   likeGroupMessageAPI,
 } from '../../../api';
@@ -19,67 +18,24 @@ export const fetchGroupMessages = async (
 
     console.log('📩 Group Messages Fetched:', data);
 
-    // ✅ Ensure messageIds stays updated to prevent duplicates
-    data.forEach((msg) => messageIds.current.add(msg.messageId));
+    // ✅ Clear existing messages on refresh
+    messageIds.current.clear();
 
-    setMessages(data);
+    // ✅ Ensure only unique messages are stored
+    const uniqueMessages = data.filter(
+      (msg) => !messageIds.current.has(msg.messageId)
+    );
+
+    // ✅ Add fetched message IDs to prevent duplicates
+    uniqueMessages.forEach((msg) => messageIds.current.add(msg.messageId));
+
+    // ✅ Replace messages instead of appending
+    setMessages(uniqueMessages);
   } catch (error) {
     console.error('❌ Failed to fetch group messages:', error);
   } finally {
     setLoading(false);
     setRefreshing(false);
-  }
-};
-
-/** ✅ Send Group Message with Real-Time Sync */
-export const sendGroupMessage = async (
-  socket,
-  groupId,
-  senderId,
-  content,
-  imageUrl,
-  members,
-  setMessages
-) => {
-  if (!socket) {
-    console.error('❌ Socket not available');
-    return;
-  }
-
-  try {
-    const newMessage = {
-      groupId,
-      senderId,
-      content: imageUrl ? '' : content, // ✅ Ensure content is empty if image is present
-      imageUrl,
-      members,
-      createdAt: new Date().toISOString(),
-      messageId: `${groupId}-${Date.now()}-${Math.random()}`,
-    };
-
-    // ✅ Optimistically update UI
-    setMessages((prevMessages) => [newMessage, ...prevMessages]);
-
-    // ✅ Emit message via WebSocket
-    socket.emit('sendGroupMessage', newMessage);
-    console.log('📤 Sent Group Message via Socket:', newMessage);
-
-    // ✅ Store message in backend
-    await sendGroupMessageAPI(
-      groupId,
-      senderId,
-      newMessage.content,
-      newMessage.imageUrl,
-      members
-    );
-    console.log('✅ Group message stored in backend');
-  } catch (error) {
-    console.error('❌ Failed to send group message:', error);
-
-    // ❌ Rollback UI update if an error occurs
-    setMessages((prevMessages) =>
-      prevMessages.filter((msg) => msg.messageId !== newMessage.messageId)
-    );
   }
 };
 

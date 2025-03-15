@@ -1,10 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
-import {
-  sendGroupMessageAPI,
-  markGroupMessagesReadAPI,
-  likeGroupMessageAPI,
-} from '../../api';
+import { sendGroupMessageAPI } from '../../api';
 
 const SOCKET_URL = 'https://socket.vibinconnect.com';
 
@@ -15,6 +11,7 @@ export const useGroupChatSocket = (
   userData
 ) => {
   const [socket, setSocket] = useState(null);
+  const pendingMessages = useRef(new Set()); // ✅ Track messages sent via WebSocket
 
   useEffect(() => {
     if (!groupId) return;
@@ -22,45 +19,48 @@ export const useGroupChatSocket = (
     const newSocket = io(SOCKET_URL, { transports: ['websocket'] });
 
     newSocket.on('connect', () => {
-      console.log('✅ Group Socket connected:', newSocket.id);
+      console.log('✅ WebSocket Connected:', newSocket.id);
       newSocket.emit('joinGroup', { groupId });
       setSocket(newSocket);
     });
 
-    // ✅ Listen for real-time group messages
+    newSocket.on('disconnect', () => {
+      console.warn('❌ WebSocket Disconnected');
+    });
+
+    // ✅ Listen for real-time group messages (Avoid duplicates)
     newSocket.on('newGroupMessage', (message) => {
       console.log('📩 New group message received:', message);
 
       if (messageIds.current.has(message.messageId)) {
-        console.warn('⚠️ Duplicate group message received:', message.messageId);
+        console.warn('⚠️ Duplicate group message detected:', message.messageId);
         return;
       }
 
       messageIds.current.add(message.messageId);
-      setMessages((prev) => [message, ...prev]);
-    });
+      pendingMessages.current.delete(message.messageId); // ✅ Remove from pending if received via WebSocket
 
-    // ✅ Handle real-time message likes
-    newSocket.on('groupMessageLiked', ({ messageId, liked }) => {
-      console.log(`💖 Group Message ${messageId} liked: ${liked}`);
-
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.messageId === messageId ? { ...msg, liked } : msg
-        )
-      );
+      setMessages((prev) => [...prev, message]); // ✅ Append at the bottom
     });
 
     return () => {
-      console.log('❌ Disconnecting group socket...');
+      console.log('❌ Disconnecting WebSocket...');
       newSocket.disconnect();
     };
   }, [groupId]);
 
   const sendGroupMessage = async (content, imageUrl = null) => {
-    if (!socket) {
-      console.error('❌ Group Socket is not connected!');
+    if (!socket || !socket.connected) {
+      console.error('❌ WebSocket is NOT connected. Falling back to API.');
+      await sendGroupMessageAPI(
+        groupId,
+        userData.userhandle,
+        content,
+        imageUrl
+      );
       return;
+    } else {
+      console.log('✅ WebSocket is connected. Sending message via WebSocket.');
     }
 
     if (!userData?.userhandle) {
@@ -70,70 +70,49 @@ export const useGroupChatSocket = (
 
     const message = {
       groupId,
-      senderId: userData.userhandle, // ✅ Ensure senderId is assigned
-      content: content ? content.trim() : null, // ✅ Avoid empty strings
-      imageUrl: imageUrl ? imageUrl : null,
+      senderId: userData.userhandle,
+      content: content ? content.trim() : null,
+      imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
-      messageId: `${groupId}-${Date.now()}-${Math.random()}`,
+      messageId: `${groupId}-${Date.now()}-${Math.random()}`, // Ensure uniqueness
     };
 
     console.log('📤 Sending group message:', message);
 
-    // ✅ Emit message to WebSocket server
+    // ✅ Emit message to WebSocket first
     socket.emit('sendGroupMessage', message);
+    pendingMessages.current.add(message.messageId);
 
-    // ✅ Optimistically update UI
     if (!messageIds.current.has(message.messageId)) {
       messageIds.current.add(message.messageId);
-      setMessages((prev) => [message, ...prev]);
+      setMessages((prev) => [...prev, message]); // ✅ Append at the bottom
     }
 
     try {
+      // ✅ Wait before calling API (to prevent double insertion)
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (!pendingMessages.current.has(message.messageId)) {
+        console.log(
+          '⚠️ Message already received via WebSocket. Skipping API call.'
+        );
+        return;
+      }
+
+      // ✅ Store message in backend only if WebSocket didn't handle it
       await sendGroupMessageAPI(
         groupId,
-        userData.userhandle, // ✅ Ensure correct senderId is passed to the API
+        userData.userhandle,
         message.content,
         message.imageUrl
       );
       console.log('✅ Group message successfully stored in backend');
     } catch (error) {
       console.error('❌ Failed to send group message:', error);
+    } finally {
+      pendingMessages.current.delete(message.messageId);
     }
   };
 
-  /** ✅ Like a Group Message */
-  const likeGroupMessage = async (messageId, liked) => {
-    if (!socket) {
-      console.error('❌ Socket not available');
-      return;
-    }
-
-    try {
-      // ✅ Optimistically update UI
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.messageId === messageId ? { ...msg, liked } : msg
-        )
-      );
-
-      socket.emit('likeGroupMessage', { groupId, messageId, liked });
-
-      console.log(
-        `👍 Group Like event sent: Message ${messageId}, Liked: ${liked}`
-      );
-
-      await likeGroupMessageAPI(groupId, messageId, liked);
-      console.log(
-        `✅ Group Like status updated in backend for message ${messageId}`
-      );
-    } catch (error) {
-      console.error('❌ Failed to like group message:', error);
-    }
-  };
-
-  return {
-    socket,
-    sendGroupMessage,
-    likeGroupMessage,
-  };
+  return { socket, sendGroupMessage };
 };

@@ -30,6 +30,11 @@ const GroupChatContainer = ({
     seenMessageIds.add(message.messageId);
     return true;
   });
+  useEffect(() => {
+    if (flatListRef.current && messages.length > 0) {
+      flatListRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
 
   // ✅ Fetch pre-signed URLs for image messages
   const fetchImageUrl = async (imageKey) => {

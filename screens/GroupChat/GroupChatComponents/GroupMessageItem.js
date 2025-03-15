@@ -33,12 +33,12 @@ const GroupMessageItem = ({
             : { backgroundColor: colors.surfaceVariant },
         ]}
       >
-        {/* 🔹 Sender Name (Only for Received Messages) */}
+        {/* 🔹 Sender Name (Only for Received Messages)
         {!isSentByCurrentUser && (
           <Text style={[styles.senderName, { color: colors.primary }]}>
             {item.senderName}
           </Text>
-        )}
+        )} */}
 
         {/* 🔹 Reply Preview */}
         {item.replyTo && (
@@ -128,13 +128,15 @@ const styles = StyleSheet.create({
   receivedMessageWrapper: {
     alignItems: 'flex-start',
   },
+
   messageContainer: {
-    maxWidth: '75%',
-    padding: 12,
+    maxWidth: '65%', // ✅ Reduce width for better alignment
+    padding: 10,
     borderRadius: 12,
-    marginVertical: 5,
+    marginVertical: 3, // ✅ Reduce space between messages
     position: 'relative',
   },
+
   senderName: {
     fontSize: 14,
     fontWeight: 'bold',
@@ -150,8 +152,9 @@ const styles = StyleSheet.create({
   heartIconReceived: {
     position: 'absolute',
     bottom: -10,
-    left: -1,
+    left: 5,
   },
+
   heartIconSent: {
     position: 'absolute',
     bottom: -10,

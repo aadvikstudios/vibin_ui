@@ -58,6 +58,9 @@ const GroupChatScreen = ({ route, navigation }) => {
 
   const onRefresh = () => {
     setRefreshing(true);
+    setMessages([]); // ✅ Clear existing messages
+    messageIds.current.clear(); // ✅ Clear message IDs to avoid duplicates
+
     fetchGroupMessages(
       groupId,
       setMessages,
@@ -66,6 +69,7 @@ const GroupChatScreen = ({ route, navigation }) => {
       messageIds
     );
   };
+
   const handleSendMessage = async (content = '', imageUrl = null) => {
     if (!content.trim() && !imageUrl) return;
 

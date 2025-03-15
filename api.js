@@ -85,7 +85,7 @@ export const sendGroupMessageAPI = async (
       members, // List of group members
     };
 
-    console.log('📤 Sending group message:', message);
+    console.log('📤 Sending group message api:', message);
 
     const response = await fetch(`${API_BASE_URL}/api/groupchat/message`, {
       method: 'POST',
