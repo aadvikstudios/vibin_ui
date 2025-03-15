@@ -10,7 +10,7 @@ import { useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import EmptyStateView from '../../../components/EmptyStateView';
 import ChatItem from './ChatItem';
-import GroupChatItem from './GroupChatItem'; // ✅ New component for groups
+import GroupChatList from './GroupChatList'; // ✅ Moved to separate component
 import ConnectionsHeader from './ConnectionsHeader';
 import { MESSAGE_TYPES } from '../../../constants/messageConstants';
 
@@ -97,21 +97,10 @@ const ConnectionsScreen = ({
       />
 
       {/* ✅ Group Chat List */}
-      {safeGroupConnections.length > 0 && (
-        <View style={styles.groupChatSection}>
-          <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-            Group Chats
-          </Text>
-          <FlatList
-            data={safeGroupConnections}
-            keyExtractor={(group) => group.groupId}
-            renderItem={({ item }) => (
-              <GroupChatItem group={item} onPress={handleGroupPress} /> // ✅ Pass handleGroupPress
-            )}
-            contentContainerStyle={styles.groupChatList}
-          />
-        </View>
-      )}
+      <GroupChatList
+        groups={safeGroupConnections}
+        onGroupPress={handleGroupPress}
+      />
     </View>
   );
 };
@@ -137,18 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-  },
-  groupChatSection: {
-    marginTop: 20,
-    paddingHorizontal: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  groupChatList: {
-    paddingBottom: 10,
   },
 });
 

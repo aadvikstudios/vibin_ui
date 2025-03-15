@@ -26,6 +26,7 @@ const GroupChatScreen = ({ route, navigation }) => {
   const { group } = route.params;
 
   const groupId = group.groupId;
+  const groupName = group.groupName;
   const messageIds = useRef(new Set());
 
   const [messages, setMessages] = useState([]);
@@ -50,9 +51,9 @@ const GroupChatScreen = ({ route, navigation }) => {
       messageIds
     );
 
-    if (userData.userhandle) {
-      markGroupMessagesRead(socket, groupId, userData.userhandle);
-    }
+    // if (userData.userhandle) {
+    //   markGroupMessagesRead(socket, groupId, userData.userhandle);
+    // }
   }, [groupId, userData.userhandle]);
 
   const onRefresh = () => {

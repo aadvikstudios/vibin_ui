@@ -335,7 +335,6 @@ export const fetchConnectionsAPI = async (userHandle) => {
     return []; // ✅ Return an empty array instead of crashing
   }
 };
-
 export const fetchPendingApprovalsAPI = async (userHandle) => {
   try {
     console.log(`🔍 Fetching pending approvals for userHandle: ${userHandle}`);
@@ -399,9 +398,10 @@ export const fetchPendingApprovalsAPI = async (userHandle) => {
       updatedInvites
     );
 
-    // ✅ Process invites safely
+    // ✅ Process invites safely and include groupName
     return updatedInvites.map((invite) => ({
       groupId: invite.groupId || invite.SK.split('#')[1], // Extract Group ID from SK if not explicitly provided
+      groupName: invite.groupName || 'Unnamed Group', // ✅ Extract groupName safely
       interactionType: invite.interactionType,
       status: invite.status,
       inviterHandle: invite.inviterHandle,

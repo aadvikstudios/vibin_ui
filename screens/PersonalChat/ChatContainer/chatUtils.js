@@ -220,6 +220,7 @@ export const checkPendingInvites = async (approverId) => {
 
 export const handleUserInvite = async ({
   inviteeHandle,
+  groupName,
   inviterHandle,
   approverHandle,
 }) => {
@@ -233,6 +234,7 @@ export const handleUserInvite = async ({
     // ✅ Ensure all handles are lowercase before sending the request
     const payload = {
       inviterHandle: inviterHandle.toLowerCase(),
+      groupName,
       inviteeHandle: inviteeHandle.toLowerCase(),
       approverHandle: approverHandle.toLowerCase(),
     };
@@ -248,7 +250,7 @@ export const handleUserInvite = async ({
 
     return {
       success: true,
-      message: `Invitation successfully sent to @${inviteeHandle.toLowerCase()} and is pending approval by @${approverHandle.toLowerCase()}.`,
+      message: `Hey! We've sent the invitation approval request to @${approverHandle.toLowerCase()} (Approval ID: ${approverHandle}). As soon as they give the go-ahead, @${inviteeHandle.toLowerCase()} will get the invite, and we'll get the group rolling! 🎉`,
     };
   } catch (error) {
     console.error('❌ Error sending invite:', error?.response?.data || error);

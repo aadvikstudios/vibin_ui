@@ -6,10 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 const GroupChatHeader = ({ group, navigation }) => {
   const { colors } = useTheme();
 
-  // ✅ Safe fallback values in case group is undefined or missing properties
-  const groupImage = group?.photo || 'https://via.placeholder.com/40'; // Placeholder image
-  const groupName = group?.name || 'Unnamed Group';
+  // ✅ Capitalize first letter function
+  const capitalizeFirstLetter = (str) =>
+    str.charAt(0).toUpperCase() + str.slice(1);
+
+  const groupName = capitalizeFirstLetter(group?.groupName || 'Unnamed Group');
   const membersCount = group?.members?.length || 0;
+
+  // ✅ Extract first letter of the group name for Avatar
+  const groupInitial = groupName.charAt(0).toUpperCase();
 
   return (
     <View style={[styles.header, { backgroundColor: colors.surface }]}>
@@ -21,8 +26,15 @@ const GroupChatHeader = ({ group, navigation }) => {
         <Ionicons name="arrow-back" size={24} color={colors.onSurface} />
       </TouchableOpacity>
 
-      {/* 🟡 Group Avatar & Name */}
-      <Avatar.Image source={{ uri: groupImage }} size={40} />
+      {/* 🟡 Group Avatar with Initial */}
+      <Avatar.Text
+        size={40}
+        label={groupInitial}
+        style={{ backgroundColor: colors.primary }} // ✅ Dynamic Background
+        labelStyle={{ fontSize: 20, fontWeight: 'bold', color: 'white' }} // ✅ Letter Styling
+      />
+
+      {/* Group Name & Members Count */}
       <View style={styles.infoContainer}>
         <Text
           style={[styles.groupName, { color: colors.primaryText }]}
@@ -35,7 +47,7 @@ const GroupChatHeader = ({ group, navigation }) => {
         </Text>
       </View>
 
-      {/* ⚙️ Group Settings (Future feature) */}
+      {/* ⚙️ Group Settings */}
       <TouchableOpacity style={styles.iconButton}>
         <Ionicons name="ellipsis-vertical" size={24} color={colors.primary} />
       </TouchableOpacity>
@@ -58,7 +70,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     marginLeft: 10,
-    flex: 1, // ✅ Ensures text doesn't overlap with buttons
+    flex: 1,
   },
   groupName: {
     fontSize: 18,

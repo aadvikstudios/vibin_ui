@@ -45,11 +45,11 @@ const GroupChatContainer = ({
       return null;
     }
   };
-
+  console.log('uniqueMessages', uniqueMessages);
   // ✅ Check if only one message exists and it's a system message
   const shouldCenterMessage =
     uniqueMessages.length === 1 &&
-    uniqueMessages[0].content === MESSAGE_TYPES.GROUP_BOT;
+    uniqueMessages[0].senderId === MESSAGE_TYPES.SYSTEM_MESSAGE;
 
   if (shouldCenterMessage) {
     return <CenteredMessage message={uniqueMessages[0]} colors={colors} />;
@@ -57,7 +57,7 @@ const GroupChatContainer = ({
 
   // ✅ Filter out system messages from the display
   const filteredMessages = uniqueMessages.filter(
-    (msg) => msg.content !== MESSAGE_TYPES.GROUP_BOT
+    (msg) => msg.senderId !== MESSAGE_TYPES.SYSTEM_MESSAGE
   );
 
   return (

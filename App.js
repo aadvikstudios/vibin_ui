@@ -15,15 +15,15 @@ LogBox.ignoreLogs([
 ]);
 
 const AppContent = () => {
-  useEffect(() => {
-    async function configureNavigationBar() {
-      if (Platform.OS === 'android') {
-        await NavigationBar.setVisibilityAsync('hidden');
-        await NavigationBar.setBehaviorAsync('overlay-swipe');
-      }
-    }
-    configureNavigationBar();
-  }, []);
+  // useEffect(() => {
+  //   async function configureNavigationBar() {
+  //     if (Platform.OS === 'android') {
+  //       await NavigationBar.setVisibilityAsync('hidden');
+  //       await NavigationBar.setBehaviorAsync('overlay-swipe');
+  //     }
+  //   }
+  //   configureNavigationBar();
+  // }, []);
 
   return (
     <UserProvider>

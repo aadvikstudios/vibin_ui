@@ -16,6 +16,7 @@ const NotificationItem = ({
   inviteeHandle,
   inviteeProfile,
   groupId,
+  groupName, // ✅ Added Group Name
   approverHandle,
   onAccept,
   onReject,
@@ -69,15 +70,29 @@ const NotificationItem = ({
           },
         ]}
       >
-        🎉{' '}
+        📨{' '}
         <Text style={[styles.bold, { color: colors.primary }]}>
-          {inviterHandle}
+          {inviterHandle}{' '}
+        </Text>
+        wants to add{' '}
+        <Text style={[styles.bold, { color: colors.accent }]}>
+          {inviteeHandle}
         </Text>{' '}
-        invited you to join a group with{' '}
-        <Text style={[styles.bold, { color: colors.secondary }]}>
-          {inviteeProfile.name}
+        to group{' '}
+        <Text style={[styles.groupName, { color: colors.accent }]}>
+          {groupName}
         </Text>
         .
+      </Text>
+
+      <Text style={[styles.approvalText, { color: colors.secondaryText }]}>
+        If you're okay with this, approve it. Otherwise, you can decline.
+      </Text>
+
+      <Text
+        style={[styles.viewBeforeApproveText, { color: colors.secondaryText }]}
+      >
+        You can view the invitee's profile before approving.
       </Text>
 
       {/* Action Buttons (View Profile / Accept / Reject) */}
@@ -96,10 +111,10 @@ const NotificationItem = ({
           </Text>
         </TouchableOpacity>
 
-        {/* ✅ Accept Button */}
+        {/* ✅ Approve Button */}
         <TouchableOpacity
           onPress={() => handleInviteAction('approved')}
-          style={styles.acceptButton}
+          style={styles.approveButton}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -108,16 +123,16 @@ const NotificationItem = ({
             <>
               <Icon name="checkmark-circle" size={40} color={colors.success} />
               <Text style={[styles.buttonText, { color: colors.success }]}>
-                Accept
+                Approve
               </Text>
             </>
           )}
         </TouchableOpacity>
 
-        {/* ❌ Reject Button */}
+        {/* ❌ Decline Button */}
         <TouchableOpacity
           onPress={() => handleInviteAction('declined')}
-          style={styles.rejectButton}
+          style={styles.declineButton}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -126,7 +141,7 @@ const NotificationItem = ({
             <>
               <Icon name="close-circle" size={40} color={colors.danger} />
               <Text style={[styles.buttonText, { color: colors.danger }]}>
-                Reject
+                Decline
               </Text>
             </>
           )}
@@ -155,15 +170,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     fontWeight: '500',
+    lineHeight: 20, // ✅ Ensures better readability
   },
   bold: {
     fontWeight: 'bold',
+  },
+  groupName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 2,
+  },
+  approvalText: {
+    fontSize: 12,
+    marginTop: 5,
+    lineHeight: 18, // ✅ Spacing for readability
+  },
+  viewBeforeApproveText: {
+    fontSize: 12,
+    marginTop: 5,
+    fontStyle: 'italic',
   },
   actionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 12,
   },
   viewProfileButton: {
     alignItems: 'center',
@@ -175,11 +206,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  acceptButton: {
+  approveButton: {
     alignItems: 'center',
     paddingHorizontal: 10,
   },
-  rejectButton: {
+  declineButton: {
     alignItems: 'center',
     paddingHorizontal: 10,
   },

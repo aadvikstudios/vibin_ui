@@ -20,6 +20,7 @@ const InviteUserModal = ({
 }) => {
   const { colors } = useTheme();
   const [userHandle, setUserHandle] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState('');
@@ -30,12 +31,18 @@ const InviteUserModal = ({
       return;
     }
 
+    if (!groupName.trim()) {
+      setError('Please enter a group name');
+      return;
+    }
+
     setError('');
     setMessage('');
     setLoading(true);
-
+    console.log('approverHandle', approverHandle);
     const { success, message } = await handleUserInvite({
       inviteeHandle: userHandle,
+      groupName,
       inviterHandle,
       approverHandle,
     });
@@ -45,9 +52,20 @@ const InviteUserModal = ({
     if (success) {
       setMessage(message); // ✅ Show success message
       setUserHandle(''); // ✅ Clear input field
+      setGroupName(''); // ✅ Clear group name input
     } else {
       setError(message); // ❌ Show error message
     }
+  };
+
+  // ✅ Reset state when modal is closed
+  const handleClose = () => {
+    setUserHandle('');
+    setGroupName('');
+    setMessage(null);
+    setError('');
+    setLoading(false);
+    onClose();
   };
 
   return (
@@ -66,97 +84,133 @@ const InviteUserModal = ({
             </Text>
           </View>
 
-          {/* Description */}
-          <Text style={[styles.description, { color: colors.secondaryText }]}>
-            Want to spice things up? You and your match can add a third person
-            to this chat! Enter their username below. Your match will need to
-            approve this invite.
-          </Text>
+          {/* Show input fields and buttons only if no success message */}
+          {!message ? (
+            <>
+              {/* Description */}
+              <Text
+                style={[styles.description, { color: colors.secondaryText }]}
+              >
+                Want to spice things up? You and your match can add a third
+                person to this chat! Enter their username below along with a
+                group name. Your match will need to approve this invite.
+              </Text>
 
-          {/* Input Field */}
-          <TextInput
-            style={[
-              styles.input,
-              {
-                borderColor: error ? colors.error : colors.border,
-                color: colors.primaryText,
-                backgroundColor: colors.backgroundSecondary,
-              },
-            ]}
-            placeholder="Enter @username"
-            placeholderTextColor={colors.secondaryText}
-            value={userHandle}
-            onChangeText={(text) => {
-              setUserHandle(text);
-              setError('');
-              setMessage('');
-            }}
-            editable={!loading}
-          />
-
-          {/* Error or Success Message */}
-          {error ? (
-            <View style={styles.messageContainer}>
-              <Ionicons
-                name="close-circle-outline"
-                size={20}
-                color={colors.error}
+              {/* Input Field - Group Name */}
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    borderColor: error ? colors.error : colors.border,
+                    color: colors.primaryText,
+                    backgroundColor: colors.backgroundSecondary,
+                    marginBottom: 10, // Added spacing between inputs
+                  },
+                ]}
+                placeholder="Give your trio a name!"
+                placeholderTextColor={colors.secondaryText}
+                value={groupName}
+                onChangeText={(text) => {
+                  setGroupName(text);
+                  setError('');
+                  setMessage('');
+                }}
+                editable={!loading}
               />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
 
-          {message ? (
-            <View style={styles.messageContainer}>
+              {/* Input Field - Username */}
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    borderColor: error ? colors.error : colors.border,
+                    color: colors.primaryText,
+                    backgroundColor: colors.backgroundSecondary,
+                  },
+                ]}
+                placeholder="Enter @username"
+                placeholderTextColor={colors.secondaryText}
+                value={userHandle}
+                onChangeText={(text) => {
+                  setUserHandle(text);
+                  setError('');
+                  setMessage('');
+                }}
+                editable={!loading}
+              />
+
+              {/* Error Message */}
+              {error ? (
+                <View style={styles.messageContainer}>
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={20}
+                    color={colors.error}
+                  />
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              {/* Invite Button */}
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary }]}
+                onPress={handleInvitePress}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color={colors.onPrimary} />
+                ) : (
+                  <>
+                    <Ionicons
+                      name="send-outline"
+                      size={20}
+                      color={colors.onPrimary}
+                    />
+                    <Text
+                      style={[styles.buttonText, { color: colors.onPrimary }]}
+                    >
+                      Send Invite
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          ) : (
+            // ✅ Show success message and close button only
+            <View style={styles.successContainer}>
               <Ionicons
                 name="checkmark-circle-outline"
-                size={20}
+                size={40}
                 color={colors.success}
               />
-              <Text style={styles.successText}>{message}</Text>
-            </View>
-          ) : null}
-
-          {/* Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={handleInvitePress}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.onPrimary} />
-              ) : (
-                <>
-                  <Ionicons
-                    name="send-outline"
-                    size={20}
-                    color={colors.onPrimary}
-                  />
-                  <Text
-                    style={[styles.buttonText, { color: colors.onPrimary }]}
-                  >
-                    Send Invite
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.secondary }]}
-              onPress={onClose}
-              disabled={loading}
-            >
-              <Ionicons
-                name="close-outline"
-                size={20}
-                color={colors.onSecondary}
-              />
-              <Text style={[styles.buttonText, { color: colors.onSecondary }]}>
-                Close
+              <Text
+                style={[
+                  styles.successText,
+                  { fontSize: 16, textAlign: 'center' },
+                ]}
+              >
+                {message}
               </Text>
-            </TouchableOpacity>
-          </View>
+            </View>
+          )}
+
+          {/* Close Button */}
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.secondary, marginTop: 15 },
+            ]}
+            onPress={handleClose}
+          >
+            <Ionicons
+              name="close-outline"
+              size={20}
+              color={colors.onSecondary}
+            />
+            <Text style={[styles.buttonText, { color: colors.onSecondary }]}>
+              Close
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -209,10 +263,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 5,
   },
+  successContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
   successText: {
     color: 'green',
     fontSize: 14,
-    marginLeft: 5,
+    marginTop: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -221,13 +279,13 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   button: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 12,
     borderRadius: 8,
     marginHorizontal: 5,
+    width: '100%',
   },
   buttonText: {
     fontSize: 16,
