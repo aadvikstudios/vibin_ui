@@ -101,7 +101,7 @@ export const sendGroupMessageAPI = async (
       throw new Error(data.message || 'Failed to send group message');
     }
 
-    console.log('✅ Group message successfully stored in backend');
+    console.log('✅ Group message successfully stored in backend api');
   } catch (error) {
     console.error('❌ Error in sendGroupMessageAPI:', error.message);
     throw error;

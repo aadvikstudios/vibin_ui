@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
-import { sendGroupMessageAPI } from '../../api';
+import { sendGroupMessageAPI, fetchGroupMessagesAPI } from '../../api';
 
 const SOCKET_URL = 'https://socket.vibinconnect.com';
 
@@ -11,36 +11,56 @@ export const useGroupChatSocket = (
   userData
 ) => {
   const [socket, setSocket] = useState(null);
-  const pendingMessages = useRef(new Set()); // ✅ Track messages sent via WebSocket
+  const pendingMessages = useRef(new Map()); // ✅ Track messages sent via WebSocket
 
   useEffect(() => {
     if (!groupId) return;
 
-    const newSocket = io(SOCKET_URL, { transports: ['websocket'] });
+    const newSocket = io(SOCKET_URL, {
+      transports: ['websocket'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 3000,
+    });
 
     newSocket.on('connect', () => {
       console.log('✅ WebSocket Connected:', newSocket.id);
       newSocket.emit('joinGroup', { groupId });
+
+      // ✅ Fetch last 10 messages when joining
+      fetchGroupMessagesAPI(groupId).then((messages) => {
+        console.log('📩 Last 10 messages fetched:', messages);
+        setMessages(messages); // Display older messages first
+      });
+
       setSocket(newSocket);
     });
 
-    newSocket.on('disconnect', () => {
-      console.warn('❌ WebSocket Disconnected');
+    newSocket.on('disconnect', (reason) => {
+      console.warn('❌ WebSocket Disconnected:', reason);
     });
 
-    // ✅ Listen for real-time group messages (Avoid duplicates)
+    // ✅ Handle New Messages from WebSocket
     newSocket.on('newGroupMessage', (message) => {
-      console.log('📩 New group message received:', message);
+      console.log('📩 New group message received in real-time:', message);
 
       if (messageIds.current.has(message.messageId)) {
-        console.warn('⚠️ Duplicate group message detected:', message.messageId);
+        console.warn(
+          '⚠️ Duplicate group message detected, skipping:',
+          message.messageId
+        );
         return;
       }
 
       messageIds.current.add(message.messageId);
-      pendingMessages.current.delete(message.messageId); // ✅ Remove from pending if received via WebSocket
 
-      setMessages((prev) => [...prev, message]); // ✅ Append at the bottom
+      setMessages((prevMessages) => {
+        // ✅ Append new message and sort messages by `createdAt` (Oldest → Newest)
+        const updatedMessages = [...prevMessages, message].sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        return updatedMessages;
+      });
     });
 
     return () => {
@@ -59,13 +79,6 @@ export const useGroupChatSocket = (
         imageUrl
       );
       return;
-    } else {
-      console.log('✅ WebSocket is connected. Sending message via WebSocket.');
-    }
-
-    if (!userData?.userhandle) {
-      console.error('❌ Missing senderId! userData:', userData);
-      return;
     }
 
     const message = {
@@ -74,22 +87,26 @@ export const useGroupChatSocket = (
       content: content ? content.trim() : null,
       imageUrl: imageUrl || null,
       createdAt: new Date().toISOString(),
-      messageId: `${groupId}-${Date.now()}-${Math.random()}`, // Ensure uniqueness
+      messageId: `${groupId}-${Date.now()}-${Math.random()}`,
     };
 
     console.log('📤 Sending group message:', message);
 
-    // ✅ Emit message to WebSocket first
-    socket.emit('sendGroupMessage', message);
-    pendingMessages.current.add(message.messageId);
+    // ✅ Optimistic UI Update
+    setMessages((prev) => [...prev, message]);
 
-    if (!messageIds.current.has(message.messageId)) {
-      messageIds.current.add(message.messageId);
-      setMessages((prev) => [...prev, message]); // ✅ Append at the bottom
+    // ✅ Prevent Duplicate Sending
+    if (!pendingMessages.current.has(message.messageId)) {
+      pendingMessages.current.set(message.messageId, message);
+      socket.emit('sendGroupMessage', message);
+    } else {
+      console.warn(
+        '⚠️ Duplicate message detected in send. Skipping WebSocket emit.'
+      );
     }
 
     try {
-      // ✅ Wait before calling API (to prevent double insertion)
+      // ✅ Delay API Call to Avoid WebSocket Race Conditions
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (!pendingMessages.current.has(message.messageId)) {
@@ -99,7 +116,6 @@ export const useGroupChatSocket = (
         return;
       }
 
-      // ✅ Store message in backend only if WebSocket didn't handle it
       await sendGroupMessageAPI(
         groupId,
         userData.userhandle,

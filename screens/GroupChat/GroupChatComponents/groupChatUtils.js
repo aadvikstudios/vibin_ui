@@ -7,7 +7,6 @@ import {
 } from '../../../api';
 import * as ImagePicker from 'expo-image-picker';
 
-/** ✅ Fetch Group Messages */
 export const fetchGroupMessages = async (
   groupId,
   setMessages,
@@ -32,7 +31,12 @@ export const fetchGroupMessages = async (
     // ✅ Add fetched message IDs to prevent duplicates
     uniqueMessages.forEach((msg) => messageIds.current.add(msg.messageId));
 
-    // ✅ Replace messages instead of appending
+    // ✅ Sort messages by `createdAt` (Ascending: Oldest → Newest)
+    uniqueMessages.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    // ✅ Set messages in correct order
     setMessages(uniqueMessages);
   } catch (error) {
     console.error('❌ Failed to fetch group messages:', error);

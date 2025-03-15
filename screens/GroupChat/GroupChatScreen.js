@@ -50,10 +50,6 @@ const GroupChatScreen = ({ route, navigation }) => {
       setRefreshing,
       messageIds
     );
-
-    // if (userData.userhandle) {
-    //   markGroupMessagesRead(socket, groupId, userData.userhandle);
-    // }
   }, [groupId, userData.userhandle]);
 
   const onRefresh = () => {
