@@ -70,11 +70,13 @@ const GroupChatScreen = ({ route, navigation }) => {
     );
   };
 
-  const handleSendMessage = async (content = '', imageUrl = null) => {
-    if (!content.trim() && !imageUrl) return;
+  const handleSendMessage = async (content = null, imageUrl = null) => {
+    if ((!content || !content.trim()) && !imageUrl) return; // Ensure at least content or image exists
 
     try {
-      await sendGroupMessage(content.trim() || null, imageUrl || null);
+      const messageContent = content && content.trim() ? content.trim() : null; // Avoid calling trim() on null
+
+      await sendGroupMessage(messageContent, imageUrl);
       setInputText('');
       setReplyMessage(null);
     } catch (error) {

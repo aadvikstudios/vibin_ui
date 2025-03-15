@@ -21,20 +21,20 @@ const GroupMessageInput = ({
   setReplyMessage,
 }) => {
   const { colors } = useTheme();
-  const [attachedImage, setAttachedImage] = useState(null); // ✅ Image state
+  const [attachedImage, setAttachedImage] = useState(null);
 
   /** ✅ Handle Sending Message */
   const onSend = async () => {
-    if (!inputText.trim() && !attachedImage) return; // Ensure at least text or image exists
+    if (!inputText.trim() && !attachedImage) return; // Prevent sending empty messages
 
     try {
-      // ✅ Correctly pass content & imageUrl separately
+      // ✅ Send text and/or image message
       await sendMessage(
-        inputText.trim() ? inputText.trim() : null,
-        attachedImage ? attachedImage : null
+        inputText.trim() || null, // Send text if available
+        attachedImage || null // Send image if available
       );
 
-      setInputText(''); // Reset text input
+      setInputText(''); // Clear text input
       setReplyMessage(null);
       setAttachedImage(null); // ✅ Clear image after sending
     } catch (error) {
@@ -42,22 +42,27 @@ const GroupMessageInput = ({
     }
   };
 
-  /** ✅ Handle Sending Image */
+  /** ✅ Handle Image Selection & Upload */
   const onAttachImage = async () => {
     try {
       const imageUrl = await pickImageAndUpload(
         groupId,
+        sendMessage,
         userData,
         'group-chat-images/'
       );
-      if (imageUrl) setAttachedImage(imageUrl); // ✅ Store image URL before sending
+
+      if (imageUrl) {
+        console.log('✅ Image uploaded and sent:', imageUrl);
+      }
     } catch (error) {
-      console.error('❌ Image upload failed:', error);
+      console.error('❌ Image upload failed from input js:', error);
     }
   };
 
   return (
     <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
+      {/* 🔹 Reply Preview */}
       {replyMessage && (
         <View
           style={[
@@ -89,7 +94,7 @@ const GroupMessageInput = ({
 
       {/* 🔹 Attachment Button */}
       <TouchableOpacity onPress={onAttachImage} style={styles.iconButton}>
-        <Ionicons name="attach" size={24} color={colors.primary} />
+        <Ionicons name="image-outline" size={24} color={colors.primary} />
       </TouchableOpacity>
 
       {/* 🔹 Text Input */}
@@ -102,7 +107,6 @@ const GroupMessageInput = ({
         value={inputText}
         onChangeText={setInputText}
         placeholderTextColor={colors.secondaryText}
-        editable={!attachedImage} // ✅ Disable input if an image is attached
       />
 
       {/* 🔹 Send Button */}

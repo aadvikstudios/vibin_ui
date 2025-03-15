@@ -2,7 +2,10 @@ import {
   fetchGroupMessagesAPI,
   markGroupMessagesReadAPI,
   likeGroupMessageAPI,
+  uploadImageToS3API,
+  generatePresignedUrlAPI,
 } from '../../../api';
+import * as ImagePicker from 'expo-image-picker';
 
 /** ✅ Fetch Group Messages */
 export const fetchGroupMessages = async (
@@ -97,5 +100,66 @@ export const likeGroupMessage = async (
         msg.messageId === messageId ? { ...msg, liked: !liked } : msg
       )
     );
+  }
+};
+
+export const pickImageAndUpload = async (
+  groupId,
+  sendMessage,
+  userData,
+  path = 'group-chat-images/'
+) => {
+  try {
+    // ✅ Request permission to access the media library
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      alert('You need to allow permission to access the gallery.');
+      return;
+    }
+
+    // ✅ Launch image picker
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      try {
+        const imageUri = result.assets[0].uri;
+        const fileName = `${groupId}-${Date.now()}.jpg`;
+        const fileType = 'image/jpeg';
+
+        console.log('📂 Upload path:', path);
+
+        // ✅ 1️⃣ Generate Pre-Signed URL for S3 upload
+        const { url: uploadUrl, fileName: s3Key } =
+          await generatePresignedUrlAPI(fileName, fileType, path);
+
+        if (!uploadUrl) {
+          console.error('❌ Failed to get pre-signed URL');
+          return;
+        }
+
+        // ✅ 2️⃣ Upload Image to S3
+        await uploadImageToS3API(uploadUrl, imageUri, path);
+
+        // ✅ 3️⃣ Store only the relative path in DB
+        const storedFilePath = `${path}${fileName}`;
+        console.log('✅ Stored file path:', storedFilePath);
+
+        // ✅ 4️⃣ Send the image message immediately so UI updates instantly
+        await sendMessage(null, storedFilePath);
+        console.log('✅ Image message sent successfully!');
+
+        return storedFilePath; // Return the image URL if needed
+      } catch (error) {
+        console.error('❌ Image upload failed from chat utils:', error);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error picking/uploading image:', error);
   }
 };

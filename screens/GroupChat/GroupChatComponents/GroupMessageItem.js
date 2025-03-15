@@ -33,12 +33,12 @@ const GroupMessageItem = ({
             : { backgroundColor: colors.surfaceVariant },
         ]}
       >
-        {/* 🔹 Sender Name (Only for Received Messages)
+        {/* 🔹 Sender Name (Only for Received Messages) */}
         {!isSentByCurrentUser && (
           <Text style={[styles.senderName, { color: colors.primary }]}>
-            {item.senderName}
+            {item.senderId}
           </Text>
-        )} */}
+        )}
 
         {/* 🔹 Reply Preview */}
         {item.replyTo && (
@@ -76,7 +76,7 @@ const GroupMessageItem = ({
         )}
 
         {/* 🔹 Like (Heart) Button */}
-        {!isSentByCurrentUser ? (
+        {/* {!isSentByCurrentUser ? (
           // ✅ Heart Button for Received Messages (Can Like or Unlike)
           <TouchableOpacity
             onPress={() =>
@@ -103,7 +103,7 @@ const GroupMessageItem = ({
               <Ionicons name="heart" size={20} color={colors.liked} />
             </View>
           )
-        )}
+        )} */}
       </View>
 
       {/* 🔹 Message Timestamp */}
